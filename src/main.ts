@@ -811,10 +811,10 @@ function openMobileSidebar() {
   sp('z-index', '400');
   sp('overflow-y', 'auto');
   sp('overflow-x', 'hidden');
-  sp('background', '#fff');
-  sp('box-shadow', '6px 0 32px rgba(0,0,0,.45)');
+  sp('background', 'var(--ink, #171715)');
+  sp('box-shadow', '6px 0 40px rgba(0,0,0,.55)');
   sp('border-radius', '0');
-  sp('border-right', '1px solid #E2E8F0');
+  sp('border-right', 'none');
   sp('padding', '18px 12px 16px');
   sb.style.animation = 'drawerSlideIn .22s cubic-bezier(.4,0,.2,1) both';
   sb.classList.add('mobile-open');
