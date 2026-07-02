@@ -5300,6 +5300,12 @@ tbody tr:hover td,.dreco-table tr:hover td{background:var(--dreco-surface-soft)!
 @media(max-width:900px){
   .workflow-settings-grid{grid-template-columns:1fr;}
 }
+/* ── Mobile topbar: force single row, no wrapping ──────────── */
+@media(max-width:860px){
+  .topbar{flex-wrap:nowrap!important;height:56px!important;overflow:hidden!important;align-items:center!important;min-height:unset!important;}
+  .topbar-search,.topbar-icon-btn,.topbar-workspace{display:none!important;}
+  .topbar-title{flex:1 1 auto!important;width:auto!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;}
+}
 </style>
 </head>
 <body>
