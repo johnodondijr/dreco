@@ -5306,6 +5306,20 @@ tbody tr:hover td,.dreco-table tr:hover td{background:var(--dreco-surface-soft)!
   .topbar-search,.topbar-icon-btn,.topbar-workspace{display:none!important;}
   .topbar-title{flex:1 1 auto!important;width:auto!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;}
 }
+/* ── Mobile sidebar drawer ──────────────────────────────────── */
+.sidebar.mobile-open{background:#1A1710!important;}
+.sidebar.mobile-open .sidebar-logo-mark{background:#2A2518!important;}
+.sidebar.mobile-open .sidebar-logo-text{color:#fff!important;}
+.sidebar.mobile-open .nav-section-label{color:rgba(255,255,255,.35)!important;}
+.sidebar.mobile-open .nav-item{color:rgba(255,255,255,.6)!important;background:transparent!important;}
+.sidebar.mobile-open .nav-item:hover{background:rgba(255,255,255,.08)!important;color:#fff!important;}
+.sidebar.mobile-open .nav-item.active{background:rgba(255,255,255,.12)!important;color:#fff!important;box-shadow:none!important;}
+.sidebar.mobile-open .nav-item.active i{color:#fff!important;}
+.sidebar.mobile-open .sidebar-divider{border-color:rgba(255,255,255,.08)!important;}
+.sidebar.mobile-open .sidebar-user-card{background:#EDE5C4!important;border-color:transparent!important;margin-top:8px!important;}
+.sidebar.mobile-open .suc-name{color:#1A1710!important;}
+.sidebar.mobile-open .suc-org{color:#6B6248!important;}
+.sidebar.mobile-open .suc-avatar{background:#1A1710!important;color:#fff!important;border-radius:50%!important;}
 </style>
 </head>
 <body>
@@ -5550,68 +5564,43 @@ tbody tr:hover td,.dreco-table tr:hover td{background:var(--dreco-surface-soft)!
       </div>
       <div class="sidebar-divider"></div>
 
-      <!-- USER CARD -->
-      <button class="sidebar-user-card sidebar-account-trigger" onclick="toggleProfileDropdown(event)" type="button">
-        <div class="suc-avatar-wrap">
-          <div class="suc-avatar" id="suc-avatar">-</div>
-        </div>
-        <div class="suc-name" id="suc-name">-</div>
-        <div class="suc-org">Workspace</div>
+      <div class="nav-section-label">Workspace</div>
+      <button type="button" class="nav-item active" id="nav-dash" data-title="Home" aria-label="Home" onclick="switchTab('dash')">
+        <i class="ti ti-home"></i><span class="nav-item-label">Home</span>
       </button>
-      <div class="sidebar-divider"></div>
-
-      <!-- Sidebar search -->
-      <div class="sidebar-search-bar" role="button" tabindex="0" onclick="document.querySelector('.topbar-search-btn')&&document.querySelector('.topbar-search-btn').click()">
-        <i class="ti ti-search"></i>
-        <span>Search...</span>
-        <kbd>⌘K</kbd>
-      </div>
-
-      <div class="nav-section-label">General</div>
-      <button type="button" class="nav-item active" id="nav-dash" data-title="Dashboard" aria-label="Dashboard" onclick="switchTab('dash')">
-        <i class="ti ti-layout-dashboard"></i><span class="nav-item-label">Dashboard</span>
+      <button type="button" class="nav-item" id="nav-pipeline" data-title="Pipeline" aria-label="Pipeline" onclick="switchTab('pipeline')">
+        <i class="ti ti-route"></i><span class="nav-item-label">Pipeline</span>
+      </button>
+      <button type="button" class="nav-item" id="nav-candidates" data-title="Candidates" aria-label="Candidates" onclick="switchTab('candidates')">
+        <i class="ti ti-users"></i><span class="nav-item-label">Candidates</span>
       </button>
 
-      <div class="nav-section-label">Workflows</div>
-      <button type="button" class="nav-item" id="nav-pro" data-title="Professional Jobs" aria-label="Professional Jobs" onclick="switchTab('pro')">
-        <i class="ti ti-users"></i><span class="nav-item-label">Professional Jobs</span>
+      <div class="nav-section-label">Operations</div>
+      <button type="button" class="nav-item" id="nav-finance" data-title="Finance" aria-label="Finance" onclick="switchTab('finance')">
+        <i class="ti ti-coin"></i><span class="nav-item-label">Finance</span>
       </button>
-      <button type="button" class="nav-item" id="nav-lb" data-title="General Jobs" aria-label="General Jobs" onclick="switchTab('lb')">
-        <i class="ti ti-briefcase"></i><span class="nav-item-label">General Jobs</span>
-      </button>
-      <button type="button" class="nav-item" id="nav-kanban" data-title="Pipeline Board" aria-label="Pipeline Board" onclick="switchTab('kanban')">
-        <i class="ti ti-route"></i><span class="nav-item-label">Pipeline Board</span>
-      </button>
-      <button type="button" class="nav-item" id="nav-travel" data-title="Travel" aria-label="Travel" onclick="switchTab('travel')">
-        <i class="ti ti-plane-departure"></i><span class="nav-item-label">Travel</span>
-      </button>
-      <button type="button" class="nav-item" id="nav-calendar" data-title="Calendar" aria-label="Calendar" onclick="switchTab('calendar')">
-        <i class="ti ti-calendar-check"></i><span class="nav-item-label">Calendar</span>
-      </button>
-
-      <div class="nav-section-label">Finance</div>
-      <button type="button" class="nav-item" id="nav-commissions" data-title="Commissions" aria-label="Commissions" onclick="switchTab('commissions')">
-        <i class="ti ti-coin"></i><span class="nav-item-label">Commissions</span>
-      </button>
-      <button type="button" class="nav-item" id="nav-repayments" data-title="Repayments" aria-label="Repayments" onclick="switchTab('repayments')">
-        <i class="ti ti-receipt-refund"></i><span class="nav-item-label">Repayments</span>
-      </button>
-      <button type="button" class="nav-item" id="nav-expenses" data-title="Expenses" aria-label="Expenses" onclick="switchTab('expenses')">
-        <i class="ti ti-wallet"></i><span class="nav-item-label">Expenses</span>
+      <button type="button" class="nav-item" id="nav-documents" data-title="Documents" aria-label="Documents" onclick="switchTab('documents')">
+        <i class="ti ti-file-description"></i><span class="nav-item-label">Documents</span>
       </button>
       <button type="button" class="nav-item" id="nav-reports" data-title="Reports" aria-label="Reports" onclick="switchTab('reports')">
         <i class="ti ti-chart-bar"></i><span class="nav-item-label">Reports</span>
       </button>
-
-      <div class="nav-section-label">Team & Settings</div>
-      <button type="button" class="nav-item" id="nav-team" data-title="Team" aria-label="Team" onclick="switchTab('team')">
-        <i class="ti ti-users-group"></i><span class="nav-item-label">Team</span>
-      </button>
-      <button type="button" class="nav-item" id="nav-help" data-title="Help & Support" aria-label="Help & Support" onclick="openHelp()">
-        <i class="ti ti-help-circle"></i><span class="nav-item-label">Help & Support</span>
+      <button type="button" class="nav-item" id="nav-clients" data-title="Clients" aria-label="Clients" onclick="switchTab('clients')">
+        <i class="ti ti-building"></i><span class="nav-item-label">Clients</span>
       </button>
 
       <div class="nav-spacer"></div>
+
+      <!-- USER CARD at bottom -->
+      <button class="sidebar-user-card sidebar-account-trigger" onclick="toggleProfileDropdown(event)" type="button">
+        <div class="suc-avatar-wrap">
+          <div class="suc-avatar" id="suc-avatar">-</div>
+        </div>
+        <div class="suc-info">
+          <div class="suc-name" id="suc-name">-</div>
+          <div class="suc-org">Admin</div>
+        </div>
+      </button>
 </aside>
 
     <!-- MAIN -->
