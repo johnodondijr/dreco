@@ -407,8 +407,8 @@ export function injectDepsToD5(deps) {
       ${months.map(b => {
         const pct = Math.max(Math.round((b.count/max)*100), b.count>0?6:2);
         return `<div class="dv5-bar-col" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;position:relative">
-          <div class="dv5-bar-tip" style="position:absolute;bottom:calc(${pct}% + 10px);left:50%;transform:translateX(-50%);background:#1A1C2E;color:#C9F035;font-size:10px;font-weight:500;padding:3px 7px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;z-index:10">${b.count} placed</div>
-          <div style="width:100%;border-radius:5px 5px 3px 3px;background:linear-gradient(180deg,#2A2D44,#1A1C2E);height:${pct}%;min-height:3px;transition:height .4s cubic-bezier(.4,0,.2,1),opacity .12s;cursor:default" onmouseenter="this.previousElementSibling.style.opacity=1;this.style.background='linear-gradient(180deg,#C9F035,#A8CC1A)'" onmouseleave="this.previousElementSibling.style.opacity=0;this.style.background='linear-gradient(180deg,#2A2D44,#1A1C2E)'"></div>
+          <div class="dv5-bar-tip" style="position:absolute;bottom:calc(${pct}% + 10px);left:50%;transform:translateX(-50%);background:#1F2133;color:#DDF56C;font-size:10px;font-weight:500;padding:3px 7px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;z-index:10">${b.count} placed</div>
+          <div style="width:100%;border-radius:5px 5px 3px 3px;background:linear-gradient(180deg,#5347CE,#6A5CF0);height:${pct}%;min-height:3px;transition:height .4s cubic-bezier(.4,0,.2,1),opacity .12s;cursor:default" onmouseenter="this.previousElementSibling.style.opacity=1;this.style.background='linear-gradient(180deg,#DDF56C,#D7F266)'" onmouseleave="this.previousElementSibling.style.opacity=0;this.style.background='linear-gradient(180deg,#5347CE,#6A5CF0)'"></div>
           <span style="font-size:10px;color:var(--text-3,#999);font-weight:438">${h(b.label)}</span>
         </div>`;
       }).join('')}
@@ -417,7 +417,7 @@ export function injectDepsToD5(deps) {
 
   function buildFunnelChart(flowSteps) {
     const max = Math.max(...flowSteps.map(([,v]) => v), 1);
-    const colors = ['#C9F035','#A8CC1A','#7A9A10','#4A5C0A','#2A3C06','#1A2C04'];
+    const colors = ['#5347CE','#DDF56C','#49774E','#A05B3F','#426CA8','#8A6A16'];
     return `<div style="display:flex;flex-direction:column;gap:8px;padding:8px 0;justify-content:center;height:100%">
       ${flowSteps.map(([label,val],i) => {
         const pct = Math.max(Math.round((val/max)*100), val>0?4:1);
@@ -1585,7 +1585,7 @@ export function injectDepsToD5(deps) {
     const monthlyChart=`<div style="display:flex;align-items:flex-end;gap:4px;height:100px;padding-bottom:4px">
       ${last12.map(s=>{const pct=Math.max(Math.round(s.count/chartMax*100),s.count>0?5:2);return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end;position:relative">
         <span style="font-size:9px;font-weight:500;color:var(--dreco-ink,#1A1C2E);position:absolute;bottom:calc(${pct}% + 2px)">${s.count||''}</span>
-        <div style="width:100%;border-radius:4px 4px 2px 2px;background:linear-gradient(180deg,#C9F035,#A8CC1A);height:${pct}%;min-height:2px" title="${s.count} placements"></div>
+        <div style="width:100%;border-radius:4px 4px 2px 2px;background:linear-gradient(180deg,#5347CE,#6A5CF0);height:${pct}%;min-height:2px" title="${s.count} placements"></div>
         <span style="font-size:9px;color:#999;font-weight:438;writing-mode:vertical-lr;transform:rotate(180deg);height:28px;white-space:nowrap">${s.label}</span>
       </div>`}).join('')}
     </div>`;
@@ -2336,7 +2336,7 @@ export function injectDepsToD5(deps) {
 .dv5-badge.orange { background:#FFEDD5; color:#C2410C; }
 .dv5-badge.red    { background:#FEE2E2; color:#B91C1C; }
 .dv5-badge.gray   { background:#F3F4F6; color:#6B7280; }
-.dv5-badge.purple { background:rgba(201,240,53,.15); color:#5A7A10; }
+.dv5-badge.purple { background:#E9DDFB; color:#5347CE; }
 
 /* Pills */
 .dv5-pill { display:inline-flex; align-items:center; padding:3px 8px; border-radius:999px; font-size:10px; font-weight:500; white-space:nowrap; background:#F3F3F3; color:#888; }
@@ -2648,29 +2648,31 @@ export function injectDepsToD5(deps) {
 .dv5-profile-avatar,
 .dv5-avatar { background:#E4E1D6!important; color:#171715!important; }
 
-/* Eduplex-inspired final palette */
+/* Premium Dreco palette: warm SaaS, purple brand, lime accent */
 .dv5-page,
 .dv5-section {
-  --dreco-bg:#F7F7F2;
+  --dreco-brand:#5347CE;
+  --dreco-brand-2:#6A5CF0;
+  --dreco-bg:#FAFAF8;
   --dreco-shell:#FFFFFF;
   --dreco-surface:#FFFFFF;
-  --dreco-soft:#F4F5EF;
+  --dreco-soft:#F5F4F1;
   --dreco-ink:#242330;
-  --dreco-ink-deep:#1B1A2D;
+  --dreco-ink-deep:#1F2133;
   --dreco-muted:#7E7C8C;
   --dreco-muted-2:#A9A7B4;
-  --dreco-line:#EBECE4;
-  --dreco-line-strong:#DDE1D2;
-  --dreco-accent:#DDFB57;
-  --dreco-accent-soft:#F2FFC4;
+  --dreco-line:#ECEAE6;
+  --dreco-line-strong:#DDDAD4;
+  --dreco-accent:#DDF56C;
+  --dreco-accent-soft:#F3FCCB;
   --dreco-success:#49774E;
-  --dreco-success-bg:#E9FBD9;
+  --dreco-success-bg:#DCECC8;
   --dreco-warning:#8A6A16;
-  --dreco-warning-bg:#FFF3C6;
+  --dreco-warning-bg:#F6EEB6;
   --dreco-danger:#A7444A;
   --dreco-danger-bg:#FFE1E2;
-  --dreco-info:#675BB7;
-  --dreco-info-bg:#E8E4FF;
+  --dreco-info:#5347CE;
+  --dreco-info-bg:#E9DDFB;
 }
 .dv5-card,
 .dv5-table-card,
@@ -2683,46 +2685,50 @@ export function injectDepsToD5(deps) {
 .dv5-profile-hero {
   background:#FFFFFF!important;
   border-color:var(--dreco-line)!important;
-  box-shadow:0 18px 44px rgba(27,26,45,.055)!important;
+  box-shadow:0 18px 44px rgba(31,33,51,.055)!important;
 }
 .dv5-card-pipeline {
-  background:linear-gradient(135deg,#FFFFFF 0%,#FAFFF2 58%,#F4F5EF 100%)!important;
+  background:linear-gradient(135deg,#FFFFFF 0%,#FAFAF8 58%,#F5F4F1 100%)!important;
 }
-.dv5-btn.primary,
+.dv5-btn.primary {
+  background:var(--dreco-brand)!important;
+  border-color:var(--dreco-brand)!important;
+  color:#FFFFFF!important;
+}
 .dv5-view-tab.active,
 .dv5-preset-btn.active,
 .dv5-col-count,
 .dv5-step.active span {
-  background:var(--dreco-ink-deep)!important;
-  border-color:var(--dreco-ink-deep)!important;
-  color:var(--dreco-accent)!important;
+  background:var(--dreco-accent)!important;
+  border-color:var(--dreco-accent)!important;
+  color:var(--dreco-ink-deep)!important;
 }
 .dv5-stat-icon,
 .dv5-kpi-icon.ink,
 .dv5-priority-icon {
-  background:var(--dreco-ink-deep)!important;
-  color:var(--dreco-accent)!important;
+  background:var(--dreco-soft)!important;
+  color:var(--dreco-brand)!important;
 }
 .dv5-badge.green,
-.dv5-pill.green { background:#E9FBD9!important; color:#49774E!important; }
-.dv5-badge.blue { background:#E5F0FF!important; color:#426CA8!important; }
+.dv5-pill.green { background:#DCECC8!important; color:#49774E!important; }
+.dv5-badge.blue { background:#DDE9F7!important; color:#426CA8!important; }
 .dv5-badge.teal { background:#DDF8EE!important; color:#3E8170!important; }
 .dv5-badge.amber,
-.dv5-pill.amber { background:#FFF3C6!important; color:#8A6A16!important; }
-.dv5-badge.orange { background:#FFE7DA!important; color:#A05B3F!important; }
+.dv5-pill.amber { background:#F6EEB6!important; color:#8A6A16!important; }
+.dv5-badge.orange { background:#F5D7C8!important; color:#A05B3F!important; }
 .dv5-badge.red,
 .dv5-pill.red,
 .dv5-pill.danger { background:#FFE1E2!important; color:#A7444A!important; }
 .dv5-badge.gray,
 .dv5-badge.purple,
 .dv5-pill,
-.dv5-pill.gray { background:#E8E4FF!important; color:#675BB7!important; }
+.dv5-pill.gray { background:#E9DDFB!important; color:#5347CE!important; }
 .dv5-bar,
 .dv5-file-bar,
-.dv5-flow-fill { background:linear-gradient(180deg,#1B1A2D,#302F4A)!important; }
+.dv5-flow-fill { background:linear-gradient(180deg,#5347CE,#6A5CF0)!important; }
 .dv5-flow-fill.done { background:#49774E!important; }
 .dv5-profile-avatar,
-.dv5-avatar { background:#E8E4FF!important; color:#675BB7!important; }
+.dv5-avatar { background:#E9DDFB!important; color:#5347CE!important; }
 
 /* Rounded corner pass */
 .dv5-card,
