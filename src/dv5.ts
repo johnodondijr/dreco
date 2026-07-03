@@ -547,9 +547,9 @@ export function injectDepsToD5(deps) {
     if (!topN.length) return `<div style="text-align:center;padding:24px;font-size:12px;color:#9ca3af">No collections data for this period.</div>`;
     const totalAmt = topN.reduce((s,_)=>s+_[1], 0) || 1;
     const colors = ['#AE9CF0','#F9B3AA','#C5C7F0','#C9F035','#EDFAA8','#1A1C2E','#E5E3F8'];
-    const CX=85, CY=85, R=65, RI=42;
+    const CX=110, CY=110, R=95, RI=60;
     let angle = -Math.PI/2;
-    const GAP = topN.length > 1 ? 0.05 : 0;
+    const GAP = topN.length > 1 ? 0.04 : 0;
     const paths = topN.map(([,amt],i) => {
       const sweep = (amt/totalAmt)*2*Math.PI;
       const a0=angle+GAP/2, a1=angle+sweep-GAP/2; angle+=sweep;
@@ -559,25 +559,24 @@ export function injectDepsToD5(deps) {
       const ix2=CX+RI*Math.cos(a1),iy2=CY+RI*Math.sin(a1);
       const large=sweep>Math.PI?1:0; const color=colors[i%colors.length];
       if(topN.length===1) return `<circle cx="${CX}" cy="${CY}" r="${R}" fill="${color}"/><circle cx="${CX}" cy="${CY}" r="${RI}" fill="var(--edu-bg,#fff)"/>`;
-      return `<path d="M${ox1.toFixed(1)},${oy1.toFixed(1)} A${R},${R} 0 ${large},1 ${ox2.toFixed(1)},${oy2.toFixed(1)} L${ix2.toFixed(1)},${iy2.toFixed(1)} A${RI},${RI} 0 ${large},0 ${ix1.toFixed(1)},${iy1.toFixed(1)} Z" fill="${color}" stroke="var(--edu-bg,#fff)" stroke-width="2"/>`;
+      return `<path d="M${ox1.toFixed(1)},${oy1.toFixed(1)} A${R},${R} 0 ${large},1 ${ox2.toFixed(1)},${oy2.toFixed(1)} L${ix2.toFixed(1)},${iy2.toFixed(1)} A${RI},${RI} 0 ${large},0 ${ix1.toFixed(1)},${iy1.toFixed(1)} Z" fill="${color}" stroke="var(--edu-bg,#fff)" stroke-width="2.5"/>`;
     }).join('');
-    const topLabel = String(topN[0][0]).length > 14 ? String(topN[0][0]).slice(0,12)+'…' : topN[0][0];
-    const centerAmt = isPro ? money(topN[0][1]) : moneyUSD(topN[0][1]);
+    const centerTotal = isPro ? money(totalAmt) : moneyUSD(totalAmt);
     const legend = topN.map(([name,amt],i) => {
       const color=colors[i%colors.length];
-      return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0">
+      return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #F3F3F3">
         <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></span>
-        <span style="font-size:11px;flex:1;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(name)}</span>
-        <span style="font-size:11px;font-weight:500;color:#18191B;flex-shrink:0">${isPro?money(amt):moneyUSD(amt)}</span>
+        <span style="font-size:11px;flex:1;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${h(name)}</span>
+        <span style="font-size:11px;font-weight:500;color:#18191B;flex-shrink:0;padding-left:8px">${isPro?money(amt):moneyUSD(amt)}</span>
       </div>`;
     }).join('');
-    return `<div style="display:flex;align-items:center;gap:16px">
-      <svg width="170" height="170" viewBox="0 0 170 170" style="flex-shrink:0;display:block">
+    return `<div style="display:flex;align-items:center;gap:4px">
+      <svg width="220" height="220" viewBox="0 0 220 220" style="flex-shrink:0;display:block">
         ${paths}
-        <text x="${CX}" y="${CY-8}" text-anchor="middle" font-size="9" fill="#9ca3af" font-family="inherit" letter-spacing=".04em">${h(topLabel.toUpperCase())}</text>
-        <text x="${CX}" y="${CY+10}" text-anchor="middle" font-size="17" font-weight="700" fill="#1A1C2E" font-family="inherit">${centerAmt}</text>
+        <text x="${CX}" y="${CY-10}" text-anchor="middle" font-size="10" fill="#9ca3af" font-family="inherit" letter-spacing=".06em">COLLECTED</text>
+        <text x="${CX}" y="${CY+12}" text-anchor="middle" font-size="18" font-weight="700" fill="#1A1C2E" font-family="inherit">${centerTotal}</text>
       </svg>
-      <div style="flex:1;min-width:0">${legend}</div>
+      <div style="flex:1;min-width:0;padding-right:4px">${legend}</div>
     </div>`;
   }
 
