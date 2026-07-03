@@ -116,8 +116,8 @@ export function injectDepsToD5(deps) {
     if (countries.length < 2) return '';
     return `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px">
       <span style="font-size:11px;font-weight:375;color:#71717a;letter-spacing:.04em">DESTINATION:</span>
-      <button onclick="window.setLbCountry('')" style="font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid ${!lbCountryFilter?'#171715':'#E4E1D6'};background:${!lbCountryFilter?'#171715':'transparent'};color:${!lbCountryFilter?'#fff':'#76746B'};cursor:pointer;font-weight:375">All</button>
-      ${countries.map(c=>`<button onclick="window.setLbCountry('${js(c)}')" style="font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid ${lbCountryFilter===c?'#171715':'#E4E1D6'};background:${lbCountryFilter===c?'#171715':'transparent'};color:${lbCountryFilter===c?'#fff':'#76746B'};cursor:pointer;font-weight:375">${h(c)}</button>`).join('')}
+      <button onclick="window.setLbCountry('')" style="font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid ${!lbCountryFilter?'#1A1C2E':'#E4E1D6'};background:${!lbCountryFilter?'#1A1C2E':'transparent'};color:${!lbCountryFilter?'#fff':'#76746B'};cursor:pointer;font-weight:375">All</button>
+      ${countries.map(c=>`<button onclick="window.setLbCountry('${js(c)}')" style="font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid ${lbCountryFilter===c?'#1A1C2E':'#E4E1D6'};background:${lbCountryFilter===c?'#1A1C2E':'transparent'};color:${lbCountryFilter===c?'#fff':'#76746B'};cursor:pointer;font-weight:375">${h(c)}</button>`).join('')}
     </div>`;
   }
 
@@ -407,8 +407,8 @@ export function injectDepsToD5(deps) {
       ${months.map(b => {
         const pct = Math.max(Math.round((b.count/max)*100), b.count>0?6:2);
         return `<div class="dv5-bar-col" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;position:relative">
-          <div class="dv5-bar-tip" style="position:absolute;bottom:calc(${pct}% + 10px);left:50%;transform:translateX(-50%);background:#18191B;color:#fff;font-size:10px;font-weight:500;padding:3px 7px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;z-index:10">${b.count} placed</div>
-          <div style="width:100%;border-radius:5px 5px 3px 3px;background:#18191B;height:${pct}%;min-height:3px;transition:height .4s cubic-bezier(.4,0,.2,1),opacity .12s;cursor:default" onmouseenter="this.previousElementSibling.style.opacity=1;this.style.opacity=.6" onmouseleave="this.previousElementSibling.style.opacity=0;this.style.opacity=1"></div>
+          <div class="dv5-bar-tip" style="position:absolute;bottom:calc(${pct}% + 10px);left:50%;transform:translateX(-50%);background:#1A1C2E;color:#C9F035;font-size:10px;font-weight:500;padding:3px 7px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;z-index:10">${b.count} placed</div>
+          <div style="width:100%;border-radius:5px 5px 3px 3px;background:linear-gradient(180deg,#2A2D44,#1A1C2E);height:${pct}%;min-height:3px;transition:height .4s cubic-bezier(.4,0,.2,1),opacity .12s;cursor:default" onmouseenter="this.previousElementSibling.style.opacity=1;this.style.background='linear-gradient(180deg,#C9F035,#A8CC1A)'" onmouseleave="this.previousElementSibling.style.opacity=0;this.style.background='linear-gradient(180deg,#2A2D44,#1A1C2E)'"></div>
           <span style="font-size:10px;color:var(--text-3,#999);font-weight:438">${h(b.label)}</span>
         </div>`;
       }).join('')}
@@ -417,7 +417,7 @@ export function injectDepsToD5(deps) {
 
   function buildFunnelChart(flowSteps) {
     const max = Math.max(...flowSteps.map(([,v]) => v), 1);
-    const colors = ['#171715','#302F2A','#4A483F','#646257','#7D7B70','#969489'];
+    const colors = ['#C9F035','#A8CC1A','#7A9A10','#4A5C0A','#2A3C06','#1A2C04'];
     return `<div style="display:flex;flex-direction:column;gap:8px;padding:8px 0;justify-content:center;height:100%">
       ${flowSteps.map(([label,val],i) => {
         const pct = Math.max(Math.round((val/max)*100), val>0?4:1);
@@ -1461,7 +1461,7 @@ export function injectDepsToD5(deps) {
     const categoryHTML = categories.map(({ key, label, holders }) => `
       <div class="dv5-doc-category">
         <div class="dv5-card-head">
-          <span class="dv5-card-title"><i class="ti ti-file" style="font-size:14px;margin-right:6px;color:var(--dreco-ink,#171715)"></i>${h(label)}</span>
+          <span class="dv5-card-title"><i class="ti ti-file" style="font-size:14px;margin-right:6px;color:var(--dreco-ink,#1A1C2E)"></i>${h(label)}</span>
           <span class="dv5-card-sub">${holders.length} of ${rows.length} candidate${rows.length===1?'':'s'}</span>
         </div>
         ${holders.length === 0
@@ -1511,7 +1511,7 @@ export function injectDepsToD5(deps) {
         </div>
         ${!isPro ? lbCountryBar(lbDB||[]) : ''}
         <div class="dv5-file-grid">
-          ${fileCard('ti-files',        '#171715', '#171715', 'Files Uploaded', totalFiles,    defs.length*Math.max(rows.length,1), `Across all candidates`,          '')}
+          ${fileCard('ti-files',        '#1A1C2E', '#1A1C2E', 'Files Uploaded', totalFiles,    defs.length*Math.max(rows.length,1), `Across all candidates`,          '')}
           ${fileCard('ti-folder-check', '#059669', '#22c55e', 'With Documents', withAny.length,  rows.length,                        `${withAny.length} have uploads`, '')}
           ${fileCard('ti-folder-off',   '#78716C', '#a8a29e', 'Awaiting Upload', withNone.length, rows.length,                       `No uploads yet`,                 '')}
         </div>
@@ -1584,8 +1584,8 @@ export function injectDepsToD5(deps) {
     const chartMax=Math.max(...last12.map(s=>s.count),1);
     const monthlyChart=`<div style="display:flex;align-items:flex-end;gap:4px;height:100px;padding-bottom:4px">
       ${last12.map(s=>{const pct=Math.max(Math.round(s.count/chartMax*100),s.count>0?5:2);return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end;position:relative">
-        <span style="font-size:9px;font-weight:500;color:var(--dreco-ink,#171715);position:absolute;bottom:calc(${pct}% + 2px)">${s.count||''}</span>
-        <div style="width:100%;border-radius:4px 4px 2px 2px;background:#171715;height:${pct}%;min-height:2px" title="${s.count} placements"></div>
+        <span style="font-size:9px;font-weight:500;color:var(--dreco-ink,#1A1C2E);position:absolute;bottom:calc(${pct}% + 2px)">${s.count||''}</span>
+        <div style="width:100%;border-radius:4px 4px 2px 2px;background:linear-gradient(180deg,#C9F035,#A8CC1A);height:${pct}%;min-height:2px" title="${s.count} placements"></div>
         <span style="font-size:9px;color:#999;font-weight:438;writing-mode:vertical-lr;transform:rotate(180deg);height:28px;white-space:nowrap">${s.label}</span>
       </div>`}).join('')}
     </div>`;
@@ -1850,7 +1850,7 @@ export function injectDepsToD5(deps) {
 
       <!-- Breadcrumb -->
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;font-size:13px">
-        <button onclick="window.closeCandidateProfile()" style="display:inline-flex;align-items:center;gap:5px;background:none;border:none;color:var(--dreco-ink,#171715);font-size:13px;font-weight:438;cursor:pointer;padding:0">
+        <button onclick="window.closeCandidateProfile()" style="display:inline-flex;align-items:center;gap:5px;background:none;border:none;color:var(--dreco-ink,#1A1C2E);font-size:13px;font-weight:438;cursor:pointer;padding:0">
           <i class="ti ti-arrow-left"></i>Candidates
         </button>
         <i class="ti ti-chevron-right" style="font-size:12px;color:#9ca3af"></i>
@@ -1861,7 +1861,7 @@ export function injectDepsToD5(deps) {
       <!-- Hero card -->
       <div class="dv5-card" style="margin-bottom:16px">
         <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
-          <div style="width:60px;height:60px;border-radius:14px;background:var(--dreco-ink,#171715);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:500;flex-shrink:0">${h(ini(r.name))}</div>
+          <div style="width:60px;height:60px;border-radius:14px;background:var(--dreco-ink,#1A1C2E);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:500;flex-shrink:0">${h(ini(r.name))}</div>
           <div style="flex:1;min-width:0">
             <h2 style="font-size:20px;font-weight:500;color:#18191B;margin:0 0 3px">${h(r.name)}</h2>
             <div style="font-size:13px;color:#6b7280;margin-bottom:10px">${h(r.position||'—')} · ${h(r.company||r.country||'—')}</div>
@@ -1925,7 +1925,7 @@ export function injectDepsToD5(deps) {
             <span class="dv5-card-sub">${pct}%</span>
           </div>
           <div style="height:4px;background:#f0f0f0;border-radius:2px;margin:0 0 12px">
-            <div style="height:100%;width:${pct}%;background:${pct===100?'#22A06B':'var(--dreco-ink,#171715)'};border-radius:2px;transition:width .4s"></div>
+            <div style="height:100%;width:${pct}%;background:${pct===100?'#22A06B':'var(--dreco-ink,#1A1C2E)'};border-radius:2px;transition:width .4s"></div>
           </div>
           ${cl.map(x => {
             if (x.done) return `
@@ -2192,11 +2192,11 @@ export function injectDepsToD5(deps) {
 /* Buttons */
 .dv5-btn { display:inline-flex; align-items:center; gap:6px; padding:0 14px; height:34px; border-radius:8px; border:1px solid var(--border,#E8E8E8); background:#fff; font-size:12px; font-weight:438; color:var(--text,#18191B); cursor:pointer; white-space:nowrap; transition:background .15s; }
 .dv5-btn:hover { background:var(--bg,#F3F3F3); }
-.dv5-btn.primary { background:var(--dreco-ink,#171715); color:#fff; border-color:var(--dreco-ink,#171715); }
+.dv5-btn.primary { background:var(--dreco-ink,#1A1C2E); color:#fff; border-color:var(--dreco-ink,#1A1C2E); }
 .dv5-btn.primary:hover { background:#2B2A25; }
 .dv5-btn-icon { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; border:1px solid var(--border,#E8E8E8); background:#fff; cursor:pointer; color:var(--text-2,#555); }
 .dv5-btn-icon:hover { background:var(--bg,#F3F3F3); }
-.dv5-link { background:none; border:none; color:var(--dreco-ink,#171715); font-size:12px; font-weight:438; cursor:pointer; padding:0; flex-shrink:0; white-space:nowrap; }
+.dv5-link { background:none; border:none; color:var(--dreco-ink,#1A1C2E); font-size:12px; font-weight:438; cursor:pointer; padding:0; flex-shrink:0; white-space:nowrap; }
 .dv5-action-btn { display:inline-flex; align-items:center; gap:4px; padding:0 10px; height:28px; border-radius:6px; border:1px solid var(--border,#E8E8E8); background:#fff; font-size:11px; font-weight:438; color:var(--text,#18191B); cursor:pointer; }
 .dv5-action-btn:hover { background:var(--bg,#F3F3F3); }
 .dv5-action-queue { margin-bottom:12px; background:linear-gradient(160deg,#FFF1F2 0%,#FFE4E6 100%)!important; border-color:#FECACA!important; }
@@ -2209,7 +2209,7 @@ export function injectDepsToD5(deps) {
 .dv5-action-card strong { display:block; font-size:12.5px; font-weight:500; color:#BE123C; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .dv5-action-card em { display:block; font-style:normal; font-size:11px; color:rgba(190,18,60,.6); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .dv5-action-card b { color:#BE123C; font-size:12px; font-weight:562; }
-.dv5-next-action { display:inline-flex; align-items:center; border-radius:999px; padding:5px 9px; background:var(--dreco-soft,#F8F7EF); color:var(--dreco-ink,#171715); font-size:10px; font-weight:500; white-space:nowrap; }
+.dv5-next-action { display:inline-flex; align-items:center; border-radius:999px; padding:5px 9px; background:var(--dreco-soft,#F8F7EF); color:var(--dreco-ink,#1A1C2E); font-size:10px; font-weight:500; white-space:nowrap; }
 .dv5-workflow-mini { min-width:112px; }
 .dv5-workflow-top { display:flex; justify-content:space-between; gap:8px; align-items:center; margin-bottom:4px; }
 .dv5-workflow-top span { color:#4B5563; font-size:10px; font-weight:469; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -2240,7 +2240,7 @@ export function injectDepsToD5(deps) {
 .dv5-file-bar { height:100%; border-radius:999px; transition:width .5s cubic-bezier(.4,0,.2,1); }
 .dv5-file-foot { display:flex; justify-content:space-between; font-size:11px; color:var(--text-3,#999); font-weight:438; margin-bottom:14px; }
 .dv5-file-link { font-size:12px; font-weight:438; color:var(--text-3,#999); display:flex; align-items:center; gap:4px; padding-top:10px; border-top:1px solid var(--border,#E8E8E8); }
-.dv5-file-card:hover .dv5-file-link { color:var(--dreco-ink,#171715); }
+.dv5-file-card:hover .dv5-file-link { color:var(--dreco-ink,#1A1C2E); }
 
 /* Transactions */
 .dv5-tx-header { display:flex; justify-content:space-between; align-items:flex-start; padding:16px 20px 0; flex-wrap:wrap; gap:12px; }
@@ -2270,14 +2270,14 @@ export function injectDepsToD5(deps) {
 .dv5-kpi { background:#fff; border:1px solid var(--border,#E8E8E8); border-radius:12px; padding:20px; cursor:default; transition:border-color .15s; box-shadow:0 1px 3px rgba(0,0,0,.06); }
 .dv5-kpi[onclick] { cursor:pointer; }
 .dv5-kpi:hover[onclick] { border-color:var(--dreco-line-strong,#D6D1C3); }
-.dv5-kpi-icon { width:36px; height:36px; border-radius:10px; background:#F3F3F3; display:flex; align-items:center; justify-content:center; font-size:16px; color:var(--dreco-ink,#171715); margin-bottom:10px; }
-.dv5-kpi-icon.purple { background:var(--dreco-soft,#F8F7EF); color:var(--dreco-ink,#171715); }
+.dv5-kpi-icon { width:36px; height:36px; border-radius:10px; background:#F3F3F3; display:flex; align-items:center; justify-content:center; font-size:16px; color:var(--dreco-ink,#1A1C2E); margin-bottom:10px; }
+.dv5-kpi-icon.purple { background:var(--dreco-soft,#F8F7EF); color:var(--dreco-ink,#1A1C2E); }
 .dv5-kpi-icon.green  { background:#ECFDF5; color:#059669; }
 .dv5-kpi-icon.amber  { background:#FFFBEB; color:#D97706; }
 .dv5-kpi-icon.blue   { background:#EFF6FF; color:#2563EB; }
 .dv5-kpi-icon.rose   { background:#FFF1F2; color:#E11D48; }
 .dv5-kpi-icon.teal   { background:#F0FDFA; color:#0D9488; }
-.dv5-kpi-icon.ink    { background:var(--dreco-ink,#171715); color:#fff; }
+.dv5-kpi-icon.ink    { background:var(--dreco-ink,#1A1C2E); color:#fff; }
 .dv5-kpi-val { font-size:22px; font-weight:562; color:var(--text,#18191B); line-height:1; margin-bottom:4px; }
 .dv5-kpi-label { font-size:12px; font-weight:438; color:var(--text,#18191B); }
 .dv5-kpi-note { font-size:11px; color:var(--text-3,#999); margin-top:2px; }
@@ -2286,7 +2286,7 @@ export function injectDepsToD5(deps) {
 .dv5-priority-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:16px; }
 .dv5-priority { background:#fff; border:1px solid #EAEAD6; border-radius:14px; padding:20px; cursor:pointer; transition:border-color .15s,box-shadow .15s; text-align:left; box-shadow:0 1px 4px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.04); }
 .dv5-priority:hover { border-color:var(--dreco-line-strong,#D6D1C3); box-shadow:0 4px 16px rgba(23,23,21,.08); }
-.dv5-priority-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--dreco-ink,#171715); margin-bottom:12px; }
+.dv5-priority-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--dreco-ink,#1A1C2E); margin-bottom:12px; }
 .dv5-priority strong { display:block; font-size:34px; font-weight:700; color:var(--text,#18191B); line-height:1; margin-bottom:6px; letter-spacing:-.02em; }
 .dv5-priority span { display:block; font-size:12px; font-weight:500; color:var(--text,#18191B); }
 .dv5-priority small { display:block; font-size:11px; color:var(--text-3,#999); margin-top:3px; }
@@ -2322,7 +2322,7 @@ export function injectDepsToD5(deps) {
 .dv5-name-cell { display:flex; align-items:center; gap:10px; }
 .dv5-name { font-size:12px; font-weight:438; color:var(--text,#18191B); }
 .dv5-sub { font-size:11px; color:var(--text-3,#999); margin-top:1px; }
-.dv5-next-action { font-size:11px; font-weight:438; color:var(--dreco-ink,#171715); }
+.dv5-next-action { font-size:11px; font-weight:438; color:var(--dreco-ink,#1A1C2E); }
 
 /* Avatars */
 .dv5-avatar { width:32px; height:32px; min-width:32px; border-radius:10px; background:#E4E1D6; color:#171715; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:562; }
@@ -2336,7 +2336,7 @@ export function injectDepsToD5(deps) {
 .dv5-badge.orange { background:#FFEDD5; color:#C2410C; }
 .dv5-badge.red    { background:#FEE2E2; color:#B91C1C; }
 .dv5-badge.gray   { background:#F3F4F6; color:#6B7280; }
-.dv5-badge.purple { background:#F8F7EF; color:#76746B; }
+.dv5-badge.purple { background:rgba(201,240,53,.15); color:#5A7A10; }
 
 /* Pills */
 .dv5-pill { display:inline-flex; align-items:center; padding:3px 8px; border-radius:999px; font-size:10px; font-weight:500; white-space:nowrap; background:#F3F3F3; color:#888; }
@@ -2353,10 +2353,10 @@ export function injectDepsToD5(deps) {
 .dv5-count { font-size:11px; color:var(--text-3,#999); white-space:nowrap; }
 .dv5-view-tabs { display:flex; border:1px solid var(--border,#E8E8E8); border-radius:8px; overflow:hidden; }
 .dv5-view-tab { padding:0 12px; height:32px; font-size:11px; font-weight:438; border:none; background:#fff; cursor:pointer; color:var(--text-3,#999); }
-.dv5-view-tab.active { background:var(--dreco-ink,#171715); color:#fff; }
+.dv5-view-tab.active { background:var(--dreco-ink,#1A1C2E); color:#fff; }
 
 /* Bulk action bar */
-.dv5-bulk-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:8px 12px; background:var(--dreco-soft,#F8F7EF); border:1px solid var(--dreco-line,#E4E1D6); border-radius:10px; margin-bottom:10px; font-size:12px; font-weight:438; color:var(--dreco-ink,#171715); }
+.dv5-bulk-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:8px 12px; background:var(--dreco-soft,#F8F7EF); border:1px solid var(--dreco-line,#E4E1D6); border-radius:10px; margin-bottom:10px; font-size:12px; font-weight:438; color:var(--dreco-ink,#1A1C2E); }
 .dv5-bulk-bar .dv5-select { height:30px; font-size:11px; }
 .dv5-bulk-bar .dv5-btn { height:30px; font-size:11px; }
 .dv5-row-selected td { background:var(--dreco-soft,#F8F7EF) !important; }
@@ -2368,7 +2368,7 @@ export function injectDepsToD5(deps) {
 .dv5-col { background:#FAFAFA; border:1px solid var(--border,#E8E8E8); border-radius:12px; overflow:hidden; }
 .dv5-col-head { display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:#fff; border-bottom:1px solid var(--border,#E8E8E8); }
 .dv5-col-head span:first-child { font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:.06em; color:var(--text,#18191B); }
-.dv5-col-count { background:var(--dreco-ink,#171715); color:#fff; border-radius:999px; padding:2px 7px; font-size:10px; font-weight:500; }
+.dv5-col-count { background:var(--dreco-ink,#1A1C2E); color:#fff; border-radius:999px; padding:2px 7px; font-size:10px; font-weight:500; }
 .dv5-col-body { padding:10px; display:flex; flex-direction:column; gap:8px; min-height:100px; }
 .dv5-pipe-card { background:#fff; border:1px solid var(--border,#E8E8E8); border-radius:10px; padding:12px; cursor:pointer; transition:border-color .15s,box-shadow .15s; }
 .dv5-pipe-card:hover { border-color:var(--dreco-line-strong,#D6D1C3); box-shadow:0 4px 12px rgba(23,23,21,.07); }
@@ -2404,7 +2404,7 @@ export function injectDepsToD5(deps) {
 /* Bar chart */
 .dv5-bar-chart { display:flex; align-items:flex-end; gap:10px; height:160px; padding:0 4px 4px; }
 .dv5-bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; justify-content:flex-end; }
-.dv5-bar { width:100%; border-radius:6px 6px 3px 3px; background:var(--dreco-ink,#171715); min-height:12px; transition:height .3s; }
+.dv5-bar { width:100%; border-radius:6px 6px 3px 3px; background:var(--dreco-ink,#1A1C2E); min-height:12px; transition:height .3s; }
 .dv5-bar-wrap span { font-size:10px; color:var(--text-3,#999); font-weight:438; }
 
 /* Empty */
@@ -2428,10 +2428,10 @@ export function injectDepsToD5(deps) {
 .dv5-step { display:flex; flex-direction:column; align-items:center; gap:4px; color:#9CA3AF; font-size:10px; font-weight:500; }
 .dv5-step span { width:26px; height:26px; border-radius:999px; border:2px solid #DBE1EB; background:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:500; }
 .dv5-step.done span { background:#22A06B; color:#fff; border-color:#22A06B; }
-.dv5-step.active span { background:var(--dreco-ink,#171715); color:#fff; border-color:var(--dreco-ink,#171715); }
+.dv5-step.active span { background:var(--dreco-ink,#1A1C2E); color:#fff; border-color:var(--dreco-ink,#1A1C2E); }
 .dv5-profile-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:12px; }
 .dv5-breadcrumb { display:flex; align-items:center; gap:8px; margin-bottom:16px; font-size:13px; font-weight:438; color:#7B8496; }
-.dv5-breadcrumb a,.dv5-breadcrumb button { color:var(--dreco-ink,#171715); background:none; border:none; cursor:pointer; font-size:13px; font-weight:438; padding:0; text-decoration:none; }
+.dv5-breadcrumb a,.dv5-breadcrumb button { color:var(--dreco-ink,#1A1C2E); background:none; border:none; cursor:pointer; font-size:13px; font-weight:438; padding:0; text-decoration:none; }
 .dv5-breadcrumb a:hover,.dv5-breadcrumb button:hover { text-decoration:underline; }
 .dv5-breadcrumb span { color:#7B8496; }
 .dv5-profile-vitals { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:12px; }
@@ -2441,10 +2441,10 @@ export function injectDepsToD5(deps) {
 .dv5-vital-hint { font-size:11px; margin-top:4px; }
 .dv5-check-row { display:flex; align-items:center; gap:10px; padding:10px 8px; border-bottom:1px solid var(--border,#E8E8E8); font-size:13px; font-weight:375; color:#374151; border-radius:6px; margin:1px 0; }
 .dv5-check-row:last-child { border:none; }
-.dv5-check-row.clickable:hover { background:var(--dreco-soft,#F8F7EF); color:var(--dreco-ink,#171715); }
-.dv5-check-row.clickable:hover i { color:var(--dreco-ink,#171715) !important; }
+.dv5-check-row.clickable:hover { background:var(--dreco-soft,#F8F7EF); color:var(--dreco-ink,#1A1C2E); }
+.dv5-check-row.clickable:hover i { color:var(--dreco-ink,#1A1C2E) !important; }
 .dv5-check-hint { margin-left:auto; font-size:11px; font-weight:625; color:#9ca3af; white-space:nowrap; opacity:0; transition:opacity .15s; }
-.dv5-check-row.clickable:hover .dv5-check-hint { opacity:1; color:var(--dreco-ink,#171715); }
+.dv5-check-row.clickable:hover .dv5-check-hint { opacity:1; color:var(--dreco-ink,#1A1C2E); }
 .dv5-detail-grid { display:grid; grid-template-columns:1fr auto; gap:8px; }
 .dv5-detail-grid span { font-size:12px; color:#7B8496; }
 .dv5-detail-grid strong { font-size:12px; color:var(--text,#18191B); text-align:right; }
@@ -2456,7 +2456,7 @@ export function injectDepsToD5(deps) {
   --dreco-shell:#FBFAF4;
   --dreco-surface:#FFFFFF;
   --dreco-soft:#F8F7EF;
-  --dreco-ink:#171715;
+  --dreco-ink:#1A1C2E;
   --dreco-muted:#76746B;
   --dreco-muted-2:#9A978C;
   --dreco-line:#E4E1D6;
@@ -2626,7 +2626,7 @@ export function injectDepsToD5(deps) {
 .dv5-step.active span { background:var(--dreco-ink)!important; color:#fff!important; border-color:var(--dreco-ink)!important; }
 .dv5-step.done span { background:var(--dreco-success)!important; border-color:var(--dreco-success)!important; }
 .dv5-bar,
-.dv5-file-bar { background:linear-gradient(180deg,#171715,#45433D)!important; }
+.dv5-file-bar { background:linear-gradient(180deg,#1A1C2E,#45433D)!important; }
 .dv5-row-selected td,
 .dv5-client-row.dv5-client-open td { background:#F1EDE2!important; }
 .dv5-badge.green,

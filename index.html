@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dreco</title>
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#3C3489">
+  <meta name="theme-color" content="#1A1C2E">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Dreco">
@@ -18,15 +18,15 @@
       --font-body: 'Geist Variable', sans-serif;
       --font-mono: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
       /* Palette */
-      --accent:#EEFA94;--accent-dark:#C8D620;--accent-deeper:#9EAB10;
-      --accent-light:#F7FDE0;--accent-lighter:#FBFEF2;
-      --ink:#18191B;--ink-2:#1E2023;
+      --accent:#C9F035;--accent-dark:#A8CC1A;--accent-deeper:#7A9A10;
+      --accent-light:#EEF9A6;--accent-lighter:#F6FDCE;
+      --ink:#1A1C2E;--ink-2:#252839;
       --sage:#7D8C76;--sage-dark:#5A6854;--sage-light:#EAF0E8;
       --green:#22A06B;--green-dark:#197A52;--green-light:#E3F5EE;
       --amber:#B07B10;--amber-light:#FDF3DC;
       --blue:#1A6BB5;--blue-light:#E3EEF9;
       --red:#B83232;--red-light:#FDEAEA;
-      --purple-light:#EEEDFE;--purple:#3C3489;
+      --purple-light:#EEF9A6;--purple:#C9F035;
       --pink-light:#FBEAF0;--pink:#993556;
       --gray-light:#F3F3F3;--gray:#888;
       /* Surfaces */
@@ -2322,21 +2322,21 @@ td,th,.badge,.btn,.toolbar-select,.pill-tab,.country-tab,.field input,.field sel
 }
 /* Dreco inner app premium visual upgrade */
 :root{
-  --dreco-purple:#5347CE;
-  --dreco-purple-2:#6F62F4;
-  --dreco-lavender:#887CFD;
+  --dreco-purple:#C9F035;
+  --dreco-purple-2:#A8CC1A;
+  --dreco-lavender:#D4F56A;
   --dreco-blue:#4896FE;
   --dreco-cyan:#16C8C7;
-  --dreco-ink:#10172F;
-  --dreco-muted:#6B7280;
-  --dreco-line:#E4E8F2;
-  --dreco-soft:#F6F7FB;
+  --dreco-ink:#1A1C2E;
+  --dreco-muted:#6B7A90;
+  --dreco-line:#E4E7F0;
+  --dreco-soft:#F5F6FA;
   --dreco-card:#FFFFFF;
-  --dreco-shadow:0 18px 48px rgba(31,42,73,.08),0 4px 14px rgba(31,42,73,.05);
-  --dreco-shadow-sm:0 10px 28px rgba(31,42,73,.06);
+  --dreco-shadow:0 18px 48px rgba(26,28,46,.08),0 4px 14px rgba(26,28,46,.05);
+  --dreco-shadow-sm:0 10px 28px rgba(26,28,46,.06);
 }
 #app{
-  background:#EEF2F8!important;
+  background:#F2F4F8!important;
   color:var(--dreco-ink)!important;
 }
 .app-layout{
@@ -2934,28 +2934,28 @@ html,body{font-size:12.5px!important}.app-layout{max-width:100%!important}.sideb
   --red-light: #FDEAEA;
   --blue: #1A6BB5;
   --blue-light: #E3EEF9;
-  /* Dreco purple system */
-  --dreco-purple: #5347CE;
-  --dreco-purple-2: #6F62F4;
-  --dreco-lavender: #887CFD;
+  /* Dreco v2 — lime green + dark navy */
+  --dreco-purple: #C9F035;
+  --dreco-purple-2: #A8CC1A;
+  --dreco-lavender: #D4F56A;
   --dreco-blue: #4896FE;
   --dreco-cyan: #16C8C7;
-  --dreco-ink: #10172F;
-  --dreco-muted: #6B7280;
-  --dreco-line: #E4E8F2;
-  --dreco-soft: #F6F7FB;
+  --dreco-ink: #1A1C2E;
+  --dreco-muted: #6B7A90;
+  --dreco-line: #E4E7F0;
+  --dreco-soft: #F5F6FA;
   --dreco-card: #FFFFFF;
-  --dreco-shadow: 0 18px 48px rgba(31,42,73,.08), 0 4px 14px rgba(31,42,73,.05);
-  --dreco-shadow-sm: 0 10px 28px rgba(31,42,73,.06);
-  /* Nexus aliases kept for JS/HTML that reference them */
-  --nexus-purple: #5347CE;
-  --nexus-lavender: #887CFD;
+  --dreco-shadow: 0 18px 48px rgba(26,28,46,.08), 0 4px 14px rgba(26,28,46,.05);
+  --dreco-shadow-sm: 0 10px 28px rgba(26,28,46,.06);
+  /* Nexus aliases */
+  --nexus-purple: #C9F035;
+  --nexus-lavender: #D4F56A;
   --nexus-blue: #4896FE;
   --nexus-cyan: #16C8C7;
-  --nexus-bg: #EEF2F8;
-  --nexus-shell: #F8FAFC;
-  --nexus-line: #E4E8F2;
-  --nexus-muted: #7D8797;
+  --nexus-bg: #F2F4F8;
+  --nexus-shell: #F8F9FC;
+  --nexus-line: #E4E7F0;
+  --nexus-muted: #6B7A90;
   /* Shape */
   --radius: 10px;
   --radius-lg: 16px;
@@ -4570,21 +4570,21 @@ tr:last-child td{border-bottom:none!important}
 #app .sidebar.collapsed .suc-name,
 #app .sidebar.collapsed .suc-org { display: none !important; }
 
-/* Dreco warm-neutral redesign */
+/* Dreco v2 — Dark Navy + Lime Green */
 :root{
-  --dreco-bg:#F4F3EC;
-  --dreco-shell:#FBFAF4;
+  --dreco-bg:#F2F4F8;
+  --dreco-shell:#F8F9FC;
   --dreco-surface:#FFFFFF;
-  --dreco-surface-soft:#F8F7EF;
-  --dreco-raised:#FFFFFA;
-  --dreco-ink:#171715;
-  --dreco-ink-2:#2B2A25;
-  --dreco-muted:#76746B;
-  --dreco-muted-2:#9A978C;
-  --dreco-line:#E4E1D6;
-  --dreco-line-strong:#D6D1C3;
-  --dreco-accent:#D8D3C5;
-  --dreco-accent-soft:#EEECE2;
+  --dreco-surface-soft:#F5F6FA;
+  --dreco-raised:#FFFFFF;
+  --dreco-ink:#1A1C2E;
+  --dreco-ink-2:#252839;
+  --dreco-muted:#6B7A90;
+  --dreco-muted-2:#9BA8BB;
+  --dreco-line:#E4E7F0;
+  --dreco-line-strong:#CDD3E0;
+  --dreco-accent:#C9F035;
+  --dreco-accent-soft:#EEF9A6;
   --dreco-success:#386A52;
   --dreco-success-bg:#E7F0E9;
   --dreco-warning:#8A6424;
@@ -4728,7 +4728,7 @@ tbody tr:hover td,.dreco-table tr:hover td{background:var(--dreco-surface-soft)!
 }
 #login-screen .lp-submit:hover{background:var(--dreco-ink-2)!important;}
 #login-screen .lp-media{
-  background:#372514!important;
+  background:linear-gradient(142deg,#F2F4F8 0%,#E4E8F5 44%,#1A1C2E 45%,#1A1C2E 100%)!important;
   color:#fff!important;
 }
 #login-screen .lp-media::before{background:rgba(255,255,255,.08)!important;}
@@ -4740,7 +4740,7 @@ tbody tr:hover td,.dreco-table tr:hover td{background:var(--dreco-surface-soft)!
   background-size:10px 10px!important;
 }
 #login-screen .lp-media-copy h2{color:#fff!important;font-weight:500!important;}
-#login-screen .lp-media-copy h2 span{color:#EDE0A3!important;text-shadow:0 2px 22px rgba(237,224,163,.22)!important;}
+#login-screen .lp-media-copy h2 span{color:#C9F035!important;text-shadow:0 2px 22px rgba(201,240,53,.22)!important;}
 #login-screen .lp-media-copy p{color:#F4F0E3!important;}
 #login-screen .lp-product-preview,
 #login-screen .lp-dash-preview,
@@ -5300,26 +5300,145 @@ tbody tr:hover td,.dreco-table tr:hover td{background:var(--dreco-surface-soft)!
 @media(max-width:900px){
   .workflow-settings-grid{grid-template-columns:1fr;}
 }
-/* ── Mobile topbar: force single row, no wrapping ──────────── */
+/* ══════════════════════════════════════════════════════════════
+   DRECO v2 FINAL LAYER — Dark Navy #1A1C2E + Lime #C9F035
+   Must be last to win every cascade conflict
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Mobile topbar: single row, no wrap ──────────────────── */
 @media(max-width:860px){
   .topbar{flex-wrap:nowrap!important;height:56px!important;overflow:hidden!important;align-items:center!important;min-height:unset!important;}
   .topbar-search,.topbar-icon-btn,.topbar-workspace{display:none!important;}
-  .topbar-title{flex:1 1 auto!important;width:auto!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;}
+  .topbar-title{flex:1 1 auto!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;}
 }
-/* ── Mobile sidebar drawer ──────────────────────────────────── */
-.sidebar.mobile-open{background:#1A1710!important;}
-.sidebar.mobile-open .sidebar-logo-mark{background:#2A2518!important;}
-.sidebar.mobile-open .sidebar-logo-text{color:#fff!important;}
-.sidebar.mobile-open .nav-section-label{color:rgba(255,255,255,.35)!important;}
-.sidebar.mobile-open .nav-item{color:rgba(255,255,255,.6)!important;background:transparent!important;}
-.sidebar.mobile-open .nav-item:hover{background:rgba(255,255,255,.08)!important;color:#fff!important;}
-.sidebar.mobile-open .nav-item.active{background:rgba(255,255,255,.12)!important;color:#fff!important;box-shadow:none!important;}
-.sidebar.mobile-open .nav-item.active i{color:#fff!important;}
-.sidebar.mobile-open .sidebar-divider{border-color:rgba(255,255,255,.08)!important;}
-.sidebar.mobile-open .sidebar-user-card{background:#EDE5C4!important;border-color:transparent!important;margin-top:8px!important;}
-.sidebar.mobile-open .suc-name{color:#1A1710!important;}
+
+/* ── App shell ────────────────────────────────────────────── */
+body{background:#F2F4F8!important;}
+#app{background:#F2F4F8!important;padding:12px!important;}
+.app-layout{background:#F8F9FC!important;border:1px solid #E4E7F0!important;border-radius:18px!important;box-shadow:0 18px 50px rgba(26,28,46,.10)!important;}
+.main-area{background:#F8F9FC!important;}
+.content-area{background:transparent!important;}
+.topbar{background:#fff!important;border-bottom:1px solid #E4E7F0!important;box-shadow:none!important;}
+
+/* ── Sidebar — dark navy ──────────────────────────────────── */
+.sidebar{background:#1A1C2E!important;border-right:none!important;}
+.sidebar-logo-mark{background:#C9F035!important;border-radius:10px!important;box-shadow:0 4px 14px rgba(201,240,53,.30)!important;}
+.sidebar-logo-mark svg path[fill="#18191B"]{fill:#1A1C2E!important;}
+.sidebar-logo-text{color:#fff!important;font-weight:500!important;}
+.sidebar-logo-text span{color:#C9F035!important;}
+.sidebar-divider{border-color:rgba(255,255,255,.08)!important;}
+.sidebar-toggle{background:rgba(255,255,255,.08)!important;border-color:rgba(255,255,255,.1)!important;color:rgba(255,255,255,.5)!important;}
+.sidebar-toggle:hover{background:#C9F035!important;color:#1A1C2E!important;border-color:#C9F035!important;}
+.nav-section-label{color:rgba(255,255,255,.38)!important;}
+.nav-item{color:rgba(255,255,255,.62)!important;background:transparent!important;border-radius:12px!important;}
+.nav-item i{color:inherit!important;}
+.nav-item:hover{background:rgba(255,255,255,.08)!important;color:#fff!important;}
+.nav-item.active{background:#C9F035!important;color:#1A1C2E!important;box-shadow:0 2px 14px rgba(201,240,53,.28)!important;}
+.nav-item.active i{color:#1A1C2E!important;}
+
+/* Desktop user card — inside dark sidebar */
+#app .sidebar-user-card,
+#app .sidebar-user-card.sidebar-account-trigger{
+  background:rgba(255,255,255,.08)!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  border-radius:14px!important;
+  margin:0 8px 8px!important;width:calc(100% - 16px)!important;
+  box-shadow:none!important;
+  flex-direction:row!important;align-items:center!important;text-align:left!important;
+  padding:10px 12px!important;gap:10px!important;
+}
+#app .sidebar-user-card:hover,
+#app .sidebar-user-card.sidebar-account-trigger:hover{
+  background:rgba(255,255,255,.14)!important;
+  border-color:rgba(255,255,255,.2)!important;
+}
+#app .suc-avatar-wrap{width:auto!important;height:auto!important;background:none!important;border-radius:0!important;margin-bottom:0!important;}
+#app .suc-avatar{width:34px!important;height:34px!important;min-width:34px!important;border-radius:10px!important;background:#C9F035!important;color:#1A1C2E!important;font-size:12px!important;font-weight:600!important;flex-shrink:0!important;box-shadow:none!important;}
+#app .suc-info{flex:1!important;min-width:0!important;display:block!important;}
+#app .suc-name{color:#fff!important;font-size:12px!important;font-weight:500!important;}
+#app .suc-org{color:rgba(255,255,255,.5)!important;font-size:10.5px!important;}
+#app .sidebar.collapsed .sidebar-user-card{width:44px!important;margin:0 auto 8px!important;padding:5px!important;justify-content:center!important;background:transparent!important;border-color:transparent!important;}
+#app .sidebar.collapsed .suc-info{display:none!important;}
+
+/* Mobile sidebar drawer */
+.sidebar.mobile-open{background:#1A1C2E!important;}
+.sidebar.mobile-open .nav-item.active{background:#C9F035!important;color:#1A1C2E!important;box-shadow:0 2px 14px rgba(201,240,53,.28)!important;}
+.sidebar.mobile-open .nav-item.active i{color:#1A1C2E!important;}
+.sidebar.mobile-open .sidebar-user-card{
+  background:#EDE8CC!important;border-color:transparent!important;
+  margin-top:8px!important;flex-direction:row!important;
+  text-align:left!important;padding:10px 12px!important;
+  width:100%!important;align-items:center!important;gap:10px!important;
+  border-radius:14px!important;
+}
+.sidebar.mobile-open .suc-avatar-wrap{width:auto!important;height:auto!important;background:none!important;border-radius:0!important;}
+.sidebar.mobile-open .suc-avatar{background:#1A1C2E!important;color:#C9F035!important;border-radius:10px!important;width:34px!important;height:34px!important;min-width:34px!important;}
+.sidebar.mobile-open .suc-name{color:#1A1C2E!important;}
 .sidebar.mobile-open .suc-org{color:#6B6248!important;}
-.sidebar.mobile-open .suc-avatar{background:#1A1710!important;color:#fff!important;border-radius:50%!important;}
+
+/* ── Bottom nav ───────────────────────────────────────────── */
+.bottom-nav{background:#1A1C2E!important;border-color:rgba(255,255,255,.08)!important;}
+.bottom-nav-item{color:rgba(255,255,255,.5)!important;}
+.bottom-nav-item.active,.bottom-nav-item.active i{color:#C9F035!important;background:transparent!important;}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.btn.primary,.dv5-btn.primary{background:#C9F035!important;color:#1A1C2E!important;border-color:#A8CC1A!important;box-shadow:0 4px 14px rgba(201,240,53,.25)!important;}
+.btn.primary:hover,.dv5-btn.primary:hover{background:#A8CC1A!important;border-color:#7A9A10!important;}
+.modal-footer .btn.primary{background:#C9F035!important;color:#1A1C2E!important;border-color:#A8CC1A!important;}
+.dv5-action-btn.primary{background:#C9F035!important;color:#1A1C2E!important;border-color:#A8CC1A!important;}
+
+/* ── Pill / view tabs ─────────────────────────────────────── */
+.pill-tab.active{background:#1A1C2E!important;color:#fff!important;border-color:#1A1C2E!important;}
+.modal-tab.active{background:#1A1C2E!important;color:#fff!important;}
+.dv5-view-tab.active{background:#1A1C2E!important;color:#fff!important;}
+.modal-close:hover{background:#1A1C2E!important;color:#fff!important;}
+
+/* ── Form focus ───────────────────────────────────────────── */
+.form-input:focus,.form-select:focus,.form-textarea:focus,
+.lp-input-wrap input:focus{border-color:#C9F035!important;box-shadow:0 0 0 4px rgba(201,240,53,.15)!important;}
+
+/* ── Spinner / loading ring ───────────────────────────────── */
+.spinner{border-color:rgba(201,240,53,.2)!important;border-top-color:#C9F035!important;}
+
+/* ── Timeline dots ────────────────────────────────────────── */
+.tl-dot{background:#C9F035!important;}
+
+/* ── Bar charts — dark bars, lime accent on active ────────── */
+.report-bar,.finance-chart .bar,.dash-bar-fill{
+  background:linear-gradient(180deg,#2A2D44,#1A1C2E)!important;
+}
+.report-bar.active,.report-bar:hover,.finance-chart .bar.active{
+  background:linear-gradient(180deg,#C9F035,#A8CC1A)!important;
+}
+.dv5-bar{background:linear-gradient(180deg,#C9F035,#A8CC1A)!important;}
+.lp-progress-fill,.lp-line-fill{background:#C9F035!important;}
+.lp-mini-chart span{background:#2A2D44!important;}
+.lp-mini-chart span:last-child{background:#C9F035!important;}
+
+/* ── Kanban ───────────────────────────────────────────────── */
+.kanban-col-count{background:rgba(201,240,53,.15)!important;color:#5A7A10!important;}
+.dv5-col-count{background:#C9F035!important;color:#1A1C2E!important;}
+
+/* ── Status / pipeline badges ─────────────────────────────── */
+.b-mol,.b-travel{background:rgba(201,240,53,.15)!important;color:#5A7A10!important;}
+
+/* ── Logo mark on sidebar (SVG override) ──────────────────── */
+#app .sidebar-logo-mark{background:#C9F035!important;box-shadow:0 4px 14px rgba(201,240,53,.28)!important;}
+#app .sidebar-logo-text{color:#fff!important;}
+
+/* ── Login page ───────────────────────────────────────────── */
+#login-screen{background:#F2F4F8!important;}
+#login-screen .lp-submit{background:#1A1C2E!important;color:#C9F035!important;border-color:#1A1C2E!important;box-shadow:0 14px 28px rgba(26,28,46,.18)!important;}
+#login-screen .lp-submit:hover{background:#252839!important;}
+#login-screen .lp-kicker{color:#5A7A10!important;border-color:rgba(201,240,53,.35)!important;background:#fff!important;}
+#login-screen .lp-orbit.one{border-color:rgba(201,240,53,.3)!important;}
+#login-screen .lp-preview-kpi i{background:rgba(201,240,53,.15)!important;color:#5A7A10!important;}
+#login-screen .lp-dash-sidebar{background:#1A1C2E!important;}
+
+/* ── Command palette ──────────────────────────────────────── */
+.cmd-item-icon{background:rgba(201,240,53,.12)!important;color:#5A7A10!important;}
+
+/* ── Theme-color meta (dynamic) — handled via variable ────── */
 </style>
 </head>
 <body>

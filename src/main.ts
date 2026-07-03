@@ -811,7 +811,7 @@ function openMobileSidebar() {
   sp('z-index', '400');
   sp('overflow-y', 'auto');
   sp('overflow-x', 'hidden');
-  sp('background', '#1A1710');
+  sp('background', '#1A1C2E');
   sp('box-shadow', '6px 0 40px rgba(0,0,0,.55)');
   sp('border-radius', '0');
   sp('border-right', 'none');
