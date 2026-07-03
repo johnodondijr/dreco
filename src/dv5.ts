@@ -561,7 +561,8 @@ export function injectDepsToD5(deps) {
       if(topN.length===1) return `<circle cx="${CX}" cy="${CY}" r="${R}" fill="${color}"/><circle cx="${CX}" cy="${CY}" r="${RI}" fill="var(--edu-bg,#fff)" />` ;
       return `<path d="M${ox1.toFixed(1)},${oy1.toFixed(1)} A${R},${R} 0 ${large},1 ${ox2.toFixed(1)},${oy2.toFixed(1)} L${ix2.toFixed(1)},${iy2.toFixed(1)} A${RI},${RI} 0 ${large},0 ${ix1.toFixed(1)},${iy1.toFixed(1)} Z" fill="${color}" stroke="var(--edu-bg,#fff)" stroke-width="2.5"/>`;
     }).join('');
-    const centerTotal = isPro ? money(totalAmt) : moneyUSD(totalAmt);
+    const compact = (n: number) => n>=1e6 ? (n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M' : n>=1e3 ? (n/1e3).toFixed(1).replace(/\.?0+$/,'')+'K' : String(n);
+    const centerTotal = isPro ? `KES ${compact(totalAmt)}` : `$${compact(totalAmt)}`;
     const legend = topN.map(([name,amt],i) => {
       const color=colors[i%colors.length];
       return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #F3F3F3">
@@ -1544,82 +1545,6 @@ export function injectDepsToD5(deps) {
           </div>
         </div>` : ''}
 
-        <!-- Transactions section -->
-        <div class="dv5-table-card dv5-tx-section">
-          <div class="dv5-tx-header">
-            <div>
-              <div class="dv5-card-title">Transactions${financePositionFilter?' — '+h(financePositionFilter):''}</div>
-              <div class="dv5-card-sub" style="margin-top:2px">${financeTab==='latest'?filteredPayments.length:filteredUpcoming.length} records${searchQ?' (filtered)':''}</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-              <div class="dv5-date-presets">
-                ${presets.map(([val,label])=>`<button class="dv5-preset-btn${financeDatePreset===val?' active':''}" onclick="window.setFinanceDatePreset('${val}')">${h(label)}</button>`).join('')}
-              </div>
-              <button class="dv5-btn" onclick="exportCSV('pro')"><i class="ti ti-download"></i></button>
-            </div>
-          </div>
-          <div class="dv5-tx-tabs">
-            <button class="dv5-tx-tab${financeTab==='latest'?' active':''}" onclick="window.setFinanceTab('latest')">Latest</button>
-            <button class="dv5-tx-tab${financeTab==='upcoming'?' active':''}" onclick="window.setFinanceTab('upcoming')">Upcoming</button>
-            <button class="dv5-tx-tab${financeTab==='expenses'?' active':''}" onclick="window.setFinanceTab('expenses')">Expenses</button>
-          </div>
-          ${financeTab === 'expenses' ? `
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 4px;border-bottom:1px solid var(--border,#E8E8E8)">
-            <div>
-              <span style="font-size:12px;font-weight:438;color:#374151">${money(expTotal)}</span>
-              <span style="font-size:12px;color:#9ca3af;margin-left:8px">total · ${money(expMonthTotal)} this month</span>
-            </div>
-            <button class="dv5-btn primary" onclick="openExpensePrompt()"><i class="ti ti-plus"></i>Add Expense</button>
-          </div>
-          <div class="dv5-tx-list">
-            ${expenses.length ? expenses.map(e => {
-              const d = new Date(e.date||'');
-              const dateStr = isNaN(d) ? '—' : d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-              return `<div class="dv5-tx-row">
-                <div class="dv5-tx-date">${dateStr}</div>
-                <div class="dv5-tx-info">
-                  <div class="dv5-tx-name">${h(e.client||'—')}</div>
-                  <div class="dv5-tx-status" style="color:#6b7280">${h(e.category||'—')}${e.notes?' · '+h(e.notes):''}</div>
-                </div>
-                <div class="dv5-tx-amt" style="color:#dc2626">-${money(e.amount)}</div>
-                <button class="dv5-tx-arrow" onclick="deleteExpense('${e.id}')" title="Delete"><i class="ti ti-trash" style="color:#dc2626"></i></button>
-              </div>`;
-            }).join('') : '<div class="dv5-empty" style="padding:32px">No expenses recorded yet.</div>'}
-          </div>` : `
-          <div class="dv5-tx-list">
-            ${financeTab === 'latest'
-              ? (filteredPayments.length ? filteredPayments.map(({r, label, amt, date, isUSD}) => {
-                  const d = new Date(date||'');
-                  const dateStr = isNaN(d) ? '—' : d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-                  const amtStr = '+' + (isUSD ? moneyUSD(amt) : money(amt));
-                  return `<div class="dv5-tx-row" onclick="${r.type==='pro'?`editPro(${r.id})`:`editLB(${r.id})`}">
-                    <div class="dv5-tx-date">${dateStr}</div>
-                    <div class="dv5-tx-info">
-                      <div class="dv5-tx-name">${h(label)}</div>
-                      <div class="dv5-tx-status" style="color:#6b7280">${h(r.company||'—')} · ${h(r.type==='pro'?'Professional':'General')}</div>
-                    </div>
-                    <div class="dv5-tx-amt" style="color:#16a34a">${amtStr}</div>
-                    <button class="dv5-tx-arrow" onclick="event.stopPropagation();${r.type==='pro'?`editPro(${r.id})`:`editLB(${r.id})`}"><i class="ti ti-chevron-right"></i></button>
-                  </div>`;
-                }).join('') : '<div class="dv5-empty" style="padding:32px">No payments recorded.</div>')
-              : (filteredUpcoming.length ? filteredUpcoming.map(r => {
-                  const d = new Date(r.submitted||r.created_at||'');
-                  const dateStr = isNaN(d) ? '—' : d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-                  const dueAmount = r.type==='pro' ? (Number(r.dueNow)||0) : r.balance;
-                  const amtStr = '-' + (r.type==='lb' ? moneyUSD(dueAmount) : money(dueAmount));
-                  return `<div class="dv5-tx-row" onclick="${r.type==='pro'?`editPro(${r.id})`:`editLB(${r.id})`}">
-                    <div class="dv5-tx-date">${dateStr}</div>
-                    <div class="dv5-tx-info">
-                      <div class="dv5-tx-name">${h(r.name)} — Balance Due</div>
-                      <div class="dv5-tx-status" style="color:#6b7280">${h(r.company||'—')} · ${h(r.stage||'—')}</div>
-                    </div>
-                    <div class="dv5-tx-amt" style="color:#dc2626">${amtStr}</div>
-                    <button class="dv5-tx-arrow" onclick="event.stopPropagation();${r.type==='pro'?`editPro(${r.id})`:`editLB(${r.id})`}"><i class="ti ti-chevron-right"></i></button>
-                  </div>`;
-                }).join('') : '<div class="dv5-empty" style="padding:32px">No outstanding balances.</div>')
-            }
-          </div>`}
-        </div>
       </div>`;
   }
   window.renderFinancePage = renderFinance;
