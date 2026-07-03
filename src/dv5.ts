@@ -416,20 +416,51 @@ export function injectDepsToD5(deps) {
   }
 
   function buildLineChart(rows) {
-    const inProcess = rows.filter(r=>String(r.stage).toUpperCase()!=='TRAVELLED').length;
-    const travelledCount = rows.filter(r=>String(r.stage).toUpperCase()==='TRAVELLED').length;
+    const now = new Date();
+    const dayMs = 86400000;
+    const thisWeek = Array(7).fill(0);
+    const lastWeek = Array(7).fill(0);
+    rows.forEach(r => {
+      const ds = r.raw?.intake || r.raw?.created_at || r.raw?.createdAt;
+      if (!ds) return;
+      const d = new Date(ds); if (isNaN(d as any)) return;
+      const daysAgo = Math.floor((now.getTime() - d.getTime()) / dayMs);
+      if (daysAgo >= 0 && daysAgo < 7)   thisWeek[6 - daysAgo]++;
+      else if (daysAgo >= 7 && daysAgo < 14) lastWeek[6 - (daysAgo - 7)]++;
+    });
+    const inProcess = rows.filter(r=>String(r.stage||'').toUpperCase()!=='TRAVELLED').length;
+    const travelledCount = rows.filter(r=>String(r.stage||'').toUpperCase()==='TRAVELLED').length;
+    const thisTotal = thisWeek.reduce((s,v)=>s+v,0);
+    const lastTotal = lastWeek.reduce((s,v)=>s+v,0);
+    const diff = thisTotal - lastTotal;
+    const diffLabel = diff===0?'same as last week':diff>0?`+${diff} vs last week`:`${diff} vs last week`;
+    const maxVal = Math.max(...thisWeek, ...lastWeek, 1);
+    const W=680, H=200, PX=24, PY=16;
+    const xStep = (W - PX*2) / 6;
+    const pts = (data: number[]) => data.map((v,i)=>[PX+i*xStep, H-PY-(v/maxVal)*(H-PY*2)] as [number,number]);
+    const curve = (data: number[]) => {
+      const p = pts(data);
+      let d = `M${p[0][0].toFixed(1)},${p[0][1].toFixed(1)}`;
+      for (let i=0;i<p.length-1;i++) { const cx=(p[i][0]+p[i+1][0])/2; d+=` C${cx.toFixed(1)},${p[i][1].toFixed(1)} ${cx.toFixed(1)},${p[i+1][1].toFixed(1)} ${p[i+1][0].toFixed(1)},${p[i+1][1].toFixed(1)}`; }
+      return d;
+    };
+    const twPath = curve(thisWeek), lwPath = curve(lastWeek);
+    const twPts = pts(thisWeek), lwPts = pts(lastWeek);
+    const areaD = `${twPath} L${(PX+6*xStep).toFixed(1)},${H-PY} L${PX},${H-PY} Z`;
+    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const labels = Array(7).fill(0).map((_,i)=>dayNames[new Date(now.getTime()-(6-i)*dayMs).getDay()]);
     return `<div class="dv5-line-chart">
-      <div class="dv5-line-legend"><span><b></b>This week</span><span><b></b>Last week</span></div>
-      <svg viewBox="0 0 680 230" preserveAspectRatio="none" aria-hidden="true">
-        <defs><linearGradient id="dv5LineFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F8B9B8" stop-opacity=".32"/><stop offset="1" stop-color="#F8B9B8" stop-opacity=".02"/></linearGradient></defs>
-        <path d="M0 168 C62 102 108 118 154 142 C210 172 232 42 286 58 C336 72 338 126 404 118 C462 111 468 150 520 146 C580 140 594 72 680 92 L680 230 L0 230 Z" fill="url(#dv5LineFill)"/>
-        <path d="M0 168 C62 102 108 118 154 142 C210 172 232 42 286 58 C336 72 338 126 404 118 C462 111 468 150 520 146 C580 140 594 72 680 92" fill="none" stroke="#F79A62" stroke-width="4" stroke-linecap="round"/>
-        <path d="M0 192 C58 132 92 122 144 116 C202 108 230 82 280 90 C336 100 340 160 398 150 C454 140 468 184 526 178 C592 170 612 132 680 124" fill="none" stroke="#171715" stroke-width="4" stroke-linecap="round"/>
-        <g fill="#F79A62"><circle cx="286" cy="58" r="5"/><circle cx="520" cy="146" r="5"/><circle cx="680" cy="92" r="5"/></g>
-        <g fill="#171715"><circle cx="144" cy="116" r="5"/><circle cx="398" cy="150" r="5"/><circle cx="680" cy="124" r="5"/></g>
+      <div class="dv5-line-legend"><span><b></b>This week (${thisTotal})</span><span><b></b>Last week (${lastTotal})</span></div>
+      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+        <defs><linearGradient id="dv5LineFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#AE9CF0" stop-opacity=".28"/><stop offset="1" stop-color="#AE9CF0" stop-opacity=".02"/></linearGradient></defs>
+        <path d="${areaD}" fill="url(#dv5LineFill)"/>
+        <path d="${twPath}" fill="none" stroke="#AE9CF0" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="${lwPath}" fill="none" stroke="#1A1C2E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6,4"/>
+        ${twPts.map(([x,y],i)=>thisWeek[i]>0?`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" fill="#AE9CF0" stroke="#fff" stroke-width="2.5"/>`:``).join('')}
+        ${lwPts.map(([x,y],i)=>lastWeek[i]>0?`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="#1A1C2E" stroke="#fff" stroke-width="2"/>`:``).join('')}
       </svg>
-      <div class="dv5-line-axis"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
-      <div class="dv5-line-summary"><span>${h(String(inProcess))} in process</span><span>${h(String(travelledCount))} travelled</span></div>
+      <div class="dv5-line-axis">${labels.map(l=>`<span>${l}</span>`).join('')}</div>
+      <div class="dv5-line-summary"><span>${inProcess} in process</span><span>${travelledCount} travelled</span><span style="font-size:10px;color:#7E7C8C">${diffLabel}</span></div>
     </div>`;
   }
 
@@ -441,21 +472,53 @@ export function injectDepsToD5(deps) {
     </div>`;
   }
 
-  function buildFunnelChart(flowSteps) {
-    const max = Math.max(...flowSteps.map(([,v]) => v), 1);
-    const colors = ['#DDF56C','#F8B9B8','#D9D7F1','#FFE2B8','#1A1C2E','#F6EFE6'];
-    return `<div style="display:flex;flex-direction:column;gap:8px;padding:8px 0;justify-content:center;height:100%">
-      ${flowSteps.map(([label,val],i) => {
-        const pct = Math.max(Math.round((val/max)*100), val>0?4:1);
-        return `<div style="display:flex;align-items:center;gap:10px;position:relative" class="dv5-funnel-row">
-          <span style="font-size:10px;font-weight:438;color:var(--text-3,#999);width:56px;flex-shrink:0;text-align:right">${h(label)}</span>
-          <div style="flex:1;height:18px;background:var(--bg,#F3F3F3);border-radius:4px;overflow:hidden;position:relative" onmouseenter="this.nextElementSibling.style.opacity=1" onmouseleave="this.nextElementSibling.style.opacity=0">
-            <div style="width:${pct}%;height:100%;background:${colors[i]||colors[5]};border-radius:4px;transition:width .5s cubic-bezier(.4,0,.2,1)"></div>
-          </div>
-          <span style="font-size:11px;font-weight:500;color:var(--text,#18191B);width:22px;text-align:right;flex-shrink:0">${h(String(val))}</span>
-          <div style="position:absolute;right:30px;top:-26px;background:#18191B;color:#fff;font-size:10px;font-weight:438;padding:3px 7px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;z-index:10">${h(label)}: ${h(String(val))}</div>
-        </div>`;
-      }).join('')}
+  function buildStageDonut(normRows: any[]) {
+    const stageCounts: Record<string,number> = {};
+    normRows.forEach(r => { const s=String(r.stage||'Unknown').toUpperCase(); stageCounts[s]=(stageCounts[s]||0)+1; });
+    const entries = Object.entries(stageCounts).sort((a,b)=>b[1]-a[1]);
+    const total = entries.reduce((s,[,n])=>s+n,0) || 1;
+    const colorMap: Record<string,string> = {
+      'TRAVELLED':'#C9F035','VISA':'#C5C7F0','PENDING VISA':'#EDEDFB',
+      'MOL':'#AE9CF0','PENDING MOL':'#EDE8FB','OFFER LETTER':'#F9B3AA',
+      'PENDING OFFER LETTER':'#FCECEA','PENDING TRAVEL':'#EDFAA8',
+      'SELECTED':'#D9D7F1','UNSELECTED':'#F3F3F3',
+      'REFUND PENDING':'#FFE2E2','REFUND COMPLETE':'#D1FAE5',
+    };
+    const fallback = ['#AE9CF0','#F9B3AA','#C5C7F0','#EDFAA8','#C9F035','#D9D7F1','#F3F3F3'];
+    const CX=90,CY=90,R=70,RI=46;
+    let angle = -Math.PI/2;
+    const GAP = entries.length>1 ? 0.05 : 0;
+    const paths = entries.map(([s,n],i)=>{
+      if(!n) return '';
+      const sweep=(n/total)*2*Math.PI;
+      const a0=angle+GAP/2, a1=angle+sweep-GAP/2;
+      angle+=sweep;
+      const ox1=CX+R*Math.cos(a0),oy1=CY+R*Math.sin(a0);
+      const ox2=CX+R*Math.cos(a1),oy2=CY+R*Math.sin(a1);
+      const ix1=CX+RI*Math.cos(a0),iy1=CY+RI*Math.sin(a0);
+      const ix2=CX+RI*Math.cos(a1),iy2=CY+RI*Math.sin(a1);
+      const large=sweep>Math.PI?1:0;
+      const color=colorMap[s]||fallback[i%fallback.length];
+      if(entries.length===1) return `<circle cx="${CX}" cy="${CY}" r="${R}" fill="${color}"/><circle cx="${CX}" cy="${CY}" r="${RI}" fill="#fff"/>`;
+      const d=`M${ox1.toFixed(1)},${oy1.toFixed(1)} A${R},${R} 0 ${large},1 ${ox2.toFixed(1)},${oy2.toFixed(1)} L${ix2.toFixed(1)},${iy2.toFixed(1)} A${RI},${RI} 0 ${large},0 ${ix1.toFixed(1)},${iy1.toFixed(1)} Z`;
+      return `<path d="${d}" fill="${color}" stroke="#fff" stroke-width="2.5"/>`;
+    }).join('');
+    const legend = entries.slice(0,7).map(([s,n],i)=>{
+      const color=colorMap[s]||fallback[i%fallback.length];
+      return `<div style="display:flex;align-items:center;gap:7px;padding:4px 0;border-bottom:1px solid #F3F3F3">
+        <span style="width:9px;height:9px;border-radius:2px;background:${color};flex-shrink:0;display:inline-block"></span>
+        <span style="font-size:11px;flex:1;color:#18191B;text-transform:uppercase;letter-spacing:.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(s)}</span>
+        <span style="font-size:11px;font-weight:500;color:#18191B;flex-shrink:0">${n}</span>
+        <span style="font-size:10px;color:#999;flex-shrink:0;min-width:26px;text-align:right">${Math.round(n/total*100)}%</span>
+      </div>`;
+    }).join('');
+    return `<div style="display:flex;align-items:center;gap:16px;padding:4px 0">
+      <svg width="180" height="180" viewBox="0 0 180 180" style="flex-shrink:0;display:block">
+        ${paths}
+        <text x="${CX}" y="${CY+3}" text-anchor="middle" dominant-baseline="middle" font-size="28" font-weight="700" fill="#1A1C2E" font-family="inherit">${total}</text>
+        <text x="${CX}" y="${CY+21}" text-anchor="middle" font-size="9" fill="#999" font-family="inherit" letter-spacing=".06em">CANDIDATES</text>
+      </svg>
+      <div style="flex:1;min-width:0">${legend}</div>
     </div>`;
   }
 
@@ -778,22 +841,33 @@ export function injectDepsToD5(deps) {
             <div class="dv5-card-head">
               <div>
                 <span class="dv5-card-title">Candidate Movement</span>
-                <div class="dv5-card-sub">${isPro?'Professional':'General'} records, stage movement, and travels</div>
+                <div class="dv5-card-sub">${isPro?'Professional':'General'} — new candidates added per day</div>
               </div>
               <button class="dv5-link" style="color:rgba(190,18,60,.7)" onclick="switchTab('candidates')">All →</button>
             </div>
             ${buildLineChart(normRows)}
-            <div class="dv5-action-grid">
-              ${actionRows.length ? actionRows.map(r => `
-                <button class="dv5-action-card ${r.workflow.level}" onclick="openCandidateProfile('${r.type}',${r.id})">
-                  ${avatar(r.name)}
-                  <span><strong>${h(r.name)}</strong><em>${h(r.workflow.action)}</em></span>
-                  <b>${r.workflow.pct}%</b>
-                </button>
-              `).join('') : '<div class="dv5-empty">No urgent items.</div>'}
-            </div>
           </div>
 
+          <div class="dv5-card" style="margin-bottom:0">
+            <div class="dv5-card-head">
+              <div>
+                <span class="dv5-card-title">Status Summary</span>
+                <div class="dv5-card-sub">${isPro?'Professional':'General'} — at a glance</div>
+              </div>
+            </div>
+            <div class="dv5-status-summary">
+              <div><span>${isPro?'Active Processing':'In Pipeline'}</span><small>${isPro?'Professionals in progress':'General jobs active'}</small></div>
+              <strong>${h(String(normRows.length-travelled))}</strong>
+              <svg viewBox="0 0 220 72" preserveAspectRatio="none" aria-hidden="true"><path d="M6 46 C46 10 80 18 110 42 C145 72 178 68 214 9" fill="none" stroke="#DDF56C" stroke-width="4" stroke-linecap="round"/></svg>
+            </div>
+            <div class="dv5-ring-card">
+              ${ringStat('Collection Rate', collectionRate, '#1A1C2E')}
+              ${ringStat('Travel Readiness', travelReadiness, '#DDF56C')}
+            </div>
+          </div>
+        </div>
+
+        <div class="dv5-dashboard-lower" style="margin-bottom:12px">
           <div class="dv5-card" style="margin-bottom:0">
             <div class="dv5-card-head">
               <span class="dv5-card-title">Upcoming Reminders</span>
@@ -803,42 +877,14 @@ export function injectDepsToD5(deps) {
               ${tasks.length ? tasks.map(taskRow).join('') : '<div class="dv5-empty">No urgent tasks.</div>'}
             </div>
           </div>
-
-          <div class="dv5-card dv5-recent-card" style="margin-bottom:0">
-            <div class="dv5-card-head">
-              <span class="dv5-card-title">Recent Activity</span>
-              <span class="dv5-card-sub">Latest changes</span>
-            </div>
-            <div class="dv5-activity-list">${recentActivity(5)}</div>
-          </div>
-        </div>
-
-        <div class="dv5-dashboard-lower" style="margin-bottom:12px">
-          <div class="dv5-card" style="margin-bottom:0">
-            <div class="dv5-card-head">
-              <div>
-                <span class="dv5-card-title">Status Summary</span>
-                <div class="dv5-card-sub">${isPro?'Professional':'General'} — last 6 months</div>
-              </div>
-            </div>
-            <div class="dv5-status-summary">
-              <div><span>Status Summary</span><small>${isPro?'Active processing load':'General jobs in progress'}</small></div>
-              <strong>${h(String(normRows.length-travelled))}</strong>
-              <svg viewBox="0 0 220 72" preserveAspectRatio="none" aria-hidden="true"><path d="M6 46 C46 10 80 18 110 42 C145 72 178 68 214 9" fill="none" stroke="#DDF56C" stroke-width="4" stroke-linecap="round"/></svg>
-            </div>
-            <div class="dv5-ring-card">
-              ${ringStat('Collection Rate', collectionRate, '#1A1C2E')}
-              ${ringStat('Travel Readiness', travelReadiness, '#DDF56C')}
-            </div>
-          </div>
           <div class="dv5-card dv5-funnel-card" style="margin-bottom:0">
             <div class="dv5-card-head">
               <div>
-                <span class="dv5-card-title">Pipeline Funnel</span>
-                <div class="dv5-card-sub">Centered stage distribution</div>
+                <span class="dv5-card-title">Stage Breakdown</span>
+                <div class="dv5-card-sub">Distribution across all stages</div>
               </div>
             </div>
-            ${buildFunnelChart(flowSteps)}
+            ${buildStageDonut(normRows)}
           </div>
         </div>
 
@@ -1614,12 +1660,15 @@ export function injectDepsToD5(deps) {
       const slot=last12.find(s=>s.y===d.getFullYear()&&s.m===d.getMonth()); if(slot) slot.count++;
     });
     const chartMax=Math.max(...last12.map(s=>s.count),1);
-    const monthlyChart=`<div style="display:flex;align-items:flex-end;gap:4px;height:100px;padding-bottom:4px">
-      ${last12.map(s=>{const pct=Math.max(Math.round(s.count/chartMax*100),s.count>0?5:2);return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end;position:relative">
-        <span style="font-size:9px;font-weight:500;color:var(--dreco-ink,#1A1C2E);position:absolute;bottom:calc(${pct}% + 2px)">${s.count||''}</span>
-        <div style="width:100%;border-radius:4px 4px 2px 2px;background:linear-gradient(180deg,#5347CE,#6A5CF0);height:${pct}%;min-height:2px" title="${s.count} placements"></div>
-        <span style="font-size:9px;color:#999;font-weight:438;writing-mode:vertical-lr;transform:rotate(180deg);height:28px;white-space:nowrap">${s.label}</span>
-      </div>`}).join('')}
+    const monthlyChart=`<div style="display:flex;align-items:flex-end;gap:3px;height:168px;padding:0 4px 4px">
+      ${last12.map(s=>{
+        const pct=Math.max(Math.round(s.count/chartMax*100),s.count>0?5:2);
+        const barColor=s.count>0?'linear-gradient(180deg,#AE9CF0,#C5C7F0)':'#F0F0F0';
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end;gap:3px">
+          <div class="dv5-mp-bar" data-tip="${s.label}: ${s.count}" style="width:100%;border-radius:4px 4px 2px 2px;background:${barColor};height:${pct}%;min-height:2px"></div>
+          <span style="font-size:8px;color:#999;font-weight:438;writing-mode:vertical-lr;transform:rotate(180deg);height:26px;white-space:nowrap">${s.label.split(' ')[0]}</span>
+        </div>`;
+      }).join('')}
     </div>`;
 
     // Avg days per stage (Pro only)
@@ -2638,8 +2687,8 @@ export function injectDepsToD5(deps) {
 .dv5-line-chart { min-height:250px; display:flex; flex-direction:column; justify-content:space-between; }
 .dv5-line-legend { display:flex; justify-content:flex-end; gap:24px; color:#777783; font-size:12px; margin:-4px 4px 8px; }
 .dv5-line-legend span { display:inline-flex; align-items:center; gap:8px; }
-.dv5-line-legend b { width:10px; height:10px; border-radius:50%; background:#F79A62; }
-.dv5-line-legend span:nth-child(2) b { background:#171715; }
+.dv5-line-legend b { width:10px; height:10px; border-radius:50%; background:#AE9CF0; }
+.dv5-line-legend span:nth-child(2) b { background:#1A1C2E; }
 .dv5-line-chart svg { width:100%; height:176px; display:block; overflow:visible; }
 .dv5-line-axis,.dv5-line-summary { display:flex; justify-content:space-between; color:#8C8A93; font-size:11px; }
 .dv5-line-summary { margin-top:8px; color:#1A1C2E; font-weight:500; }
@@ -2658,12 +2707,13 @@ export function injectDepsToD5(deps) {
 .dv5-ring-stat strong { display:block; color:#1E1D2E; font-size:23px; line-height:1; margin-top:4px; font-weight:700; letter-spacing:-.04em; }
 .dv5-funnel-card { border-radius:22px!important; padding:24px!important; box-shadow:none!important; }
 .dv5-funnel-card .dv5-card-title { font-size:17px!important; font-weight:625!important; letter-spacing:-.035em; }
-.dv5-funnel-card .dv5-funnel-row { max-width:760px; margin:0 auto; }
-.dv5-funnel-card .dv5-funnel-row span:first-child { width:84px!important; color:#777783!important; }
-.dv5-funnel-card .dv5-funnel-row > div:nth-child(2) { height:22px!important; border-radius:999px!important; background:#F0F0EA!important; }
-.dv5-funnel-card .dv5-funnel-row > div:nth-child(2) > div { border-radius:999px!important; }
+/* Monthly placements bar tooltip */
+.dv5-mp-bar { position:relative; transition:filter .12s; }
+.dv5-mp-bar::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 5px); left:50%; transform:translateX(-50%); background:#1A1C2E; color:#fff; font-size:10px; font-weight:500; padding:3px 7px; border-radius:5px; white-space:nowrap; pointer-events:none; opacity:0; transition:opacity .12s; z-index:20; }
+.dv5-mp-bar:hover { filter:brightness(1.12); }
+.dv5-mp-bar:hover::after { opacity:1; }
 @media(max-width:1100px){.dv5-home-analytics,.dv5-dashboard-lower{grid-template-columns:1fr}.dv5-line-chart{min-height:220px}}
-@media(max-width:640px){.dv5-ring-card{grid-template-columns:1fr}.dv5-funnel-card .dv5-funnel-row span:first-child{width:68px!important}}
+@media(max-width:640px){.dv5-ring-card{grid-template-columns:1fr}}
 .dv5-action-queue {
   background:linear-gradient(180deg,#FFFFFF 0%,#F7F2EC 100%)!important;
   border-color:#E6D8CC!important;
