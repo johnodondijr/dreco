@@ -547,7 +547,7 @@ export function injectDepsToD5(deps) {
     if (!topN.length) return `<div style="text-align:center;padding:24px;font-size:12px;color:#9ca3af">No collections data for this period.</div>`;
     const totalAmt = topN.reduce((s,_)=>s+_[1], 0) || 1;
     const colors = ['#AE9CF0','#F9B3AA','#C5C7F0','#C9F035','#EDFAA8','#1A1C2E','#E5E3F8'];
-    const CX=110, CY=110, R=95, RI=60;
+    const CX=130, CY=130, R=118, RI=74;
     let angle = -Math.PI/2;
     const GAP = topN.length > 1 ? 0.04 : 0;
     const paths = topN.map(([,amt],i) => {
@@ -558,7 +558,7 @@ export function injectDepsToD5(deps) {
       const ix1=CX+RI*Math.cos(a0),iy1=CY+RI*Math.sin(a0);
       const ix2=CX+RI*Math.cos(a1),iy2=CY+RI*Math.sin(a1);
       const large=sweep>Math.PI?1:0; const color=colors[i%colors.length];
-      if(topN.length===1) return `<circle cx="${CX}" cy="${CY}" r="${R}" fill="${color}"/><circle cx="${CX}" cy="${CY}" r="${RI}" fill="var(--edu-bg,#fff)"/>`;
+      if(topN.length===1) return `<circle cx="${CX}" cy="${CY}" r="${R}" fill="${color}"/><circle cx="${CX}" cy="${CY}" r="${RI}" fill="var(--edu-bg,#fff)" />` ;
       return `<path d="M${ox1.toFixed(1)},${oy1.toFixed(1)} A${R},${R} 0 ${large},1 ${ox2.toFixed(1)},${oy2.toFixed(1)} L${ix2.toFixed(1)},${iy2.toFixed(1)} A${RI},${RI} 0 ${large},0 ${ix1.toFixed(1)},${iy1.toFixed(1)} Z" fill="${color}" stroke="var(--edu-bg,#fff)" stroke-width="2.5"/>`;
     }).join('');
     const centerTotal = isPro ? money(totalAmt) : moneyUSD(totalAmt);
@@ -571,10 +571,10 @@ export function injectDepsToD5(deps) {
       </div>`;
     }).join('');
     return `<div style="display:flex;align-items:center;gap:4px">
-      <svg width="220" height="220" viewBox="0 0 220 220" style="flex-shrink:0;display:block">
+      <svg width="260" height="260" viewBox="0 0 260 260" style="flex-shrink:0;display:block">
         ${paths}
-        <text x="${CX}" y="${CY-10}" text-anchor="middle" font-size="10" fill="#9ca3af" font-family="inherit" letter-spacing=".06em">COLLECTED</text>
-        <text x="${CX}" y="${CY+12}" text-anchor="middle" font-size="18" font-weight="700" fill="#1A1C2E" font-family="inherit">${centerTotal}</text>
+        <text x="${CX}" y="${CY-12}" text-anchor="middle" font-size="11" fill="#9ca3af" font-family="inherit" letter-spacing=".07em">COLLECTED</text>
+        <text x="${CX}" y="${CY+14}" text-anchor="middle" font-size="21" font-weight="700" fill="#1A1C2E" font-family="inherit">${centerTotal}</text>
       </svg>
       <div style="flex:1;min-width:0;padding-right:4px">${legend}</div>
     </div>`;
