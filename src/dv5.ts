@@ -416,6 +416,17 @@ export function injectDepsToD5(deps) {
   }
 
   function buildLineChart(rows: any[], selectedMonth: string) {
+    // Auto-detect most recent month with data if the selected month has none
+    const getDate = (r: any) => r.raw?.created_at || r.raw?.createdAt || r.raw?.intake || r.submitted || r.raw?.submitted_date || r.raw?.submitted;
+    const rowDates = rows.map(r => { const ds = getDate(r); if (!ds) return null; const d = new Date(ds); return isNaN(d as any) ? null : d; }).filter(Boolean) as Date[];
+    if (rowDates.length) {
+      const selMs = new Date(selectedMonth + '-01').getTime();
+      const hasDataInSel = rowDates.some(d => d.getFullYear() === new Date(selMs).getFullYear() && d.getMonth() === new Date(selMs).getMonth());
+      if (!hasDataInSel) {
+        const latest = rowDates.reduce((a,b) => b > a ? b : a);
+        selectedMonth = `${latest.getFullYear()}-${String(latest.getMonth()+1).padStart(2,'0')}`;
+      }
+    }
     const [selYear, selMonthNum] = selectedMonth.split('-').map(Number);
     const selMonthIdx = selMonthNum - 1; // 0-indexed
     const prevYear = selMonthNum === 1 ? selYear - 1 : selYear;
@@ -425,7 +436,7 @@ export function injectDepsToD5(deps) {
     const selWeeks = [0, 0, 0, 0];
     const prevWeeks = [0, 0, 0, 0];
     rows.forEach(r => {
-      const ds = r.raw?.intake || r.raw?.created_at || r.raw?.createdAt;
+      const ds = r.raw?.created_at || r.raw?.createdAt || r.raw?.intake || r.submitted || r.raw?.submitted_date || r.raw?.submitted;
       if (!ds) return;
       const d = new Date(ds); if (isNaN(d as any)) return;
       const y = d.getFullYear(), m = d.getMonth(), day = d.getDate();
@@ -904,7 +915,7 @@ export function injectDepsToD5(deps) {
               </div>
               <button class="dv5-link" style="color:rgba(190,18,60,.7)" onclick="switchTab('candidates')">All →</button>
             </div>
-            ${buildLineChart(normRows, candMovMonth)}
+            ${buildLineChart(normRows, candMovMonth || new Date().toISOString().slice(0,7))}
           </div>
 
           <div class="dv5-card" style="margin-bottom:0">
