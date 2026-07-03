@@ -1470,19 +1470,20 @@ export function injectDepsToD5(deps) {
               <button style="width:32px;height:32px;border-radius:8px;background:#0D9488;border:0;color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0" onclick="window.setFinanceTab('latest');setTimeout(()=>document.querySelector('.dv5-tx-section')?.scrollIntoView({behavior:'smooth'}),50)"><i class="ti ti-arrow-right"></i></button>
             </div>
             <div style="border-top:1px solid var(--border,#E8E8E8)">
-              ${(financeShowAllTx ? filteredPayments : filteredPayments.slice(0,TX_CAP)).map(({r, label, amt, date, isUSD}) => {
+              ${(financeShowAllTx ? filteredPayments : filteredPayments.slice(0,TX_CAP)).map(({r, amt, date, isUSD}) => {
                 const d = new Date(date||'');
                 const dateStr = isNaN(d as any) ? '—' : d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
                 const amtStr = '+' + (isUSD ? moneyUSD(amt) : money(amt));
-                return `<div class="dv5-tx-row" onclick="${r.type==='pro'?`editPro(${r.id})`:`editLB(${r.id})`}" style="cursor:pointer">
-                  <div class="dv5-tx-date">${dateStr}</div>
-                  <div class="dv5-tx-info">
-                    <div class="dv5-tx-name">${h(r.name||'—')}</div>
-                    <div class="dv5-tx-status" style="color:#6b7280">${h(r.company||r.position||'—')}</div>
+                const editFn = r.type==='pro' ? `editPro(${r.id})` : `editLB(${r.id})`;
+                return `<div style="display:flex;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid var(--border,#F1F1F1);cursor:pointer;transition:background .1s" onclick="${editFn}" onmouseenter="this.style.background='#F9F9F9'" onmouseleave="this.style.background=''">
+                  <div style="min-width:52px;font-size:11px;color:#9ca3af;flex-shrink:0">${dateStr}</div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:12px;font-weight:500;color:#18191B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r.name||'—')}</div>
+                    <div style="font-size:11px;color:#9ca3af;margin-top:1px">${h(r.company||r.position||'—')}</div>
                   </div>
                   <span class="dv5-badge ${r.type==='pro'?'teal':'blue'}" style="font-size:10px;padding:2px 7px;flex-shrink:0">${r.type==='pro'?'Commission':'Refund'}</span>
-                  <div class="dv5-tx-amt" style="color:#16a34a;font-size:13px;font-weight:600">${amtStr}</div>
-                  <button class="dv5-tx-arrow" onclick="event.stopPropagation();${r.type==='pro'?`editPro(${r.id})`:`editLB(${r.id})`}"><i class="ti ti-chevron-down"></i></button>
+                  <div style="font-size:13px;font-weight:600;color:#16a34a;flex-shrink:0;white-space:nowrap;min-width:0">${amtStr}</div>
+                  <button style="width:26px;height:26px;border:1px solid var(--border,#E8E8E8);border-radius:7px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:#9ca3af" onclick="event.stopPropagation();${editFn}"><i class="ti ti-chevron-right" style="font-size:12px"></i></button>
                 </div>`;
               }).join('') || '<div class="dv5-empty" style="padding:32px">No payments recorded.</div>'}
             </div>
