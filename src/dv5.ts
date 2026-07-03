@@ -2700,29 +2700,34 @@ export function injectDepsToD5(deps) {
 .dv5-priority:nth-child(3n+1),
 .dv5-stat-card:nth-child(3n+1),
 .dv5-file-card:nth-child(3n+1) {
-  background:var(--dreco-card-pink)!important;
-  border-color:var(--dreco-card-pink-line)!important;
+  background:#FFFFFF!important;
+  border-color:var(--dreco-line)!important;
 }
 .dv5-kpi:nth-child(3n+2),
 .dv5-priority:nth-child(3n+2),
 .dv5-stat-card:nth-child(3n+2),
 .dv5-file-card:nth-child(3n+2) {
-  background:var(--dreco-card-lavender)!important;
-  border-color:var(--dreco-card-lavender-line)!important;
+  background:#FFFFFF!important;
+  border-color:var(--dreco-line)!important;
 }
 .dv5-kpi:nth-child(3n),
 .dv5-priority:nth-child(3n),
 .dv5-stat-card:nth-child(3n),
 .dv5-file-card:nth-child(3n) {
-  background:var(--dreco-card-lime)!important;
-  border-color:var(--dreco-card-lime-line)!important;
+  background:#FFFFFF!important;
+  border-color:var(--dreco-line)!important;
 }
 .dv5-kpi-label,
-.dv5-kpi-val,
 .dv5-priority span,
+.dv5-stat-card span,
+.dv5-stat-card small {
+  color:var(--dreco-muted)!important;
+}
+.dv5-kpi-val,
 .dv5-priority strong,
-.dv5-stat-card * {
-  color:var(--dreco-ink)!important;
+.dv5-stat-card strong {
+  color:#1F2133!important;
+  font-weight:650!important;
 }
 .dv5-btn.primary {
   background:var(--dreco-brand)!important;
@@ -2742,6 +2747,31 @@ export function injectDepsToD5(deps) {
 .dv5-priority-icon {
   background:var(--dreco-soft)!important;
   color:var(--dreco-brand)!important;
+}
+.dv5-kpi-icon,
+.dv5-priority-icon,
+.dv5-stat-icon {
+  width:42px!important;
+  height:42px!important;
+  border-radius:13px!important;
+  background:var(--dreco-card-lavender)!important;
+  color:#1F2133!important;
+  box-shadow:none!important;
+}
+.dv5-kpi:nth-child(3n+1) .dv5-kpi-icon,
+.dv5-priority:nth-child(3n+1) .dv5-priority-icon,
+.dv5-stat-card:nth-child(3n+1) .dv5-stat-icon {
+  background:var(--dreco-card-pink)!important;
+}
+.dv5-kpi:nth-child(3n+2) .dv5-kpi-icon,
+.dv5-priority:nth-child(3n+2) .dv5-priority-icon,
+.dv5-stat-card:nth-child(3n+2) .dv5-stat-icon {
+  background:var(--dreco-card-lavender)!important;
+}
+.dv5-kpi:nth-child(3n) .dv5-kpi-icon,
+.dv5-priority:nth-child(3n) .dv5-priority-icon,
+.dv5-stat-card:nth-child(3n) .dv5-stat-icon {
+  background:var(--dreco-card-lime)!important;
 }
 .dv5-badge.green,
 .dv5-pill.green { background:#DCECC8!important; color:#49774E!important; }

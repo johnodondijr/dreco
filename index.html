@@ -5797,6 +5797,133 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
   }
   #app .sidebar:not(.mobile-open){display:none!important;}
 }
+
+/* Reference card treatment: white cards, colored icon tiles */
+.metric-card,
+.dreco-kpi,
+.priority-card,
+.p-card,
+.dv5-kpi,
+.dv5-priority,
+.dv5-stat-card,
+#login-screen .lp-dash-priority-card{
+  background:#FFFFFF!important;
+  border-color:var(--edu-line)!important;
+  color:var(--edu-text)!important;
+}
+.metric-card .metric-val,
+.metric-card .metric-val.sm,
+.dreco-kpi-value,
+.priority-card strong,
+.p-card-count,
+.dv5-kpi-val,
+.dv5-priority strong,
+.dv5-stat-card strong,
+#login-screen .lp-dash-priority-card strong{
+  color:#1F2133!important;
+  font-weight:650!important;
+}
+.metric-card .metric-label,
+.dreco-kpi-label,
+.dreco-kpi-note,
+.priority-card span,
+.priority-card small,
+.p-card-label,
+.p-card-sub,
+.dv5-kpi-label,
+.dv5-kpi-note,
+.dv5-priority span,
+.dv5-priority small,
+.dv5-stat-card span,
+.dv5-stat-card small,
+#login-screen .lp-dash-priority-card span{
+  color:#7E7C8C!important;
+  font-weight:500!important;
+}
+.metric-card .mc-icon,
+.dreco-kpi-icon,
+.priority-icon,
+.p-card-icon,
+.dv5-kpi-icon,
+.dv5-priority-icon,
+.dv5-stat-icon,
+.lp-dash-priority-card i{
+  width:42px!important;
+  height:42px!important;
+  border-radius:13px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:var(--edu-card-lavender)!important;
+  color:#1F2133!important;
+  box-shadow:none!important;
+  opacity:1!important;
+}
+.metric-card:nth-child(3n+1) .mc-icon,
+.dreco-kpi:nth-child(3n+1) .dreco-kpi-icon,
+.priority-card:nth-child(3n+1) .priority-icon,
+.p-card:nth-child(3n+1) .p-card-icon,
+.dv5-kpi:nth-child(3n+1) .dv5-kpi-icon,
+.dv5-priority:nth-child(3n+1) .dv5-priority-icon,
+.dv5-stat-card:nth-child(3n+1) .dv5-stat-icon,
+#login-screen .lp-dash-priority-card:nth-child(3n+1) i{
+  background:var(--edu-card-pink)!important;
+}
+.metric-card:nth-child(3n+2) .mc-icon,
+.dreco-kpi:nth-child(3n+2) .dreco-kpi-icon,
+.priority-card:nth-child(3n+2) .priority-icon,
+.p-card:nth-child(3n+2) .p-card-icon,
+.dv5-kpi:nth-child(3n+2) .dv5-kpi-icon,
+.dv5-priority:nth-child(3n+2) .dv5-priority-icon,
+.dv5-stat-card:nth-child(3n+2) .dv5-stat-icon,
+#login-screen .lp-dash-priority-card:nth-child(3n+2) i{
+  background:var(--edu-card-lavender)!important;
+}
+.metric-card:nth-child(3n) .mc-icon,
+.dreco-kpi:nth-child(3n) .dreco-kpi-icon,
+.priority-card:nth-child(3n) .priority-icon,
+.p-card:nth-child(3n) .p-card-icon,
+.dv5-kpi:nth-child(3n) .dv5-kpi-icon,
+.dv5-priority:nth-child(3n) .dv5-priority-icon,
+.dv5-stat-card:nth-child(3n) .dv5-stat-icon,
+#login-screen .lp-dash-priority-card:nth-child(3n) i{
+  background:var(--edu-card-lime)!important;
+}
+.metric-card.mc-amber .mc-icon,
+.priority-icon.orange,
+.dv5-kpi-icon.amber{
+  background:var(--edu-card-pink)!important;
+}
+.metric-card.mc-green .mc-icon,
+.metric-card.mc-sage .mc-icon,
+.priority-icon.green,
+.dv5-kpi-icon.green{
+  background:var(--edu-card-lime)!important;
+}
+.metric-card.mc-ink .mc-icon,
+.priority-icon.purple,
+.priority-icon.blue,
+.dv5-kpi-icon.purple,
+.dv5-kpi-icon.blue,
+.dv5-kpi-icon.teal,
+.dv5-kpi-icon.ink{
+  background:var(--edu-card-lavender)!important;
+}
+.priority-icon.red,
+.dv5-kpi-icon.rose{
+  background:var(--edu-card-pink)!important;
+}
+.p-card-icon{
+  position:absolute!important;
+  left:18px!important;
+  top:18px!important;
+  right:auto!important;
+  bottom:auto!important;
+  font-size:20px!important;
+}
+.p-card{
+  padding-left:74px!important;
+}
 </style>
 </head>
 <body>
