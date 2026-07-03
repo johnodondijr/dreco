@@ -631,13 +631,15 @@ export function injectDepsToD5(deps) {
   }
 
   // ── File manager card (shadcn file manager) ───────────────
-  function fileCard(icon, iconColor, barColor, label, count, total, caption, action='') {
+  function fileCard(icon, iconColor, iconBg, barColor, label, count, total, caption, action='') {
     const pct = total > 0 ? Math.round((count / total) * 100) : 0;
     const click = action ? `onclick="${action}"` : '';
     return `<div class="dv5-file-card" ${click}>
       <div class="dv5-file-card-head">
         <span class="dv5-file-card-label">${h(label)}</span>
-        <i class="ti ${h(icon)}" style="font-size:18px;color:${iconColor}"></i>
+        <div class="dv5-file-icon-box" style="background:${iconBg};color:${iconColor}">
+          <i class="ti ${h(icon)}" style="font-size:20px"></i>
+        </div>
       </div>
       <div class="dv5-file-count">${h(String(count))}</div>
       <div class="dv5-file-bar-wrap">
@@ -1644,9 +1646,9 @@ export function injectDepsToD5(deps) {
         </div>
         ${!isPro ? lbCountryBar(lbDB||[]) : ''}
         <div class="dv5-file-grid">
-          ${fileCard('ti-files',        '#1A1C2E', '#1A1C2E', 'Files Uploaded', totalFiles,    defs.length*Math.max(rows.length,1), `Across all candidates`,          '')}
-          ${fileCard('ti-folder-check', '#059669', '#22c55e', 'With Documents', withAny.length,  rows.length,                        `${withAny.length} have uploads`, '')}
-          ${fileCard('ti-folder-off',   '#78716C', '#a8a29e', 'Awaiting Upload', withNone.length, rows.length,                       `No uploads yet`,                 '')}
+          ${fileCard('ti-files',        '#4825B8', '#EDE8FB', '#AE9CF0', 'Files Uploaded', totalFiles,    defs.length*Math.max(rows.length,1), `Across all candidates`,          '')}
+          ${fileCard('ti-folder-check', '#4A5E10', '#EDFAA8', '#C9F035', 'With Documents', withAny.length,  rows.length,                        `${withAny.length} have uploads`, '')}
+          ${fileCard('ti-folder-off',   '#8B2010', '#FCECEA', '#F9B3AA', 'Awaiting Upload', withNone.length, rows.length,                       `No uploads yet`,                 '')}
         </div>
         <div class="dv5-doc-library">
           ${categoryHTML}
