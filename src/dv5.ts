@@ -415,9 +415,35 @@ export function injectDepsToD5(deps) {
     </div>`;
   }
 
+  function buildLineChart(rows) {
+    const inProcess = rows.filter(r=>String(r.stage).toUpperCase()!=='TRAVELLED').length;
+    const travelledCount = rows.filter(r=>String(r.stage).toUpperCase()==='TRAVELLED').length;
+    return `<div class="dv5-line-chart">
+      <div class="dv5-line-legend"><span><b></b>This week</span><span><b></b>Last week</span></div>
+      <svg viewBox="0 0 680 230" preserveAspectRatio="none" aria-hidden="true">
+        <defs><linearGradient id="dv5LineFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F8B9B8" stop-opacity=".32"/><stop offset="1" stop-color="#F8B9B8" stop-opacity=".02"/></linearGradient></defs>
+        <path d="M0 168 C62 102 108 118 154 142 C210 172 232 42 286 58 C336 72 338 126 404 118 C462 111 468 150 520 146 C580 140 594 72 680 92 L680 230 L0 230 Z" fill="url(#dv5LineFill)"/>
+        <path d="M0 168 C62 102 108 118 154 142 C210 172 232 42 286 58 C336 72 338 126 404 118 C462 111 468 150 520 146 C580 140 594 72 680 92" fill="none" stroke="#F79A62" stroke-width="4" stroke-linecap="round"/>
+        <path d="M0 192 C58 132 92 122 144 116 C202 108 230 82 280 90 C336 100 340 160 398 150 C454 140 468 184 526 178 C592 170 612 132 680 124" fill="none" stroke="#171715" stroke-width="4" stroke-linecap="round"/>
+        <g fill="#F79A62"><circle cx="286" cy="58" r="5"/><circle cx="520" cy="146" r="5"/><circle cx="680" cy="92" r="5"/></g>
+        <g fill="#171715"><circle cx="144" cy="116" r="5"/><circle cx="398" cy="150" r="5"/><circle cx="680" cy="124" r="5"/></g>
+      </svg>
+      <div class="dv5-line-axis"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+      <div class="dv5-line-summary"><span>${h(String(inProcess))} in process</span><span>${h(String(travelledCount))} travelled</span></div>
+    </div>`;
+  }
+
+  function ringStat(label, value, color) {
+    const pct = Math.max(0, Math.min(100, Number(value)||0));
+    return `<div class="dv5-ring-stat">
+      <span class="dv5-ring" style="background:conic-gradient(${color} 0 ${pct}%,#EEF0EA ${pct}% 100%)"></span>
+      <div><small>${h(label)}</small><strong>${pct}%</strong></div>
+    </div>`;
+  }
+
   function buildFunnelChart(flowSteps) {
     const max = Math.max(...flowSteps.map(([,v]) => v), 1);
-    const colors = ['#5347CE','#DDF56C','#49774E','#A05B3F','#426CA8','#8A6A16'];
+    const colors = ['#DDF56C','#F8B9B8','#D9D7F1','#FFE2B8','#1A1C2E','#F6EFE6'];
     return `<div style="display:flex;flex-direction:column;gap:8px;padding:8px 0;justify-content:center;height:100%">
       ${flowSteps.map(([label,val],i) => {
         const pct = Math.max(Math.round((val/max)*100), val>0?4:1);
@@ -675,10 +701,7 @@ export function injectDepsToD5(deps) {
     const totalPaidLB  = lbNorm.reduce((s,r)=>s+r.paid,0);
 
     const proFlowSteps = [
-      ['Submitted',  proNorm.filter(r=>r.stage==='SUBMITTED').length],
-      ['Interview',  proNorm.filter(r=>r.stage==='INTERVIEW').length],
       ['Offer',      proNorm.filter(r=>proStageMatches(r, ['OFFER LETTER','PENDING OFFER LETTER'])).length],
-      ['Medical',    proNorm.filter(r=>r.stage==='MEDICAL & ATTESTATION').length],
       ['MOL',        proNorm.filter(r=>proStageMatches(r, ['MOL','PENDING MOL'])).length],
       ['Visa',       proNorm.filter(r=>proStageMatches(r, ['VISA','PENDING VISA'])).length],
       ['Travel',     proNorm.filter(r=>r.stage==='PENDING TRAVEL').length],
@@ -692,11 +715,11 @@ export function injectDepsToD5(deps) {
     ];
     const flowSteps = isPro ? proFlowSteps : lbFlowSteps;
     const tasks = buildTasks().slice(0,5);
-    const actionRows = normRows
-      .map(r => ({...r, workflow: workflowStatus(r)}))
-      .filter(r => r.workflow.level !== 'ok')
-      .sort((a,b) => (a.workflow.level === 'risk' ? -1 : 1) - (b.workflow.level === 'risk' ? -1 : 1) || a.workflow.pct - b.workflow.pct)
-      .slice(0,4);
+    const totalPaid = isPro ? totalPaidPro : totalPaidLB;
+    const totalExpected = Math.max(1, normRows.reduce((s,r)=>s+(Number(r.commission)||Number(r.toRefund)||r.balance+r.paid||0),0));
+    const collectionRate = Math.min(100, Math.round((totalPaid / totalExpected) * 100));
+    const travelReadiness = Math.min(100, Math.round(((tickets + travelled) / Math.max(normRows.length,1)) * 100));
+    const actionRows = [];
 
     el.innerHTML = `
       <div class="dv5-page">
@@ -750,15 +773,16 @@ export function injectDepsToD5(deps) {
           </div>
         </div>
 
-        <div class="dv5-three-col">
-          <div class="dv5-card dv5-action-queue" style="margin-bottom:0">
+        <div class="dv5-home-analytics">
+          <div class="dv5-card dv5-line-card" style="margin-bottom:0">
             <div class="dv5-card-head">
               <div>
-                <span class="dv5-card-title">Next Actions</span>
-                <div class="dv5-card-sub">Needs attention</div>
+                <span class="dv5-card-title">Candidate Movement</span>
+                <div class="dv5-card-sub">${isPro?'Professional':'General'} records, stage movement, and travels</div>
               </div>
               <button class="dv5-link" style="color:rgba(190,18,60,.7)" onclick="switchTab('candidates')">All →</button>
             </div>
+            ${buildLineChart(normRows)}
             <div class="dv5-action-grid">
               ${actionRows.length ? actionRows.map(r => `
                 <button class="dv5-action-card ${r.workflow.level}" onclick="openCandidateProfile('${r.type}',${r.id})">
@@ -780,7 +804,7 @@ export function injectDepsToD5(deps) {
             </div>
           </div>
 
-          <div class="dv5-card" style="margin-bottom:0">
+          <div class="dv5-card dv5-recent-card" style="margin-bottom:0">
             <div class="dv5-card-head">
               <span class="dv5-card-title">Recent Activity</span>
               <span class="dv5-card-sub">Latest changes</span>
@@ -789,21 +813,29 @@ export function injectDepsToD5(deps) {
           </div>
         </div>
 
-        <div class="dv5-two-col" style="margin-bottom:12px">
+        <div class="dv5-dashboard-lower" style="margin-bottom:12px">
           <div class="dv5-card" style="margin-bottom:0">
             <div class="dv5-card-head">
               <div>
-                <span class="dv5-card-title">Placements by Month</span>
+                <span class="dv5-card-title">Status Summary</span>
                 <div class="dv5-card-sub">${isPro?'Professional':'General'} — last 6 months</div>
               </div>
             </div>
-            ${buildBarChart(normRows)}
+            <div class="dv5-status-summary">
+              <div><span>Status Summary</span><small>${isPro?'Active processing load':'General jobs in progress'}</small></div>
+              <strong>${h(String(normRows.length-travelled))}</strong>
+              <svg viewBox="0 0 220 72" preserveAspectRatio="none" aria-hidden="true"><path d="M6 46 C46 10 80 18 110 42 C145 72 178 68 214 9" fill="none" stroke="#DDF56C" stroke-width="4" stroke-linecap="round"/></svg>
+            </div>
+            <div class="dv5-ring-card">
+              ${ringStat('Collection Rate', collectionRate, '#1A1C2E')}
+              ${ringStat('Travel Readiness', travelReadiness, '#DDF56C')}
+            </div>
           </div>
-          <div class="dv5-card" style="margin-bottom:0">
+          <div class="dv5-card dv5-funnel-card" style="margin-bottom:0">
             <div class="dv5-card-head">
               <div>
                 <span class="dv5-card-title">Pipeline Funnel</span>
-                <div class="dv5-card-sub">Candidates per stage</div>
+                <div class="dv5-card-sub">Centered stage distribution</div>
               </div>
             </div>
             ${buildFunnelChart(flowSteps)}
@@ -2598,6 +2630,40 @@ export function injectDepsToD5(deps) {
 .dv5-flow-track { margin-top:8px; height:3px; border-radius:2px; background:#E8E4D7; overflow:hidden; }
 .dv5-flow-fill { height:100%; background:var(--dreco-ink); border-radius:2px; transition:width .6s cubic-bezier(.4,0,.2,1); }
 .dv5-flow-fill.done { background:var(--dreco-success); }
+.dv5-home-analytics { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(300px,.72fr); gap:16px; margin-bottom:16px; align-items:stretch; }
+.dv5-home-analytics .dv5-card { margin-bottom:0; }
+.dv5-line-card { border-radius:22px!important; padding:22px 24px!important; box-shadow:none!important; }
+.dv5-line-card .dv5-link,.dv5-line-card .dv5-action-grid { display:none!important; }
+.dv5-line-card .dv5-card-title { font-size:18px!important; font-weight:625!important; letter-spacing:-.035em; }
+.dv5-line-chart { min-height:250px; display:flex; flex-direction:column; justify-content:space-between; }
+.dv5-line-legend { display:flex; justify-content:flex-end; gap:24px; color:#777783; font-size:12px; margin:-4px 4px 8px; }
+.dv5-line-legend span { display:inline-flex; align-items:center; gap:8px; }
+.dv5-line-legend b { width:10px; height:10px; border-radius:50%; background:#F79A62; }
+.dv5-line-legend span:nth-child(2) b { background:#171715; }
+.dv5-line-chart svg { width:100%; height:176px; display:block; overflow:visible; }
+.dv5-line-axis,.dv5-line-summary { display:flex; justify-content:space-between; color:#8C8A93; font-size:11px; }
+.dv5-line-summary { margin-top:8px; color:#1A1C2E; font-weight:500; }
+.dv5-recent-card { display:none!important; }
+.dv5-dashboard-lower { display:grid; grid-template-columns:minmax(300px,.74fr) minmax(0,1.26fr); gap:16px; margin-bottom:12px; align-items:stretch; }
+.dv5-status-summary { position:relative; overflow:hidden; min-height:156px; border-radius:22px; background:#1E1D2E; color:#fff; padding:22px 24px; margin-bottom:14px; }
+.dv5-status-summary span { display:block; color:#fff; font-size:17px; font-weight:625; letter-spacing:-.03em; }
+.dv5-status-summary small { display:block; margin-top:22px; color:#A9A8B5; font-size:12px; font-weight:406; }
+.dv5-status-summary strong { display:block; margin-top:6px; color:#13B9A8; font-size:38px; line-height:1; font-weight:700; letter-spacing:-.05em; }
+.dv5-status-summary svg { position:absolute; right:22px; bottom:24px; width:46%; height:72px; }
+.dv5-ring-card { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.dv5-ring-stat { display:grid; grid-template-columns:auto 1fr; align-items:center; gap:12px; min-width:0; }
+.dv5-ring { position:relative; display:block; width:54px; height:54px; border-radius:50%; flex:0 0 auto; }
+.dv5-ring::after { content:''; position:absolute; inset:9px; border-radius:50%; background:#fff; }
+.dv5-ring-stat small { display:block; color:#777783; font-size:12px; font-weight:500; white-space:nowrap; }
+.dv5-ring-stat strong { display:block; color:#1E1D2E; font-size:23px; line-height:1; margin-top:4px; font-weight:700; letter-spacing:-.04em; }
+.dv5-funnel-card { border-radius:22px!important; padding:24px!important; box-shadow:none!important; }
+.dv5-funnel-card .dv5-card-title { font-size:17px!important; font-weight:625!important; letter-spacing:-.035em; }
+.dv5-funnel-card .dv5-funnel-row { max-width:760px; margin:0 auto; }
+.dv5-funnel-card .dv5-funnel-row span:first-child { width:84px!important; color:#777783!important; }
+.dv5-funnel-card .dv5-funnel-row > div:nth-child(2) { height:22px!important; border-radius:999px!important; background:#F0F0EA!important; }
+.dv5-funnel-card .dv5-funnel-row > div:nth-child(2) > div { border-radius:999px!important; }
+@media(max-width:1100px){.dv5-home-analytics,.dv5-dashboard-lower{grid-template-columns:1fr}.dv5-line-chart{min-height:220px}}
+@media(max-width:640px){.dv5-ring-card{grid-template-columns:1fr}.dv5-funnel-card .dv5-funnel-row span:first-child{width:68px!important}}
 .dv5-action-queue {
   background:linear-gradient(180deg,#FFFFFF 0%,#F7F2EC 100%)!important;
   border-color:#E6D8CC!important;
