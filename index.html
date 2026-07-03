@@ -5602,6 +5602,201 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
 .payment-rule-card.active{border-color:var(--edu-lime-2)!important;box-shadow:0 0 0 3px rgba(221,245,108,.24)!important;}
 .payment-rule-card.active button{background:var(--edu-lime)!important;color:var(--edu-ink)!important;border-color:var(--edu-lime)!important;}
 .workflow-stage-preview span,.settings-pill{background:var(--edu-lavender)!important;color:var(--edu-lavender-ink)!important;border-color:transparent!important;}
+
+/* Reference floating sidebar pass */
+#app{
+  background:var(--edu-bg)!important;
+  padding:18px!important;
+}
+#app .app-layout{
+  background:var(--edu-bg)!important;
+  border:0!important;
+  border-radius:28px!important;
+  box-shadow:none!important;
+  gap:0!important;
+  overflow:hidden!important;
+}
+#app .main-area{
+  background:var(--edu-bg)!important;
+}
+#app .sidebar,
+#app #sidebar,
+.sidebar{
+  width:248px!important;
+  margin:0 0 0 0!important;
+  padding:18px 16px!important;
+  border-radius:28px!important;
+  border:0!important;
+  align-self:stretch!important;
+  background:linear-gradient(180deg,#232235 0%,#1F2133 100%)!important;
+  box-shadow:0 26px 60px rgba(31,33,51,.20)!important;
+  overflow:hidden!important;
+}
+#app .sidebar-top{
+  padding:0 2px 18px!important;
+  min-height:44px!important;
+  display:flex!important;
+  align-items:center!important;
+}
+#app .sidebar-logo{
+  gap:12px!important;
+  min-height:42px!important;
+}
+#app .sidebar-logo-mark{
+  width:40px!important;
+  height:40px!important;
+  border-radius:14px!important;
+  background:#FFFFFF!important;
+  color:#1F2133!important;
+  box-shadow:0 14px 28px rgba(0,0,0,.18)!important;
+}
+#app .sidebar-logo-mark svg{
+  width:23px!important;
+  height:23px!important;
+}
+#app .sidebar-logo-mark svg path,
+#app .sidebar-logo-mark svg rect,
+#app .sidebar-logo-mark i{
+  fill:#1F2133!important;
+  color:#1F2133!important;
+}
+#app .sidebar-logo-text,
+#app .sidebar-logo-text span{
+  color:#FFFFFF!important;
+  font-size:20px!important;
+  font-weight:650!important;
+  letter-spacing:-.03em!important;
+}
+#app .sidebar-toggle{
+  width:34px!important;
+  height:34px!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.08)!important;
+  border-color:rgba(255,255,255,.12)!important;
+  color:rgba(255,255,255,.65)!important;
+}
+#app .sidebar-divider{
+  display:none!important;
+}
+#app .nav-section-label{
+  margin:17px 8px 9px!important;
+  padding:0!important;
+  color:rgba(255,255,255,.44)!important;
+  font-size:10px!important;
+  font-weight:650!important;
+  letter-spacing:.06em!important;
+}
+#app .nav-item,
+#app .sidebar .nav-item,
+.sidebar .nav-item{
+  width:calc(100% - 8px)!important;
+  height:48px!important;
+  margin:5px 4px!important;
+  padding:0 16px!important;
+  border-radius:999px!important;
+  gap:13px!important;
+  color:rgba(255,255,255,.68)!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  justify-content:flex-start!important;
+}
+#app .nav-item i,
+#app .sidebar .nav-item i,
+.sidebar .nav-item i{
+  width:20px!important;
+  font-size:20px!important;
+  stroke-width:1.8!important;
+  color:inherit!important;
+  text-align:center!important;
+}
+#app .nav-item-label,
+#app .sidebar .nav-item-label{
+  color:inherit!important;
+  font-size:14px!important;
+  font-weight:620!important;
+  letter-spacing:-.01em!important;
+}
+#app .nav-item:hover,
+#app .sidebar .nav-item:hover,
+.sidebar .nav-item:hover{
+  background:rgba(255,255,255,.08)!important;
+  color:#FFFFFF!important;
+  transform:none!important;
+}
+#app .nav-item.active,
+#app .sidebar .nav-item.active,
+#app .sidebar.collapsed .nav-item.active,
+.sidebar .nav-item.active{
+  background:var(--edu-lime)!important;
+  color:#1F2133!important;
+  box-shadow:0 14px 30px rgba(221,245,108,.24)!important;
+}
+#app .nav-item.active i,
+#app .sidebar .nav-item.active i,
+#app .sidebar.collapsed .nav-item.active i,
+.sidebar .nav-item.active i{
+  color:#1F2133!important;
+}
+#app .nav-spacer{
+  min-height:12px!important;
+}
+#app .sidebar-user-card,
+#app .sidebar-user-card.sidebar-account-trigger{
+  width:calc(100% - 8px)!important;
+  margin:12px 4px 0!important;
+  padding:10px 12px!important;
+  border-radius:22px!important;
+  background:rgba(255,255,255,.10)!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  box-shadow:none!important;
+}
+#app .sidebar-user-card:hover,
+#app .sidebar-user-card.sidebar-account-trigger:hover{
+  background:rgba(255,255,255,.15)!important;
+}
+#app .suc-avatar{
+  border-radius:50%!important;
+  background:#FFFFFF!important;
+  color:#1F2133!important;
+}
+#app .suc-name{color:#FFFFFF!important;}
+#app .suc-org{color:rgba(255,255,255,.56)!important;}
+#app .sidebar.collapsed,
+#app #sidebar.collapsed{
+  width:82px!important;
+  padding:18px 12px!important;
+}
+#app .sidebar.collapsed .sidebar-logo{
+  justify-content:center!important;
+}
+#app .sidebar.collapsed .nav-item{
+  width:48px!important;
+  height:48px!important;
+  padding:0!important;
+  margin:6px auto!important;
+  justify-content:center!important;
+}
+#app .sidebar.collapsed .sidebar-user-card,
+#app .sidebar.collapsed .sidebar-user-card.sidebar-account-trigger{
+  width:48px!important;
+  height:48px!important;
+  margin:12px auto 0!important;
+  padding:7px!important;
+  border-radius:999px!important;
+}
+@media(max-width:860px){
+  #app{padding:0!important;}
+  #app .app-layout{border-radius:0!important;}
+  #app .sidebar,
+  #app #sidebar{
+    width:min(320px,88vw)!important;
+    margin:0!important;
+    border-radius:0 28px 28px 0!important;
+    padding:18px 16px!important;
+    box-shadow:0 28px 70px rgba(31,33,51,.26)!important;
+  }
+  #app .sidebar:not(.mobile-open){display:none!important;}
+}
 </style>
 </head>
 <body>
@@ -5848,10 +6043,10 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
 
       <div class="nav-section-label">Workspace</div>
       <button type="button" class="nav-item active" id="nav-dash" data-title="Home" aria-label="Home" onclick="switchTab('dash')">
-        <i class="ti ti-home"></i><span class="nav-item-label">Home</span>
+        <i class="ti ti-layout-dashboard"></i><span class="nav-item-label">Home</span>
       </button>
       <button type="button" class="nav-item" id="nav-pipeline" data-title="Pipeline" aria-label="Pipeline" onclick="switchTab('pipeline')">
-        <i class="ti ti-route"></i><span class="nav-item-label">Pipeline</span>
+        <i class="ti ti-briefcase"></i><span class="nav-item-label">Pipeline</span>
       </button>
       <button type="button" class="nav-item" id="nav-candidates" data-title="Candidates" aria-label="Candidates" onclick="switchTab('candidates')">
         <i class="ti ti-users"></i><span class="nav-item-label">Candidates</span>
@@ -5859,13 +6054,13 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
 
       <div class="nav-section-label">Operations</div>
       <button type="button" class="nav-item" id="nav-finance" data-title="Finance" aria-label="Finance" onclick="switchTab('finance')">
-        <i class="ti ti-coin"></i><span class="nav-item-label">Finance</span>
+        <i class="ti ti-wallet"></i><span class="nav-item-label">Finance</span>
       </button>
       <button type="button" class="nav-item" id="nav-documents" data-title="Documents" aria-label="Documents" onclick="switchTab('documents')">
-        <i class="ti ti-file-description"></i><span class="nav-item-label">Documents</span>
+        <i class="ti ti-clipboard-text"></i><span class="nav-item-label">Documents</span>
       </button>
       <button type="button" class="nav-item" id="nav-reports" data-title="Reports" aria-label="Reports" onclick="switchTab('reports')">
-        <i class="ti ti-chart-bar"></i><span class="nav-item-label">Reports</span>
+        <i class="ti ti-chart-line"></i><span class="nav-item-label">Reports</span>
       </button>
       <button type="button" class="nav-item" id="nav-clients" data-title="Clients" aria-label="Clients" onclick="switchTab('clients')">
         <i class="ti ti-building"></i><span class="nav-item-label">Clients</span>

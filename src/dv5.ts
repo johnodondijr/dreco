@@ -73,9 +73,9 @@ export function injectDepsToD5(deps) {
     reports:'Reports', clients:'Clients', settings:'Settings'
   };
   const ICONS = {
-    dash:'ti-home', pipeline:'ti-route', candidates:'ti-users',
-    tasks:'ti-checkbox', finance:'ti-coin', documents:'ti-file-description',
-    reports:'ti-chart-bar', clients:'ti-building-skyscraper', settings:'ti-settings'
+    dash:'ti-layout-dashboard', pipeline:'ti-briefcase', candidates:'ti-users',
+    tasks:'ti-checkbox', finance:'ti-wallet', documents:'ti-clipboard-text',
+    reports:'ti-chart-line', clients:'ti-building-skyscraper', settings:'ti-settings'
   };
 
   // ── Global job-type tab (Pro / General) ──────────────────
@@ -3589,13 +3589,13 @@ export function injectDepsToD5(deps) {
   // ⌘K COMMAND PALETTE
   // ══════════════════════════════════════════════════════════
   const CMD_TABS = [
-    { label:'Dashboard',   icon:'ti-home',           tab:'dash' },
+    { label:'Dashboard',   icon:'ti-layout-dashboard', tab:'dash' },
     { label:'Candidates',  icon:'ti-users',          tab:'candidates' },
-    { label:'Pipeline',    icon:'ti-git-branch',     tab:'pipeline' },
-    { label:'Finance',     icon:'ti-coin',           tab:'finance' },
-    { label:'Documents',   icon:'ti-folder',         tab:'documents' },
+    { label:'Pipeline',    icon:'ti-briefcase',      tab:'pipeline' },
+    { label:'Finance',     icon:'ti-wallet',         tab:'finance' },
+    { label:'Documents',   icon:'ti-clipboard-text', tab:'documents' },
     { label:'Clients',     icon:'ti-building',       tab:'clients' },
-    { label:'Reports',     icon:'ti-chart-bar',      tab:'reports' },
+    { label:'Reports',     icon:'ti-chart-line',     tab:'reports' },
   ];
   let cmdSelectedIdx = 0;
 
