@@ -367,10 +367,49 @@ const LB_WORKFLOW_TEMPLATES = [
     stages: ['SUBMITTED','PROFILE SENT','SELECTED','VISA PROCESSING','PENDING TRAVEL','TRAVELLED'],
   },
 ];
+const PAYMENT_RULE_PRESETS = [
+  {
+    key: 'split-offer-visa',
+    name: '50% offer letter, 50% visa',
+    description: 'Destiny-style collection: first half after offer letter, balance after visa.',
+    rules: [
+      { stage: 'OFFER LETTER', percent: 50 },
+      { stage: 'VISA', percent: 100 },
+    ],
+  },
+  {
+    key: 'full-before-processing',
+    name: 'Full before processing',
+    description: 'The full commission is expected at the first active processing stage.',
+    rules: [
+      { stage: 'PENDING OFFER LETTER', percent: 100 },
+    ],
+  },
+  {
+    key: 'full-after-offer',
+    name: 'Full after offer letter',
+    description: 'The full commission becomes due once the offer letter is received.',
+    rules: [
+      { stage: 'OFFER LETTER', percent: 100 },
+    ],
+  },
+  {
+    key: 'full-after-visa',
+    name: 'Full after visa',
+    description: 'The full commission becomes due only after visa approval.',
+    rules: [
+      { stage: 'VISA', percent: 100 },
+    ],
+  },
+];
+function getDefaultPaymentRules(){
+  return { proPreset: 'split-offer-visa', proRules: PAYMENT_RULE_PRESETS[0].rules.map(r=>({...r})) };
+}
 let drecoExpenses = JSON.parse(safeLocalGet('dreco_expenses') || '[]');
 window.drecoExpenses = drecoExpenses;
 let drecoEvents   = JSON.parse(safeLocalGet('dreco_events') || '[]');
 let drecoAudit    = JSON.parse(safeLocalGet('dreco_audit') || '[]');
+let paymentRules  = getDefaultPaymentRules();
 let editingEventId = null;
 let pendingStageType = null;
 let pendingStageSelect = null;
@@ -507,6 +546,7 @@ function getDefaultLocalStore() {
     timelines: {},
     proStages: [...proStages],
     lbStages: [...lbStages],
+    paymentRules: getDefaultPaymentRules(),
   };
 }
 function toNumOrNull(v) {
@@ -514,6 +554,20 @@ function toNumOrNull(v) {
 }
 function cleanStage(value, fallback = '') {
   return String(value || fallback || '').trim().toUpperCase();
+}
+function normalizePaymentRules(value){
+  const defaults = getDefaultPaymentRules();
+  const source = value && typeof value === 'object' ? value : defaults;
+  const preset = PAYMENT_RULE_PRESETS.find(p=>p.key===source.proPreset) ? source.proPreset : defaults.proPreset;
+  const rules = Array.isArray(source.proRules) ? source.proRules : defaults.proRules;
+  const cleanRules = rules
+    .map(rule => ({ stage: canonicalProStage(rule.stage), percent: Math.max(0, Math.min(100, Number(rule.percent)||0)) }))
+    .filter(rule => rule.stage && rule.percent > 0)
+    .sort((a,b)=>a.percent-b.percent);
+  return { proPreset: preset, proRules: cleanRules.length ? cleanRules : defaults.proRules.map(r=>({...r})) };
+}
+function setPaymentRules(value){
+  paymentRules = normalizePaymentRules(value);
 }
 function canonicalProStage(stage) {
   const value = cleanStage(stage);
@@ -592,6 +646,26 @@ function proPaidAmount(row = {}) {
   // Use whichever total is larger: handles legacy paid1/paid2 records and new
   // running-total records where partial payments accumulate into paid directly.
   return Math.max(splitPaid, directPaid);
+}
+function proStageIndex(stage){
+  const configured = Array.isArray(proStages) && proStages.length ? proStages.map(canonicalProStage) : PRO_PIPELINE_STAGES;
+  const idx = configured.indexOf(canonicalProStage(stage));
+  return idx >= 0 ? idx : 0;
+}
+function proExpectedPaymentPercent(row = {}){
+  const currentIdx = proStageIndex(proPipelineStageValue(row));
+  return (paymentRules.proRules || []).reduce((max, rule) => {
+    return currentIdx >= proStageIndex(rule.stage) ? Math.max(max, Number(rule.percent)||0) : max;
+  }, 0);
+}
+function proPaymentStatus(row = {}){
+  const commission = Number(row.commission) || 0;
+  const paid = proPaidAmount(row);
+  const expectedPercent = proExpectedPaymentPercent(row);
+  const expected = Math.round(commission * expectedPercent / 100);
+  const dueNow = Math.max(expected - paid, 0);
+  const outstanding = Math.max(commission - paid, 0);
+  return { commission, paid, expectedPercent, expected, dueNow, outstanding };
 }
 function lbRefundPaidAmount(row = {}) {
   const legacyPaid = (Number(row.r1Amt || row.r1_amt) || 0) + (Number(row.r2Amt || row.r2_amt) || 0);
@@ -678,6 +752,7 @@ function loadLocalStore() {
     const parsed={ ...getDefaultLocalStore(), ...JSON.parse(raw) };
     parsed.pro=(parsed.pro||[]).map(normalizeProRecord);
     parsed.lb=(parsed.lb||[]).map(normalizeLBRecord);
+    parsed.paymentRules=normalizePaymentRules(parsed.paymentRules);
     return parsed;
   } catch (err) {
     console.warn('Local store could not be read, using seed data:', err);
@@ -692,6 +767,7 @@ function saveLocalStore() {
     timelines: allTimelines,
     proStages,
     lbStages,
+    paymentRules,
   }));
 }
 function nextLocalId(rows) {
@@ -1172,6 +1248,7 @@ async function loadAllData() {
     setAllTimelines(local.timelines);
     setProStages(local.proStages);
     setLbStages(local.lbStages);
+    setPaymentRules(local.paymentRules);
     rebuildStageSelects();
     restoreUserFilters();
     hideLoading();
@@ -1213,8 +1290,10 @@ async function loadAllData() {
     if (stagesRes.data) {
       const ps=stagesRes.data.find(r=>r.key===getCompanyScopedKey('pro_stages')) || stagesRes.data.find(r=>r.key==='pro_stages'&&companyId===DEFAULT_COMPANY.id);
       const ls=stagesRes.data.find(r=>r.key===getCompanyScopedKey('lb_stages')) || stagesRes.data.find(r=>r.key==='lb_stages'&&companyId===DEFAULT_COMPANY.id);
+      const pr=stagesRes.data.find(r=>r.key===getCompanyScopedKey('payment_rules')) || stagesRes.data.find(r=>r.key==='payment_rules'&&companyId===DEFAULT_COMPANY.id);
       if (ps) setProStages(ps.value);
       if (ls) setLbStages(ls.value);
+      if (pr) setPaymentRules(pr.value); else setPaymentRules(getDefaultPaymentRules());
     }
   } catch(err) {
     console.warn('Supabase error, falling back to local data:',err);
@@ -1227,6 +1306,7 @@ async function loadAllData() {
     setAllTimelines(local.timelines);
     setProStages(local.proStages);
     setLbStages(local.lbStages);
+    setPaymentRules(local.paymentRules);
     showToast('Cloud sync unavailable. Using local mode.','error');
   }
   rebuildStageSelects();
@@ -1395,6 +1475,27 @@ async function saveStages(){
   try{ const {error}=await db.from('app_settings').upsert([{key:getCompanyScopedKey('pro_stages'),value:proStages,company_id:getCompanyId()},{key:getCompanyScopedKey('lb_stages'),value:lbStages,company_id:getCompanyId()}],{onConflict:'key'}); if(error) throw error; setSaveStatus('saved'); }
   catch(e){fallBackToLocal(e);setSaveStatus('saved');}
 }
+async function savePaymentRules(){
+  setSaveStatus('saving');
+  if(!useCloud()){ saveLocalStore(); setSaveStatus('saved'); return; }
+  try{
+    const {error}=await db.from('app_settings').upsert({key:getCompanyScopedKey('payment_rules'),value:paymentRules,company_id:getCompanyId()},{onConflict:'key'});
+    if(error) throw error;
+    setSaveStatus('saved');
+  } catch(e){ fallBackToLocal(e); setSaveStatus('saved'); }
+}
+async function applyPaymentPreset(key){
+  const preset=PAYMENT_RULE_PRESETS.find(p=>p.key===key);
+  if(!preset) return;
+  setPaymentRules({ proPreset: preset.key, proRules: preset.rules });
+  await savePaymentRules();
+  auditAction('Settings','Payment rule applied',preset.name);
+  renderSettingsPage();
+  renderCommissions();
+  window.renderFinance?.();
+  window.renderDash?.();
+  showToast(`${preset.name} payment rule applied`,'success');
+}
 function getWorkflowTemplates(type){
   return type==='pro' ? PRO_WORKFLOW_TEMPLATES : LB_WORKFLOW_TEMPLATES;
 }
@@ -1474,6 +1575,30 @@ function renderWorkflowSettingsPanel(){
 // *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
 // TIMELINE
 // *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+function paymentRuleCards(){
+  const active = paymentRules.proPreset;
+  return PAYMENT_RULE_PRESETS.map(preset=>`
+    <div class="workflow-template-card payment-rule-card ${preset.key===active?'active':''}">
+      <strong>${escHTML(preset.name)}</strong>
+      <p>${escHTML(preset.description)}</p>
+      <div class="workflow-stage-preview">${preset.rules.map(rule=>`<span>${escHTML(rule.stage)}: ${Number(rule.percent)||0}%</span>`).join('')}</div>
+      <button onclick="applyPaymentPreset('${preset.key}')">${preset.key===active?'Active':'Apply'}</button>
+    </div>`).join('');
+}
+function renderPaymentSettingsPanel(){
+  const activePreset = PAYMENT_RULE_PRESETS.find(p=>p.key===paymentRules.proPreset);
+  return `
+    <div class="settings-page-card workflow-settings-card">
+      <h3>Payment rules</h3>
+      <p>Set when professional commission becomes due. Finance will show what should be collected now based on each candidate's pipeline stage.</p>
+      <div class="workflow-settings-head">
+        <strong>Current rule: ${escHTML(activePreset?.name || 'Custom')}</strong>
+        <span class="settings-pill">${(paymentRules.proRules||[]).map(rule=>`${Number(rule.percent)||0}% at ${rule.stage}`).join(' / ')}</span>
+      </div>
+      <div class="workflow-template-grid payment-rule-grid">${paymentRuleCards()}</div>
+    </div>`;
+}
+
 function addTimeline(type,id,action){
   const key=`${type}_${id}`;
   if(!allTimelines[key]) allTimelines[key]=[];
@@ -2595,16 +2720,18 @@ function renderTravel(){
 }
 function renderCommissions(){
   const billed=proDB.reduce((sum,row)=>sum+(Number(row.commission)||0),0), paid=proDB.reduce((sum,row)=>sum+proPaidAmount(row),0);
+  const dueNow=proDB.reduce((sum,row)=>sum+proPaymentStatus(row).dueNow,0);
   const rows=[...proDB].sort((a,b)=>latestCommissionTs(b)-latestCommissionTs(a) || proPaidAmount(b)-proPaidAmount(a));
-  renderMetricCards('commission-metrics',[{label:'Billed',value:moneyKES(billed),cls:'mc-ink',small:true},{label:'Received',value:moneyKES(paid),cls:'mc-green',small:true},{label:'Outstanding',value:moneyKES(billed-paid),cls:'mc-amber',small:true}]);
+  renderMetricCards('commission-metrics',[{label:'Billed',value:moneyKES(billed),cls:'mc-ink',small:true},{label:'Received',value:moneyKES(paid),cls:'mc-green',small:true},{label:'Due now',value:moneyKES(dueNow),cls:'mc-red',small:true},{label:'Outstanding',value:moneyKES(billed-paid),cls:'mc-amber',small:true}]);
   renderTransactionHistory('commission-history', getCommissionTransactions(), moneyKES);
   const tb=document.getElementById('commissions-tbody'); if(!tb) return;
   tb.innerHTML=rows.length?rows.map(r=>{
     const bal=proBalance(r);
+    const payment=proPaymentStatus(r);
     const actions=`<button class="action-link" onclick="event.stopPropagation();openAddPayment(${r.id})" title="Add payment">+ Pay</button>`
       +(bal>0?` <button class="action-link" style="color:var(--green,#22A06B)" onclick="event.stopPropagation();markCommissionCleared(${r.id})" title="Mark fully paid">✓ Cleared</button>`:'');
-    return `<tr onclick="editPro(${r.id})"><td class="name-cell">${escHTML(r.name)}</td><td>${escHTML(r.company||'-')}</td><td>${escHTML(r.position||'-')}</td><td>${moneyKES(r.commission)}</td><td>${moneyKES(proPaidAmount(r))}</td><td class="${bal>0?'balance-owed':''}">${moneyKES(bal)}</td><td>${escHTML(getLatestTimelineText('pro',r.id))}</td><td onclick="event.stopPropagation()" style="white-space:nowrap">${actions}</td></tr>`;
-  }).join(''):'<tr><td colspan="8"><div class="mini-empty">No commission records yet</div></td></tr>';
+    return `<tr onclick="editPro(${r.id})"><td class="name-cell">${escHTML(r.name)}</td><td>${escHTML(r.company||'-')}</td><td>${escHTML(r.position||'-')}</td><td>${moneyKES(r.commission)}</td><td>${moneyKES(payment.paid)}</td><td class="${payment.dueNow>0?'balance-owed':''}">${moneyKES(payment.dueNow)}</td><td class="${bal>0?'balance-owed':''}">${moneyKES(bal)}</td><td>${escHTML(getLatestTimelineText('pro',r.id))}</td><td onclick="event.stopPropagation()" style="white-space:nowrap">${actions}</td></tr>`;
+  }).join(''):'<tr><td colspan="9"><div class="mini-empty">No commission records yet</div></td></tr>';
 }
 function openAddPayment(id) {
   const r = proDB.find(x => x.id === id); if (!r) return;
@@ -2687,7 +2814,7 @@ function renderTeam(){
 function renderSettingsPage(){
   const el=document.getElementById('settings-page-content'); if(!el) return;
   const syncCopy=appStorageMode==='cloud'?'Supabase cloud sync is active. Local fallback remains available if a write fails.':'Local mode is active. Configure Supabase to enable shared office sync.';
-  el.innerHTML=`${renderWorkflowSettingsPanel()}<div class="settings-page-card"><h3>Workspace</h3><p>Manage company identity and data mode.</p><div class="setting-row"><span>Company</span><button onclick="openSettingsModal()">Edit</button></div><div class="setting-row"><span>Storage</span><span class="settings-pill">${appStorageMode==='cloud'?'Cloud':'Local'}</span></div></div><div class="settings-page-card"><h3>Pipeline</h3><p>Adjust stage lists from workflow templates, or add one-off custom stages from the candidate forms.</p><div class="setting-row"><span>Professional stages</span><span class="settings-pill">${proStages.length} stages</span></div><div class="setting-row"><span>General countries</span><button onclick="switchTab('lb')">Open</button></div></div><div class="settings-page-card"><h3>Team & permissions</h3><p>Add staff and review roles from the Team page.</p><div class="setting-row"><span>Team members</span><button onclick="switchTab('team')">Manage</button></div></div><div class="settings-page-card"><h3>Data</h3><p>Export backups or reset local filters.</p><div class="setting-row"><span>Backup</span><button onclick="downloadBackup()">Download</button></div><div class="setting-row"><span>Saved filters</span><button onclick="resetSavedFilters()">Reset</button></div></div><div class="settings-page-card"><h3>Sync health</h3><p>${syncCopy}</p><div class="setting-row"><span>Mode</span><span class="settings-pill">${appStorageMode==='cloud'?'Cloud first':'Local fallback'}</span></div><div class="setting-row"><span>Last sync issue</span><span>${escHTML(lastSyncError||'None')}</span></div></div><div class="settings-page-card"><h3>Audit log</h3><p>Recent system activity across candidates, finance, users, and documents.</p>${drecoAudit.slice(0,6).map(a=>`<div class="audit-row"><strong>${escHTML(a.action)}</strong><span>${escHTML(a.area)} - ${fmtDate(a.ts)}</span></div>`).join('')||'<div class="mini-empty">No audited actions yet</div>'}</div>`;
+  el.innerHTML=`${renderWorkflowSettingsPanel()}${renderPaymentSettingsPanel()}<div class="settings-page-card"><h3>Workspace</h3><p>Manage company identity and data mode.</p><div class="setting-row"><span>Company</span><button onclick="openSettingsModal()">Edit</button></div><div class="setting-row"><span>Storage</span><span class="settings-pill">${appStorageMode==='cloud'?'Cloud':'Local'}</span></div></div><div class="settings-page-card"><h3>Pipeline</h3><p>Adjust stage lists from workflow templates, or add one-off custom stages from the candidate forms.</p><div class="setting-row"><span>Professional stages</span><span class="settings-pill">${proStages.length} stages</span></div><div class="setting-row"><span>General countries</span><button onclick="switchTab('lb')">Open</button></div></div><div class="settings-page-card"><h3>Team & permissions</h3><p>Add staff and review roles from the Team page.</p><div class="setting-row"><span>Team members</span><button onclick="switchTab('team')">Manage</button></div></div><div class="settings-page-card"><h3>Data</h3><p>Export backups or reset local filters.</p><div class="setting-row"><span>Backup</span><button onclick="downloadBackup()">Download</button></div><div class="setting-row"><span>Saved filters</span><button onclick="resetSavedFilters()">Reset</button></div></div><div class="settings-page-card"><h3>Sync health</h3><p>${syncCopy}</p><div class="setting-row"><span>Mode</span><span class="settings-pill">${appStorageMode==='cloud'?'Cloud first':'Local fallback'}</span></div><div class="setting-row"><span>Last sync issue</span><span>${escHTML(lastSyncError||'None')}</span></div></div><div class="settings-page-card"><h3>Audit log</h3><p>Recent system activity across candidates, finance, users, and documents.</p>${drecoAudit.slice(0,6).map(a=>`<div class="audit-row"><strong>${escHTML(a.action)}</strong><span>${escHTML(a.area)} - ${fmtDate(a.ts)}</span></div>`).join('')||'<div class="mini-empty">No audited actions yet</div>'}</div>`;
 }
 function openQuickAddCandidate(){
   const modal=document.getElementById('quick-add-modal');
@@ -3784,7 +3911,7 @@ injectDepsToD5({
   proBalance, proStageValue, lbStageValue, proStageMatches,
   lbRefundPrincipal, lbRefundPaidAmount, lbOwnPassport, lbRefundReturned, lbRefundOutstanding,
   showToast, bindAccountMenuTriggers, fmtDate, getCompanyName, DEFAULT_COMPANY, db,
-  proPaidAmount, proPipelineStageValue, lbPipelineStageValue,
+  proPaidAmount, proPaymentStatus, proPipelineStageValue, lbPipelineStageValue,
   addTimeline, auditAction, saveLocalStore, getStorageLabel, getCompanyId,
 });
 
@@ -3818,7 +3945,7 @@ Object.assign(window, {
   resetAllFilters, resetSavedFilters, saveUserFilters,
   openQuickAddCandidate, submitQuickAddCandidate,
   openStageModal, submitQuickStage,
-  applyWorkflowTemplate, resetWorkflowStages,
+  applyWorkflowTemplate, resetWorkflowStages, applyPaymentPreset,
   // Settings & config
   openSettingsModal, openSettings, openHelp,
   addCustomStage, addSettingsCountry, removeSettingsCountry,

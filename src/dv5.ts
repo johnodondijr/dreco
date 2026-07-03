@@ -19,7 +19,7 @@ function activeWorkflowStages(type) {
 let proBalance, proStageValue, lbStageValue, proStageMatches;
 let lbRefundPrincipal, lbRefundPaidAmount, lbOwnPassport, lbRefundReturned, lbRefundOutstanding;
 let showToast, bindAccountMenuTriggers, fmtDate, getCompanyName;
-let proPaidAmount, proPipelineStageValue, lbPipelineStageValue;
+let proPaidAmount, proPaymentStatus, proPipelineStageValue, lbPipelineStageValue;
 let addTimeline, auditAction, saveLocalStore, getStorageLabel, getCompanyId;
 // Supabase client — named _supabaseDb to avoid shadowing local 'db' variables inside IIFE
 let _supabaseDb = null;
@@ -48,7 +48,7 @@ export function injectDepsToD5(deps) {
     proBalance, proStageValue, lbStageValue, proStageMatches,
     lbRefundPrincipal, lbRefundPaidAmount, lbOwnPassport, lbRefundReturned, lbRefundOutstanding,
     showToast, bindAccountMenuTriggers, fmtDate, getCompanyName,
-    proPaidAmount, proPipelineStageValue, lbPipelineStageValue,
+    proPaidAmount, proPaymentStatus, proPipelineStageValue, lbPipelineStageValue,
     addTimeline, auditAction, saveLocalStore, getStorageLabel, getCompanyId,
   } = deps);
   if (deps.DEFAULT_COMPANY) DEFAULT_COMPANY = deps.DEFAULT_COMPANY;
@@ -184,6 +184,9 @@ export function injectDepsToD5(deps) {
       const paid1=Number(r.paid1)||0;
       const paid2=Number(r.paid2)||0;
       const paid=proPaidAmount(r);
+      const paymentStatus = typeof proPaymentStatus === 'function'
+        ? proPaymentStatus(r)
+        : { expected: Number(r.commission)||0, dueNow: Math.max((Number(r.commission)||0)-paid,0), expectedPercent: 100 };
       return {
         type:'pro', id:r.id, name:r.name||'—', pp:r.pp||'', phone:r.phone||'',
         position:r.position||'—', company:r.company||'—', country:r.country||'—',
@@ -193,6 +196,9 @@ export function injectDepsToD5(deps) {
         commission:Number(r.commission)||0,
         paid1, paid2, paid,
         balance:proBalance(r),
+        expected:paymentStatus.expected||0,
+        dueNow:paymentStatus.dueNow||0,
+        expectedPercent:paymentStatus.expectedPercent||0,
         currency:'KES', raw:r,
         followUp:r.followUp||null,
       };
@@ -1192,6 +1198,7 @@ export function injectDepsToD5(deps) {
     const proTotal = proFin.reduce((s,r)=>s+r.commission,0);
     const proPaid  = proFin.reduce((s,r)=>s+r.paid,0);
     const proBal   = proFin.reduce((s,r)=>s+r.balance,0);
+    const proDueNow = proFin.reduce((s,r)=>s+(Number(r.dueNow)||0),0);
     const proRate  = proTotal ? Math.round(proPaid/proTotal*100) : 0;
     // LB stats (USD) — only post-travel candidates have real outstanding balances
     const lbFin = financePositionFilter ? lbRows.filter(r=>r.position===financePositionFilter) : lbRows;
@@ -1260,7 +1267,9 @@ export function injectDepsToD5(deps) {
       }
     });
     paymentEntries.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
-    const upcomingRows = dateRows.filter(r => r.balance > 0).sort((a,b) => b.balance - a.balance);
+    const upcomingRows = dateRows
+      .filter(r => r.type === 'pro' ? (Number(r.dueNow)||0) > 0 : r.balance > 0)
+      .sort((a,b) => (b.type === 'pro' ? Number(b.dueNow)||0 : b.balance) - (a.type === 'pro' ? Number(a.dueNow)||0 : a.balance));
     const searchQ = financeClientSearch.trim().toLowerCase();
     const filteredPayments = searchQ ? paymentEntries.filter(e => e.label.toLowerCase().includes(searchQ) || (e.r.company||'').toLowerCase().includes(searchQ)) : paymentEntries;
     const filteredUpcoming = searchQ ? upcomingRows.filter(r => (r.name||'').toLowerCase().includes(searchQ) || (r.company||'').toLowerCase().includes(searchQ)) : upcomingRows;
@@ -1290,7 +1299,8 @@ export function injectDepsToD5(deps) {
           ${isPro ? `
             ${statCard('ti-receipt',      money(proTotal), 'Total Commission',  `${proFin.length} candidates`,     '#E0E7FF','#4338CA','#fff')}
             ${statCard('ti-wallet',       money(proPaid),  'Collected KES',     'Revenue received',                '#DCFCE7','#16A34A','#fff')}
-            ${statCard('ti-alert-circle', money(proBal),   'Outstanding KES',   `${proFin.filter(r=>r.balance>0).length} open accounts`, '#FEE2E2','#DC2626','#fff')}
+            ${statCard('ti-alert-circle', money(proDueNow), 'Due Now KES',       `${proFin.filter(r=>r.dueNow>0).length} stage-triggered accounts`, '#FEE2E2','#DC2626','#fff')}
+            ${statCard('ti-file-invoice', money(proBal),   'Total Balance KES', `${proFin.filter(r=>r.balance>0).length} open accounts`, '#FEF9C3','#A16207','#fff')}
             ${statCard('ti-chart-pie',    proRate+'%',     'Collection Rate',   'Paid vs invoiced',                '#FEF9C3','#A16207','#fff')}
             ${statCard('ti-cash',         money(expTotal), 'Expenses',          `${expenses.length} entries · ${money(expMonthTotal)} this month`, '#FFF7ED','#C2410C','#fff', "window.setFinanceTab('expenses');window.renderFinancePage()")}
           ` : `
@@ -1398,7 +1408,8 @@ export function injectDepsToD5(deps) {
               : (filteredUpcoming.length ? filteredUpcoming.map(r => {
                   const d = new Date(r.submitted||r.created_at||'');
                   const dateStr = isNaN(d) ? '—' : d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-                  const amtStr = '-' + (r.type==='lb' ? moneyUSD(r.balance) : money(r.balance));
+                  const dueAmount = r.type==='pro' ? (Number(r.dueNow)||0) : r.balance;
+                  const amtStr = '-' + (r.type==='lb' ? moneyUSD(dueAmount) : money(dueAmount));
                   return `<div class="dv5-tx-row" onclick="${r.type==='pro'?`editPro(${r.id})`:`editLB(${r.id})`}">
                     <div class="dv5-tx-date">${dateStr}</div>
                     <div class="dv5-tx-info">
