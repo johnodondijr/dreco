@@ -1823,7 +1823,7 @@ function renderReports(){
     const v=String(s||'-').replace(/^PENDING\s+/,'').trim();
     return v.length>11?v.slice(0,10)+'...':v;
   };
-  const palette=['#372514','#171715','#386A52','#A16207','#8F3E3C','#5C4A38','#D8D3C5','#F4F4EC'];
+  const palette=['#1B1A2D','#242330','#49774E','#8A6A16','#A7444A','#A05B3F','#DDFB57','#F7F7F2'];
   const chartBars=(items,max,colorFn)=>items.map((item,i)=>{
     const pct=max?Math.max(8,Math.round((item.value/max)*100)):8;
     const color=colorFn?colorFn(item,i):palette[i%palette.length];
@@ -2422,7 +2422,7 @@ function renderDash(){
   const workspaceEl=document.getElementById('topbar-workspace-name');
   if(workspaceEl) workspaceEl.textContent=companyName;
 
-  const stageColors=['#372514','#171715','#386A52','#A16207','#5C4A38','#8F3E3C','#6F6A5E','#D8D3C5'];
+  const stageColors=['#1B1A2D','#242330','#49774E','#8A6A16','#A05B3F','#A7444A','#6F6A5E','#DDFB57'];
   const stageData=[
     {label:'Submitted', value:proDB.filter(r=>r.stage==='SUBMITTED').length, icon:'ti-clipboard-list', color:stageColors[0]},
     {label:'Interview', value:proDB.filter(r=>r.stage==='INTERVIEW').length, icon:'ti-users', color:stageColors[1]},
@@ -2516,9 +2516,9 @@ function renderDash(){
               <div class="ref-legend"><span><b></b>In Process</span><span><b></b>Travelled</span></div>
               <div class="ref-line-chart" onmousemove="updateTrendTooltip(event)" onmouseleave="resetTrendTooltip()">
                 <svg viewBox="0 0 620 210" preserveAspectRatio="none" aria-hidden="true">
-                  <defs><linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5A49F8" stop-opacity=".20"/><stop offset="1" stop-color="#5DD6C4" stop-opacity=".04"/></linearGradient></defs>
+                  <defs><linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DDFB57" stop-opacity=".20"/><stop offset="1" stop-color="#5DD6C4" stop-opacity=".04"/></linearGradient></defs>
                   <path d="M0 150 C80 120 95 90 160 86 C235 82 235 112 310 92 C390 70 420 88 480 92 C545 96 570 58 620 42 L620 210 L0 210 Z" fill="url(#trendFill)"/>
-                  <path d="M0 150 C80 120 95 90 160 86 C235 82 235 112 310 92 C390 70 420 88 480 92 C545 96 570 58 620 42" fill="none" stroke="#5A49F8" stroke-width="4" stroke-linecap="round"/>
+                  <path d="M0 150 C80 120 95 90 160 86 C235 82 235 112 310 92 C390 70 420 88 480 92 C545 96 570 58 620 42" fill="none" stroke="#DDFB57" stroke-width="4" stroke-linecap="round"/>
                   <path d="M0 178 C80 160 105 130 170 126 C245 122 255 132 320 116 C398 96 428 118 492 114 C552 110 580 88 620 78" fill="none" stroke="#5DD6C4" stroke-width="4" stroke-linecap="round"/>
                   <line x1="318" y1="52" x2="318" y2="210" stroke="#B9C2D7" stroke-dasharray="4 6"/>
                 </svg>
@@ -2952,7 +2952,7 @@ function openBalancePayment(type, id){
     `<strong>${escHTML(r.name)}</strong><br>`+
     `${type==='lb'?'To refund':'Commission'}: <b>${fmt(commission)}</b> &nbsp;|&nbsp; `+
     `Paid so far: <b>${fmt(paid)}</b><br>`+
-    `<span style="color:#8F3E3C;font-weight:600">Outstanding: ${fmt(balance)}</span>`;
+    `<span style="color:#A7444A;font-weight:600">Outstanding: ${fmt(balance)}</span>`;
   const amtEl=document.getElementById('bpm-amount'); if(amtEl){ amtEl.value=''; amtEl.placeholder=`e.g. ${Math.round(balance/2)}`; }
   const dateEl=document.getElementById('bpm-date'); if(dateEl) dateEl.value=new Date().toISOString().slice(0,10);
   const errEl=document.getElementById('bpm-error'); if(errEl){ errEl.textContent=''; errEl.style.display='none'; }

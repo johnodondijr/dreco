@@ -2648,6 +2648,82 @@ export function injectDepsToD5(deps) {
 .dv5-profile-avatar,
 .dv5-avatar { background:#E4E1D6!important; color:#171715!important; }
 
+/* Eduplex-inspired final palette */
+.dv5-page,
+.dv5-section {
+  --dreco-bg:#F7F7F2;
+  --dreco-shell:#FFFFFF;
+  --dreco-surface:#FFFFFF;
+  --dreco-soft:#F4F5EF;
+  --dreco-ink:#242330;
+  --dreco-ink-deep:#1B1A2D;
+  --dreco-muted:#7E7C8C;
+  --dreco-muted-2:#A9A7B4;
+  --dreco-line:#EBECE4;
+  --dreco-line-strong:#DDE1D2;
+  --dreco-accent:#DDFB57;
+  --dreco-accent-soft:#F2FFC4;
+  --dreco-success:#49774E;
+  --dreco-success-bg:#E9FBD9;
+  --dreco-warning:#8A6A16;
+  --dreco-warning-bg:#FFF3C6;
+  --dreco-danger:#A7444A;
+  --dreco-danger-bg:#FFE1E2;
+  --dreco-info:#675BB7;
+  --dreco-info-bg:#E8E4FF;
+}
+.dv5-card,
+.dv5-table-card,
+.dv5-kpi,
+.dv5-priority,
+.dv5-stat-card,
+.dv5-file-card,
+.dv5-col,
+.dv5-pipe-card,
+.dv5-profile-hero {
+  background:#FFFFFF!important;
+  border-color:var(--dreco-line)!important;
+  box-shadow:0 18px 44px rgba(27,26,45,.055)!important;
+}
+.dv5-card-pipeline {
+  background:linear-gradient(135deg,#FFFFFF 0%,#FAFFF2 58%,#F4F5EF 100%)!important;
+}
+.dv5-btn.primary,
+.dv5-view-tab.active,
+.dv5-preset-btn.active,
+.dv5-col-count,
+.dv5-step.active span {
+  background:var(--dreco-ink-deep)!important;
+  border-color:var(--dreco-ink-deep)!important;
+  color:var(--dreco-accent)!important;
+}
+.dv5-stat-icon,
+.dv5-kpi-icon.ink,
+.dv5-priority-icon {
+  background:var(--dreco-ink-deep)!important;
+  color:var(--dreco-accent)!important;
+}
+.dv5-badge.green,
+.dv5-pill.green { background:#E9FBD9!important; color:#49774E!important; }
+.dv5-badge.blue { background:#E5F0FF!important; color:#426CA8!important; }
+.dv5-badge.teal { background:#DDF8EE!important; color:#3E8170!important; }
+.dv5-badge.amber,
+.dv5-pill.amber { background:#FFF3C6!important; color:#8A6A16!important; }
+.dv5-badge.orange { background:#FFE7DA!important; color:#A05B3F!important; }
+.dv5-badge.red,
+.dv5-pill.red,
+.dv5-pill.danger { background:#FFE1E2!important; color:#A7444A!important; }
+.dv5-badge.gray,
+.dv5-badge.purple,
+.dv5-pill,
+.dv5-pill.gray { background:#E8E4FF!important; color:#675BB7!important; }
+.dv5-bar,
+.dv5-file-bar,
+.dv5-flow-fill { background:linear-gradient(180deg,#1B1A2D,#302F4A)!important; }
+.dv5-flow-fill.done { background:#49774E!important; }
+.dv5-profile-avatar,
+.dv5-avatar { background:#E8E4FF!important; color:#675BB7!important; }
+
 /* Rounded corner pass */
 .dv5-card,
 .dv5-table-card,
