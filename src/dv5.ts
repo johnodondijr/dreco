@@ -9,6 +9,11 @@ const PRO_PIPELINE_STAGES = ['PENDING OFFER LETTER','OFFER LETTER','MOL','VISA',
 const LB_PIPELINE_STAGES  = ['UNSELECTED','SELECTED','TRAVELLED'];
 // Fallback only — overridden by injectDepsToD5 in practice
 let DEFAULT_COMPANY = { name: 'Dreco', id: 'dreco-default', generalJobsCountries: ['UAE'] };
+function activeWorkflowStages(type) {
+  const stages = type === 'pro' ? proStages : lbStages;
+  const fallback = type === 'pro' ? PRO_PIPELINE_STAGES : LB_PIPELINE_STAGES;
+  return Array.isArray(stages) && stages.length ? stages : fallback;
+}
 
 // Functions injected by main.ts after all declarations are hoisted
 let proBalance, proStageValue, lbStageValue, proStageMatches;
@@ -815,8 +820,8 @@ export function injectDepsToD5(deps) {
     const matchSearch = r => !q || [r.name,r.position,r.company,r.pp,r.country,r.phone].join(' ').toLowerCase().includes(q);
     const proRows = pipelineRows.filter(r=>r.type==='pro'&&matchSearch(r)).map(r=>({...r, pipelineStage:proPipelineStageValue(r)}));
     const lbRows = pipelineRows.filter(r=>r.type==='lb'&&matchSearch(r)).map(r=>({...r, pipelineStage:lbPipelineStageValue(r)}));
-    const proStageList = PRO_PIPELINE_STAGES;
-    const lbStageList  = LB_PIPELINE_STAGES;
+    const proStageList = activeWorkflowStages('pro');
+    const lbStageList  = activeWorkflowStages('lb');
     const lbFiltered = lbCountryFilter ? lbRows.filter(r=>(r.country||'')=== lbCountryFilter) : lbRows;
     const stages = isPro ? proStageList : lbStageList;
     const totalShown = isPro ? proRows.length : lbFiltered.length;
@@ -958,7 +963,7 @@ export function injectDepsToD5(deps) {
     all = isPro
       ? allCandidateRows.filter(r=>r.type==='pro')
       : allCandidateRows.filter(r=>r.type==='lb' && (!lbCountryFilter || (r.country||'')===lbCountryFilter));
-    const stageOptions = isPro ? PRO_PIPELINE_STAGES : LB_PIPELINE_STAGES;
+    const stageOptions = isPro ? activeWorkflowStages('pro') : activeWorkflowStages('lb');
     const q = candidateSearch.toLowerCase();
     let list = all.filter(r => {
       if (candidateStageFilter && r.pipelineStage !== candidateStageFilter) return false;
@@ -969,7 +974,7 @@ export function injectDepsToD5(deps) {
     });
     const allSel = list.length > 0 && list.every(r => selectedCandidates.has(r.type+'_'+r.id));
     const someSel = selectedCandidates.size > 0;
-    const allStages = isPro ? PRO_PIPELINE_STAGES : LB_PIPELINE_STAGES;
+    const allStages = isPro ? activeWorkflowStages('pro') : activeWorkflowStages('lb');
     el.innerHTML = `
       <div class="dv5-page">
         <div class="dv5-page-head">
@@ -1094,7 +1099,7 @@ export function injectDepsToD5(deps) {
   }
 
   window.advanceStage = async function(type, id) {
-    const stages = type === 'pro' ? PRO_PIPELINE_STAGES : LB_PIPELINE_STAGES;
+    const stages = type === 'pro' ? activeWorkflowStages('pro') : activeWorkflowStages('lb');
     const curRow  = allRows().find(r => r.type===type && String(r.id)===String(id));
     const curStage = curRow?.pipelineStage || stages[0];
     const idx = stages.findIndex(s => s === curStage);
@@ -1103,7 +1108,7 @@ export function injectDepsToD5(deps) {
   };
 
   window.jumpToStage = async function(type, id, targetIdx) {
-    const stages = type === 'pro' ? PRO_PIPELINE_STAGES : LB_PIPELINE_STAGES;
+    const stages = type === 'pro' ? activeWorkflowStages('pro') : activeWorkflowStages('lb');
     const targetPipelineStage = stages[targetIdx];
     if (!targetPipelineStage) return;
     const curRow = allRows().find(r => r.type===type && String(r.id)===String(id));
@@ -1819,7 +1824,7 @@ export function injectDepsToD5(deps) {
     const stageLabels  = type==='pro'
       ? ['Pending OL','Offer Letter','MOL','Visa','Travel','Travelled']
       : ['Unselected','Selected','Travelled'];
-    const stageListRef = type==='pro' ? PRO_PIPELINE_STAGES : LB_PIPELINE_STAGES;
+    const stageListRef = type==='pro' ? activeWorkflowStages('pro') : activeWorkflowStages('lb');
     const stageIdx     = stageListRef.findIndex(s => s === r.pipelineStage);
 
     // Docs — from Document Upload IIFE (exposed on window)

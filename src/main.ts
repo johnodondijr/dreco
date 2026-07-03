@@ -333,6 +333,40 @@ function safeLocalRemove(key) {
 let currentCompany = { ...DEFAULT_COMPANY };
 const PRO_PIPELINE_STAGES = ['PENDING OFFER LETTER','OFFER LETTER','MOL','VISA','PENDING TRAVEL','TRAVELLED'];
 const LB_PIPELINE_STAGES = ['SUBMITTED','PROFILE SENT','SELECTED','PASSPORT APPLIED','VISA PROCESSING','TRAVELLED','REFUND PENDING','REFUND COMPLETE'];
+const PRO_WORKFLOW_TEMPLATES = [
+  {
+    key: 'professional-standard',
+    name: 'Professional standard',
+    description: 'Profile submission through offer letter, MOL, visa, ticket, and travel.',
+    stages: ['PENDING OFFER LETTER','OFFER LETTER','MOL','VISA','PENDING TRAVEL','TRAVELLED'],
+  },
+  {
+    key: 'professional-full',
+    name: 'Professional full recruitment',
+    description: 'Adds submitted, profile sent, interview, and selected before processing starts.',
+    stages: ['SUBMITTED','PROFILE SENT','INTERVIEW','SELECTED','PENDING OFFER LETTER','OFFER LETTER','MOL','VISA','PENDING TRAVEL','TRAVELLED'],
+  },
+];
+const LB_WORKFLOW_TEMPLATES = [
+  {
+    key: 'general-simple',
+    name: 'General simple',
+    description: 'Short pipeline for agencies that only need submitted, selected, and travelled.',
+    stages: ['SUBMITTED','PROFILE SENT','SELECTED','TRAVELLED'],
+  },
+  {
+    key: 'saudi-domestic',
+    name: 'Saudi domestic worker',
+    description: 'Training, good conduct, Musaned, contract, medical, VFS, embassy, ticket, travel.',
+    stages: ['SUBMITTED','TRAINING','TRANSCRIPT','GOOD CONDUCT','MUSANED UPLOAD','CONTRACT ISSUED','MEDICAL','VFS BIOMETRICS','EMBASSY','TICKET BOOKED','TRAVELLED'],
+  },
+  {
+    key: 'lebanon-domestic',
+    name: 'Lebanon domestic worker',
+    description: 'Lightweight flow where employer handles most processing after selection.',
+    stages: ['SUBMITTED','PROFILE SENT','SELECTED','VISA PROCESSING','PENDING TRAVEL','TRAVELLED'],
+  },
+];
 let drecoExpenses = JSON.parse(safeLocalGet('dreco_expenses') || '[]');
 window.drecoExpenses = drecoExpenses;
 let drecoEvents   = JSON.parse(safeLocalGet('dreco_events') || '[]');
@@ -511,31 +545,36 @@ function lbStageValue(row = {}) {
 function proPipelineStageValue(row = {}) {
   const raw = row.raw || row;
   const stage = canonicalProStage(raw.stage || row.stage);
-  const ORDER = {'PENDING OFFER LETTER':0,'OFFER LETTER':1,'MOL':2,'VISA':3,'PENDING TRAVEL':4,'TRAVELLED':5};
+  const configured = Array.isArray(proStages) && proStages.length ? proStages.map(canonicalProStage) : PRO_PIPELINE_STAGES;
+  const ORDER = Object.fromEntries(configured.map((s,i)=>[s,i]));
+  const pick = (candidates, fallback = configured[0] || 'PENDING OFFER LETTER') =>
+    candidates.find(s => configured.includes(s)) || fallback;
 
   // Stage derived from the DB stage field
-  let dbStage = 'PENDING OFFER LETTER';
-  if (stage === 'TRAVELLED') dbStage = 'TRAVELLED';
-  else if (PRO_PIPELINE_STAGES.includes(stage)) dbStage = stage;
+  let dbStage = configured[0] || 'PENDING OFFER LETTER';
+  if (configured.includes(stage)) dbStage = stage;
+  else if (stage === 'TRAVELLED' && configured.includes('TRAVELLED')) dbStage = 'TRAVELLED';
 
   // Minimum stage inferred from milestone date fields
-  let dateStage = 'PENDING OFFER LETTER';
-  if (toInput(raw.ol || row.ol)) dateStage = 'OFFER LETTER';
-  if (toInput(raw.mol || row.mol)) dateStage = 'MOL';
-  if (toInput(raw.visa || row.visa)) dateStage = 'VISA';
-  if (toInput(raw.travel || row.travel)) dateStage = stage === 'TRAVELLED' ? 'TRAVELLED' : 'PENDING TRAVEL';
+  let dateStage = configured[0] || 'PENDING OFFER LETTER';
+  if (toInput(raw.ol || row.ol)) dateStage = pick(['OFFER LETTER','PENDING OFFER LETTER'], dateStage);
+  if (toInput(raw.mol || row.mol)) dateStage = pick(['MOL','WORK PERMIT'], dateStage);
+  if (toInput(raw.visa || row.visa)) dateStage = pick(['VISA'], dateStage);
+  if (toInput(raw.travel || row.travel)) dateStage = stage === 'TRAVELLED' ? pick(['TRAVELLED'], dateStage) : pick(['PENDING TRAVEL','TICKET BOOKED'], dateStage);
 
   // Return whichever is further along the pipeline
-  return ORDER[dbStage] >= ORDER[dateStage] ? dbStage : dateStage;
+  return (ORDER[dbStage] ?? 0) >= (ORDER[dateStage] ?? 0) ? dbStage : dateStage;
 }
 function lbPipelineStageValue(row = {}) {
   const raw = row.raw || row;
   const stage = cleanStage(raw.stage || raw.travelStatus || raw.travel_status || row.stage);
+  const configured = Array.isArray(lbStages) && lbStages.length ? lbStages.map(cleanStage) : LB_PIPELINE_STAGES;
+  if (configured.includes(stage)) return stage;
   const SELECTED_STAGES = new Set(['SELECTED','PASSPORT APPLIED','VISA PROCESSING']);
   const TRAVELLED_STAGES = new Set(['TRAVELLED','REFUND PENDING','REFUND COMPLETE']);
   if (TRAVELLED_STAGES.has(stage)) return 'TRAVELLED';
   if (SELECTED_STAGES.has(stage)) return 'SELECTED';
-  return 'UNSELECTED';
+  return configured[0] || 'SUBMITTED';
 }
 function stageListWithData(configured = [], rows = [], getter = row => row.stage, normalizer = cleanStage) {
   const seen = new Set();
@@ -1355,6 +1394,81 @@ async function saveStages(){
   if(!useCloud()){ saveLocalStore(); setSaveStatus('saved'); return; }
   try{ const {error}=await db.from('app_settings').upsert([{key:getCompanyScopedKey('pro_stages'),value:proStages,company_id:getCompanyId()},{key:getCompanyScopedKey('lb_stages'),value:lbStages,company_id:getCompanyId()}],{onConflict:'key'}); if(error) throw error; setSaveStatus('saved'); }
   catch(e){fallBackToLocal(e);setSaveStatus('saved');}
+}
+function getWorkflowTemplates(type){
+  return type==='pro' ? PRO_WORKFLOW_TEMPLATES : LB_WORKFLOW_TEMPLATES;
+}
+function getWorkflowStages(type){
+  return type==='pro' ? proStages : lbStages;
+}
+function setWorkflowStages(type, stages){
+  const clean=[...new Set((stages||[]).map(s=>cleanStage(s)).filter(Boolean))];
+  if(!clean.length) return false;
+  if(type==='pro') setProStages(clean);
+  else setLbStages(clean);
+  rebuildStageSelects();
+  rebuildProPills();
+  return true;
+}
+async function applyWorkflowTemplate(type,key){
+  const tpl=getWorkflowTemplates(type).find(t=>t.key===key);
+  if(!tpl) return;
+  if(!confirm(`Apply "${tpl.name}" stages? Existing candidates stay in their current stage, but your workflow stage list will change.`)) return;
+  if(!setWorkflowStages(type,tpl.stages)) return;
+  await saveStages();
+  auditAction('Settings','Workflow template applied',tpl.name);
+  renderSettingsPage();
+  window.renderPipelinePage?.();
+  window.renderDash?.();
+  showToast(`${tpl.name} workflow applied`,'success');
+}
+async function resetWorkflowStages(type){
+  const stages=type==='pro' ? PRO_WORKFLOW_TEMPLATES[0].stages : LB_WORKFLOW_TEMPLATES[0].stages;
+  if(!confirm(`Reset ${type==='pro'?'Professional':'General Jobs'} workflow to the default stages?`)) return;
+  if(!setWorkflowStages(type,stages)) return;
+  await saveStages();
+  auditAction('Settings','Workflow stages reset',type==='pro'?'Professional':'General Jobs');
+  renderSettingsPage();
+  window.renderPipelinePage?.();
+  window.renderDash?.();
+  showToast('Workflow stages reset','success');
+}
+function workflowStageChips(type){
+  return getWorkflowStages(type).map((s,i)=>`<span class="settings-pill">${i+1}. ${escHTML(s)}</span>`).join('');
+}
+function workflowTemplateCards(type){
+  return getWorkflowTemplates(type).map(t=>`
+    <div class="workflow-template-card">
+      <strong>${escHTML(t.name)}</strong>
+      <p>${escHTML(t.description)}</p>
+      <div class="workflow-stage-preview">${t.stages.map(s=>`<span>${escHTML(s)}</span>`).join('')}</div>
+      <button onclick="applyWorkflowTemplate('${type}','${t.key}')">Apply</button>
+    </div>`).join('');
+}
+function renderWorkflowSettingsPanel(){
+  return `
+    <div class="settings-page-card workflow-settings-card">
+      <h3>Workflow templates</h3>
+      <p>Choose the operating process for each agency stream. These stages power forms, filters, and the pipeline board.</p>
+      <div class="workflow-settings-grid">
+        <section>
+          <div class="workflow-settings-head">
+            <strong>Professional Jobs</strong>
+            <button onclick="resetWorkflowStages('pro')">Reset</button>
+          </div>
+          <div class="workflow-current-stages">${workflowStageChips('pro')}</div>
+          <div class="workflow-template-grid">${workflowTemplateCards('pro')}</div>
+        </section>
+        <section>
+          <div class="workflow-settings-head">
+            <strong>General Jobs</strong>
+            <button onclick="resetWorkflowStages('lb')">Reset</button>
+          </div>
+          <div class="workflow-current-stages">${workflowStageChips('lb')}</div>
+          <div class="workflow-template-grid">${workflowTemplateCards('lb')}</div>
+        </section>
+      </div>
+    </div>`;
 }
 
 // *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
@@ -2573,7 +2687,7 @@ function renderTeam(){
 function renderSettingsPage(){
   const el=document.getElementById('settings-page-content'); if(!el) return;
   const syncCopy=appStorageMode==='cloud'?'Supabase cloud sync is active. Local fallback remains available if a write fails.':'Local mode is active. Configure Supabase to enable shared office sync.';
-  el.innerHTML=`<div class="settings-page-card"><h3>Workspace</h3><p>Manage company identity and data mode.</p><div class="setting-row"><span>Company</span><button onclick="openSettingsModal()">Edit</button></div><div class="setting-row"><span>Storage</span><span class="settings-pill">${appStorageMode==='cloud'?'Cloud':'Local'}</span></div></div><div class="settings-page-card"><h3>Pipeline</h3><p>Adjust workflow stages and country options from their respective screens.</p><div class="setting-row"><span>Professional stages</span><button onclick="switchTab('pro')">Open</button></div><div class="setting-row"><span>General countries</span><button onclick="switchTab('lb')">Open</button></div></div><div class="settings-page-card"><h3>Team & permissions</h3><p>Add staff and review roles from the Team page.</p><div class="setting-row"><span>Team members</span><button onclick="switchTab('team')">Manage</button></div></div><div class="settings-page-card"><h3>Data</h3><p>Export backups or reset local filters.</p><div class="setting-row"><span>Backup</span><button onclick="downloadBackup()">Download</button></div><div class="setting-row"><span>Saved filters</span><button onclick="resetSavedFilters()">Reset</button></div></div><div class="settings-page-card"><h3>Sync health</h3><p>${syncCopy}</p><div class="setting-row"><span>Mode</span><span class="settings-pill">${appStorageMode==='cloud'?'Cloud first':'Local fallback'}</span></div><div class="setting-row"><span>Last sync issue</span><span>${escHTML(lastSyncError||'None')}</span></div></div><div class="settings-page-card"><h3>Audit log</h3><p>Recent system activity across candidates, finance, users, and documents.</p>${drecoAudit.slice(0,6).map(a=>`<div class="audit-row"><strong>${escHTML(a.action)}</strong><span>${escHTML(a.area)} - ${fmtDate(a.ts)}</span></div>`).join('')||'<div class="mini-empty">No audited actions yet</div>'}</div>`;
+  el.innerHTML=`${renderWorkflowSettingsPanel()}<div class="settings-page-card"><h3>Workspace</h3><p>Manage company identity and data mode.</p><div class="setting-row"><span>Company</span><button onclick="openSettingsModal()">Edit</button></div><div class="setting-row"><span>Storage</span><span class="settings-pill">${appStorageMode==='cloud'?'Cloud':'Local'}</span></div></div><div class="settings-page-card"><h3>Pipeline</h3><p>Adjust stage lists from workflow templates, or add one-off custom stages from the candidate forms.</p><div class="setting-row"><span>Professional stages</span><span class="settings-pill">${proStages.length} stages</span></div><div class="setting-row"><span>General countries</span><button onclick="switchTab('lb')">Open</button></div></div><div class="settings-page-card"><h3>Team & permissions</h3><p>Add staff and review roles from the Team page.</p><div class="setting-row"><span>Team members</span><button onclick="switchTab('team')">Manage</button></div></div><div class="settings-page-card"><h3>Data</h3><p>Export backups or reset local filters.</p><div class="setting-row"><span>Backup</span><button onclick="downloadBackup()">Download</button></div><div class="setting-row"><span>Saved filters</span><button onclick="resetSavedFilters()">Reset</button></div></div><div class="settings-page-card"><h3>Sync health</h3><p>${syncCopy}</p><div class="setting-row"><span>Mode</span><span class="settings-pill">${appStorageMode==='cloud'?'Cloud first':'Local fallback'}</span></div><div class="setting-row"><span>Last sync issue</span><span>${escHTML(lastSyncError||'None')}</span></div></div><div class="settings-page-card"><h3>Audit log</h3><p>Recent system activity across candidates, finance, users, and documents.</p>${drecoAudit.slice(0,6).map(a=>`<div class="audit-row"><strong>${escHTML(a.action)}</strong><span>${escHTML(a.area)} - ${fmtDate(a.ts)}</span></div>`).join('')||'<div class="mini-empty">No audited actions yet</div>'}</div>`;
 }
 function openQuickAddCandidate(){
   const modal=document.getElementById('quick-add-modal');
@@ -3704,6 +3818,7 @@ Object.assign(window, {
   resetAllFilters, resetSavedFilters, saveUserFilters,
   openQuickAddCandidate, submitQuickAddCandidate,
   openStageModal, submitQuickStage,
+  applyWorkflowTemplate, resetWorkflowStages,
   // Settings & config
   openSettingsModal, openSettings, openHelp,
   addCustomStage, addSettingsCountry, removeSettingsCountry,
