@@ -737,17 +737,17 @@ export function injectDepsToD5(deps) {
 
         <div class="dv5-priority-grid">
           ${isPro ? `
-            ${priority('ti-file-description', awaitMol,  'Awaiting MOL',       'Submit to ministry',   '#FEF9C3','#A16207', "switchTab('pipeline')")}
-            ${priority('ti-id-badge-2',       visaReady, 'Visas Ready',        'Ready to travel',      '#DCFCE7','#16A34A', "switchTab('pipeline')")}
-            ${priority('ti-coin',             unpaidPro, 'Unpaid Commissions', 'Requires follow up',   '#FCE7F3','#9D174D', "switchTab('finance')")}
-            ${priority('ti-plane-departure',  tickets,   'Tickets Pending',    'Awaiting issue',       '#E0F2FE','#0369A1', "switchTab('pipeline')")}
-            ${priority('ti-users',            normRows.length, 'Total Candidates', 'In pipeline',      '#F4F4EC','#372514', "switchTab('candidates')")}
+            ${priority('ti-file-description', awaitMol,  'Awaiting MOL',       'Submit to ministry',   '#EDE8FB','#4825B8', "switchTab('pipeline')")}
+            ${priority('ti-id-badge-2',       visaReady, 'Visas Ready',        'Ready to travel',      '#EDEDFB','#252677', "switchTab('pipeline')")}
+            ${priority('ti-coin',             unpaidPro, 'Unpaid Commissions', 'Requires follow up',   '#FCECEA','#8B2010', "switchTab('finance')")}
+            ${priority('ti-plane-departure',  tickets,   'Tickets Pending',    'Awaiting issue',       '#EDFAA8','#5A7A10', "switchTab('pipeline')")}
+            ${priority('ti-users',            normRows.length, 'Total Candidates', 'In pipeline',      '#F4F4EC','#1A1C2E', "switchTab('candidates')")}
           ` : `
-            ${priority('ti-users',            lbSelected,       'Selected',          'Cumulative selected',  '#E0F2FE','#0369A1', "switchTab('pipeline')")}
-            ${priority('ti-passport',         lbPassportApplied,'Passport Applied',  'Applied by ppStatus',  '#DCFCE7','#16A34A', "switchTab('candidates')")}
-            ${priority('ti-credit-card',      lbRefundPending,  'Refund Pending',    'Refunds to process',   '#FEF9C3','#A16207', "switchTab('finance')")}
-            ${priority('ti-coin',             unpaidLB,         'Outstanding USD',   'Refunds not started',  '#FCE7F3','#9D174D', "switchTab('finance')")}
-            ${priority('ti-users',            normRows.length,  'Total Candidates',  'In pipeline',          '#F4F4EC','#372514', "switchTab('candidates')")}
+            ${priority('ti-users',            lbSelected,       'Selected',          'Cumulative selected',  '#EDEDFB','#252677', "switchTab('pipeline')")}
+            ${priority('ti-passport',         lbPassportApplied,'Passport Applied',  'Applied by ppStatus',  '#EDFAA8','#5A7A10', "switchTab('candidates')")}
+            ${priority('ti-credit-card',      lbRefundPending,  'Refund Pending',    'Refunds to process',   '#EDE8FB','#4825B8', "switchTab('finance')")}
+            ${priority('ti-coin',             unpaidLB,         'Outstanding USD',   'Refunds not started',  '#FCECEA','#8B2010', "switchTab('finance')")}
+            ${priority('ti-users',            normRows.length,  'Total Candidates',  'In pipeline',          '#F4F4EC','#1A1C2E', "switchTab('candidates')")}
           `}
         </div>
 
@@ -1329,17 +1329,17 @@ export function injectDepsToD5(deps) {
 
         <div class="dv5-stat-grid" style="margin-bottom:20px;margin-top:12px">
           ${isPro ? `
-            ${statCard('ti-receipt',      money(proTotal), 'Total Commission',  `${proFin.length} candidates`,     '#E0E7FF','#4338CA','#fff')}
+            ${statCard('ti-receipt',      money(proTotal), 'Total Commission',  `${proFin.length} candidates`,     '#EDE8FB','#4825B8','#fff')}
             ${statCard('ti-wallet',       money(proPaid),  'Collected KES',     'Revenue received',                '#DCFCE7','#16A34A','#fff')}
-            ${statCard('ti-alert-circle', money(proDueNow), 'Due Now KES',       `${proFin.filter(r=>r.dueNow>0).length} stage-triggered accounts`, '#FEE2E2','#DC2626','#fff')}
+            ${statCard('ti-alert-circle', money(proDueNow), 'Due Now KES',       `${proFin.filter(r=>r.dueNow>0).length} stage-triggered accounts`, '#FCECEA','#8B2010','#fff')}
             ${statCard('ti-file-invoice', money(proBal),   'Total Balance KES', `${proFin.filter(r=>r.balance>0).length} open accounts`, '#FEF9C3','#A16207','#fff')}
-            ${statCard('ti-chart-pie',    proRate+'%',     'Collection Rate',   'Paid vs invoiced',                '#FEF9C3','#A16207','#fff')}
-            ${statCard('ti-cash',         money(expTotal), 'Expenses',          `${expenses.length} entries · ${money(expMonthTotal)} this month`, '#FFF7ED','#C2410C','#fff', "window.setFinanceTab('expenses');window.renderFinancePage()")}
+            ${statCard('ti-chart-pie',    proRate+'%',     'Collection Rate',   'Paid vs invoiced',                '#EDFAA8','#5A7A10','#fff')}
+            ${statCard('ti-cash',         money(expTotal), 'Expenses',          `${expenses.length} entries · ${money(expMonthTotal)} this month`, '#EDEDFB','#252677','#fff', "window.setFinanceTab('expenses');window.renderFinancePage()")}
           ` : `
             ${statCard('ti-wallet',       moneyUSD(lbPaidAmt),   'Refunds Collected',  'Received so far',                                          '#DCFCE7','#16A34A','#fff')}
-            ${statCard('ti-alert-circle', moneyUSD(lbBal),      'Outstanding USD',    `${lbTravelled.filter(r=>r.balance>0).length} post-travel unpaid`, '#FEE2E2','#DC2626','#fff')}
-            ${statCard('ti-receipt',      moneyUSD(lbTotal),    'Collected + Owed',   `${lbTravelled.length} have travelled`,                            '#E0E7FF','#4338CA','#fff')}
-            ${statCard('ti-clock',        moneyUSD(lbExpected), 'Expected (Pipeline)',`${lbPipeline} pre-travel candidates`,                             '#FEF9C3','#A16207','#fff')}
+            ${statCard('ti-alert-circle', moneyUSD(lbBal),      'Outstanding USD',    `${lbTravelled.filter(r=>r.balance>0).length} post-travel unpaid`, '#FCECEA','#8B2010','#fff')}
+            ${statCard('ti-receipt',      moneyUSD(lbTotal),    'Collected + Owed',   `${lbTravelled.length} have travelled`,                            '#EDE8FB','#4825B8','#fff')}
+            ${statCard('ti-clock',        moneyUSD(lbExpected), 'Expected (Pipeline)',`${lbPipeline} pre-travel candidates`,                             '#EDEDFB','#252677','#fff')}
           `}
         </div>
 
@@ -2303,11 +2303,11 @@ export function injectDepsToD5(deps) {
 .dv5-kpi[onclick] { cursor:pointer; }
 .dv5-kpi:hover[onclick] { border-color:var(--dreco-line-strong,#D6D1C3); }
 .dv5-kpi-icon { width:36px; height:36px; border-radius:10px; background:#F3F3F3; display:flex; align-items:center; justify-content:center; font-size:16px; color:var(--dreco-ink,#1A1C2E); margin-bottom:10px; }
-.dv5-kpi-icon.purple { background:var(--dreco-soft,#F8F7EF); color:var(--dreco-ink,#1A1C2E); }
+.dv5-kpi-icon.purple { background:#EDE8FB; color:#4825B8; }
 .dv5-kpi-icon.green  { background:#ECFDF5; color:#059669; }
 .dv5-kpi-icon.amber  { background:#FFFBEB; color:#D97706; }
-.dv5-kpi-icon.blue   { background:#EFF6FF; color:#2563EB; }
-.dv5-kpi-icon.rose   { background:#FFF1F2; color:#E11D48; }
+.dv5-kpi-icon.blue   { background:#EDEDFB; color:#252677; }
+.dv5-kpi-icon.rose   { background:#FCECEA; color:#8B2010; }
 .dv5-kpi-icon.teal   { background:#F0FDFA; color:#0D9488; }
 .dv5-kpi-icon.ink    { background:var(--dreco-ink,#1A1C2E); color:#fff; }
 .dv5-kpi-val { font-size:22px; font-weight:562; color:var(--text,#18191B); line-height:1; margin-bottom:4px; }
@@ -2362,9 +2362,9 @@ export function injectDepsToD5(deps) {
 /* Badges */
 .dv5-badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
 .dv5-badge.green  { background:#D1FAE5; color:#065F46; }
-.dv5-badge.blue   { background:#DBEAFE; color:#1D4ED8; }
-.dv5-badge.teal   { background:#CCFBF1; color:#0F766E; }
-.dv5-badge.amber  { background:#FEF3C7; color:#92400E; }
+.dv5-badge.blue   { background:#EDEDFB; color:#252677; }
+.dv5-badge.teal   { background:#EDE8FB; color:#4825B8; }
+.dv5-badge.amber  { background:#FCECEA; color:#8B2010; }
 .dv5-badge.orange { background:#FFEDD5; color:#C2410C; }
 .dv5-badge.red    { background:#FEE2E2; color:#B91C1C; }
 .dv5-badge.gray   { background:#F3F4F6; color:#6B7280; }
@@ -2578,23 +2578,23 @@ export function injectDepsToD5(deps) {
 .dv5-profile-info h2,
 .dv5-detail-grid strong { color:var(--dreco-ink); font-weight:500; }
 .dv5-kpi-icon,
-.dv5-kpi-icon.purple,
-.dv5-kpi-icon.blue,
-.dv5-kpi-icon.teal,
 .dv5-file-card i,
 .dv5-activity-icon {
   background:var(--dreco-soft)!important;
   color:var(--dreco-ink)!important;
 }
+.dv5-kpi-icon.purple { background:#EDE8FB!important; color:#4825B8!important; }
+.dv5-kpi-icon.blue   { background:#EDEDFB!important; color:#252677!important; }
+.dv5-kpi-icon.teal   { background:#F0FDFA!important; color:#0D9488!important; }
+.dv5-kpi-icon.rose   { background:#FCECEA!important; color:#8B2010!important; }
+.dv5-kpi-icon.green  { background:#ECFDF5!important; color:#059669!important; }
+.dv5-kpi-icon.amber  { background:#FFFBEB!important; color:#D97706!important; }
 .dv5-stat-icon {
   background:var(--dreco-ink)!important;
   color:#fff!important;
 }
-.dv5-kpi-icon.green,
-.dv5-task-icon.med { background:var(--dreco-warning-bg)!important; color:var(--dreco-warning)!important; }
-.dv5-kpi-icon.amber { background:var(--dreco-warning-bg)!important; color:var(--dreco-warning)!important; }
-.dv5-kpi-icon.rose,
-.dv5-task-icon.high { background:var(--dreco-danger-bg)!important; color:var(--dreco-danger)!important; }
+.dv5-task-icon.high { background:#FCECEA!important; color:#8B2010!important; }
+.dv5-task-icon.med  { background:#EDEDFB!important; color:#252677!important; }
 .dv5-stat-card {
   background:linear-gradient(180deg,#FFFFFF 0%,#FAF9F2 100%)!important;
   border:1px solid var(--dreco-line)!important;
