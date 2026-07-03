@@ -6005,6 +6005,22 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
 .dv5-file-icon-box{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .dv5-file-card .dv5-file-icon-box i{background:transparent!important;color:inherit!important;}
 /* ══════════════════════════════════════════════════════
+   LOGIN PAGE: remove circle decorations, palette preview
+══════════════════════════════════════════════════════ */
+/* Remove circle illustrations from the dark panel */
+.lp-bg-circle{display:none!important;}
+.lp-media::before,.lp-media::after{content:none!important;display:none!important;}
+/* Dashboard preview: apply purppinkgreen palette to KPI cards */
+#login-screen .lp-dash-priority-card i{background:#EDE8FB!important;color:#5347CE!important;}
+#login-screen .lp-dash-priority-card.blue i{background:#EDFAA8!important;color:#4A5E10!important;}
+#login-screen .lp-dash-priority-card.green i{background:#FCECEA!important;color:#8B2010!important;}
+#login-screen .lp-dash-priority-card.purple i{background:#EDE8FB!important;color:#4825B8!important;}
+/* Pipeline flow bars: lime */
+#login-screen .lp-dash-flow i{background:#C9F035!important;}
+/* Activity/reminder row icons: palette */
+#login-screen .lp-dash-row>i{background:#EDFAA8!important;color:#4A5E10!important;}
+#login-screen .lp-dash-task>i{background:#EDE8FB!important;color:#5347CE!important;}
+/* ══════════════════════════════════════════════════════
    MOBILE PREMIUM LAYOUT
    Overrides the non-responsive padding:24px rule (line ~3049)
    and polishes the entire small-screen experience.
@@ -6014,10 +6030,10 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
   html,body{overflow-x:hidden!important;max-width:100vw!important;}
   #app{padding:0!important;min-height:100dvh!important;}
   .app-layout{border-radius:0!important;border:none!important;margin:0!important;width:100%!important;max-width:100%!important;}
-  /* --- fix left/right whitespace (overrides the bare padding:24px rule) --- */
+  /* --- fix left/right whitespace; no bottom nav clearance needed --- */
   .content-area>div,
   .dv5-page{
-    padding:14px 14px calc(env(safe-area-inset-bottom,0px) + 76px) 14px!important;
+    padding:10px 10px 16px 10px!important;
     overflow-x:hidden!important;
     min-width:0!important;
   }
@@ -6033,38 +6049,14 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
     backdrop-filter:blur(16px)!important;
     -webkit-backdrop-filter:blur(16px)!important;
     border-radius:0!important;
-    padding:0 14px!important;
+    padding:0 10px!important;
   }
-  /* --- premium bottom nav --- */
-  .bottom-nav{
-    display:flex!important;
-    position:fixed!important;
-    bottom:0!important;
-    left:0!important;
-    right:0!important;
-    z-index:300!important;
-    background:rgba(26,28,46,0.97)!important;
-    backdrop-filter:blur(20px)!important;
-    -webkit-backdrop-filter:blur(20px)!important;
-    border-top:1px solid rgba(255,255,255,0.09)!important;
-    padding-bottom:env(safe-area-inset-bottom,0px)!important;
-    padding-top:4px!important;
-    height:auto!important;
-  }
-  .bottom-nav-item{
-    color:rgba(255,255,255,0.45)!important;
-    font-size:10px!important;
-    gap:3px!important;
-    padding:6px 0!important;
-    flex:1!important;
-  }
-  .bottom-nav-item i{font-size:20px!important;color:rgba(255,255,255,0.45)!important;}
-  .bottom-nav-item.active,
-  .bottom-nav-item.active i{color:#C9F035!important;background:transparent!important;}
+  /* --- HIDE bottom nav on mobile --- */
+  .bottom-nav{display:none!important;}
   /* --- cards: tighter padding --- */
-  .dv5-card{padding:12px!important;margin-bottom:10px!important;border-radius:12px!important;}
-  .dv5-card-head{margin-bottom:10px!important;}
-  .dv5-kpi{padding:11px 12px!important;border-radius:12px!important;}
+  .dv5-card{padding:10px!important;margin-bottom:8px!important;border-radius:12px!important;}
+  .dv5-card-head{margin-bottom:8px!important;}
+  .dv5-kpi{padding:10px!important;border-radius:12px!important;}
   /* --- grid gaps --- */
   .dv5-kpi-grid,.dv5-file-grid{gap:8px!important;}
   .dv5-vitals{gap:8px!important;}
@@ -6075,10 +6067,34 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
   .dv5-step-label{font-size:9px!important;}
   /* --- hide search max-width constraint on mobile --- */
   .topbar-search{max-width:none!important;flex:1 1 auto!important;}
+  /* --- LOGIN: full-screen, not a popup card --- */
+  #login-screen{padding:0!important;align-items:flex-start!important;}
+  .lp-window{
+    height:100dvh!important;
+    min-height:100dvh!important;
+    max-height:none!important;
+    border-radius:0!important;
+    border:none!important;
+    box-shadow:none!important;
+    grid-template-columns:1fr!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  .lp-media{display:none!important;}
+  .lp-form-panel{
+    flex:1!important;
+    padding:env(safe-area-inset-top,32px) 20px 32px!important;
+    min-height:100dvh!important;
+    justify-content:center!important;
+  }
+  .lp-content-area{margin-top:24px!important;max-width:none!important;}
+  .lp-header h1{font-size:28px!important;}
+  .lp-header p{font-size:15px!important;}
 }
 @media(max-width:420px){
-  .content-area>div,.dv5-page{padding:10px 10px calc(env(safe-area-inset-bottom,0px) + 76px) 10px!important;}
-  .dv5-card{padding:10px!important;}
+  .content-area>div,.dv5-page{padding:8px 8px 14px 8px!important;}
+  .dv5-card{padding:8px!important;}
+  .lp-form-panel{padding:28px 16px 28px!important;}
 }
 </style>
 </head>
