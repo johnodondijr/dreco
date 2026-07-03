@@ -314,7 +314,7 @@ export function injectDepsToD5(deps) {
       if (s === 'VISA PROCESSING') return 'Follow visa';
       if (s === 'REFUND PENDING') return 'Complete refund';
     }
-    if (s === 'TRAVELLED')    return 'Working Abroad';
+    if (s === 'TRAVELLED')    return 'Complete';
     if (s === 'REFUND COMPLETE') return 'Closed';
     return '—';
   }
@@ -2022,20 +2022,20 @@ export function injectDepsToD5(deps) {
           ${badge(r.pipelineStage)}
           <div class="dv5-vital-hint" style="color:#9A978C">${h(nextAction(r))}</div>
         </div>
-        <div class="dv5-vital-card" style="background:#F5ECCC;border-color:#E2D49A">
-          <div class="dv5-vital-label" style="color:#7A5C1E">${type==='pro'?'Commission':'To Refund'}</div>
-          <div class="dv5-vital-value" style="color:#5C420E">${fmt2(r.commission)}</div>
-          <div class="dv5-vital-hint" style="color:#9A7A30">Total agreed</div>
+        <div class="dv5-vital-card" style="background:#EDE8FB;border-color:#C8BAEF">
+          <div class="dv5-vital-label" style="color:#5C3FAD">${type==='pro'?'Commission':'To Refund'}</div>
+          <div class="dv5-vital-value" style="color:#3A2580">${fmt2(r.commission)}</div>
+          <div class="dv5-vital-hint" style="color:#7B65CC">Total agreed</div>
         </div>
-        <div class="dv5-vital-card" style="background:#E7F0E9;border-color:#BDD8C5">
-          <div class="dv5-vital-label" style="color:#386A52">Paid</div>
-          <div class="dv5-vital-value" style="color:#2A5240">${fmt2(r.paid)}</div>
-          <div class="dv5-vital-hint" style="color:#528C6A">${r.commission?Math.round(r.paid/r.commission*100)+'% collected':'No commission set'}</div>
+        <div class="dv5-vital-card" style="background:#EDFAA8;border-color:#CEED6A">
+          <div class="dv5-vital-label" style="color:#4A5E10">Paid</div>
+          <div class="dv5-vital-value" style="color:#2D3C08">${fmt2(r.paid)}</div>
+          <div class="dv5-vital-hint" style="color:#6A8018">${r.commission?Math.round(r.paid/r.commission*100)+'% collected':'No commission set'}</div>
         </div>
-        <div class="dv5-vital-card${r.balance>0?' dv5-vital-card--clickable':''}" style="background:${r.balance>0?'#F3E5E2':'#E7F0E9'};border-color:${r.balance>0?'#DFBAB6':'#BDD8C5'}${r.balance>0?';cursor:pointer':''}" ${r.balance>0?`onclick="openBalancePayment('${type}',${r.id})"`:''} title="${r.balance>0?'Click to record a payment':''}">
-          <div class="dv5-vital-label" style="color:${r.balance>0?'#8F3E3C':'#386A52'}">Balance${r.balance>0?' <span style="font-size:10px;opacity:.7">· tap to pay</span>':''}</div>
-          <div class="dv5-vital-value" style="color:${r.balance>0?'#6E2C2A':'#2A5240'}">${fmt2(r.balance)}</div>
-          <div class="dv5-vital-hint" style="color:${r.balance>0?'#B05250':'#528C6A'}">${r.balance>0?'Outstanding':'Fully settled'}</div>
+        <div class="dv5-vital-card${r.balance>0?' dv5-vital-card--clickable':''}" style="background:${r.balance>0?'#FCECEA':'#EDFAA8'};border-color:${r.balance>0?'#F0BCBA':'#CEED6A'}${r.balance>0?';cursor:pointer':''}" ${r.balance>0?`onclick="openBalancePayment('${type}',${r.id})"`:''} title="${r.balance>0?'Click to record a payment':''}">
+          <div class="dv5-vital-label" style="color:${r.balance>0?'#8B2010':'#4A5E10'}">Balance${r.balance>0?' <span style="font-size:10px;opacity:.7">· tap to pay</span>':''}</div>
+          <div class="dv5-vital-value" style="color:${r.balance>0?'#6B180E':'#2D3C08'}">${fmt2(r.balance)}</div>
+          <div class="dv5-vital-hint" style="color:${r.balance>0?'#B05250':'#6A8018'}">${r.balance>0?'Outstanding':'Fully settled'}</div>
         </div>
       </div>
 
@@ -2061,12 +2061,12 @@ export function injectDepsToD5(deps) {
             <span class="dv5-card-sub">${pct}%</span>
           </div>
           <div style="height:4px;background:#f0f0f0;border-radius:2px;margin:0 0 12px">
-            <div style="height:100%;width:${pct}%;background:${pct===100?'#22A06B':'var(--dreco-ink,#1A1C2E)'};border-radius:2px;transition:width .4s"></div>
+            <div style="height:100%;width:${pct}%;background:${pct===100?'#C9F035':'#AE9CF0'};border-radius:2px;transition:width .4s"></div>
           </div>
           ${cl.map(x => {
             if (x.done) return `
               <div class="dv5-check-row done" style="opacity:.7">
-                <i class="ti ti-circle-check-filled" style="color:#22A06B;font-size:18px;flex-shrink:0"></i>
+                <i class="ti ti-circle-check-filled" style="color:#C9F035;font-size:18px;flex-shrink:0"></i>
                 <span style="text-decoration:line-through;flex:1">${h(x.label)}</span>
                 ${x.action && x.action!=='edit' ? `<button onclick="window.checklistUntick('${type}',${JSON.stringify(id)},'${js(x.label)}')" style="font-size:11px;padding:2px 7px;border-radius:4px;border:1px solid #e4e4e7;background:transparent;color:#9ca3af;cursor:pointer;flex-shrink:0">Undo</button>` : ''}
               </div>`;
@@ -2089,17 +2089,45 @@ export function injectDepsToD5(deps) {
         </div>
 
         <div class="dv5-card">
-          <div class="dv5-card-head"><span class="dv5-card-title">Details</span></div>
-          <div class="dv5-detail-grid">
-            <span>${type==='pro'?'Submitted':'Doc Date'}</span><strong>${h(fmt(r.submitted||r.travelDate))}</strong>
-            <span>Stage</span><strong>${h(r.stage)}</strong>
-            <span>${type==='pro'?'Company':'Country'}</span><strong>${h(r.company||r.country||'—')}</strong>
-            ${type==='pro' && r.raw?.ol      ? `<span>Offer Letter</span><strong>${h(fmt(r.raw.ol))}</strong>` : ''}
-            ${type==='pro' && r.raw?.medical ? `<span>Medical</span><strong>${h(fmt(r.raw.medical))}</strong>` : ''}
-            ${type==='pro' && r.raw?.mol     ? `<span>MOL Date</span><strong>${h(fmt(r.raw.mol))}</strong>` : ''}
-            ${type==='pro' && r.raw?.visa    ? `<span>Visa Date</span><strong>${h(fmt(r.raw.visa))}</strong>` : ''}
-            ${r.travel ? `<span>Travel Date</span><strong>${h(fmt(r.travel))}</strong>` : ''}
+          <div class="dv5-card-head">
+            <span class="dv5-card-title">Journey Timeline</span>
+            <span class="dv5-card-sub">${h(r.company||r.country||'—')}</span>
           </div>
+          ${(() => {
+            const milestones = [
+              { label: 'Submitted',    date: r.submitted || r.raw?.submitted_date || r.raw?.submitted },
+              { label: 'Offer Letter', date: r.raw?.ol || r.ol },
+              { label: 'Medical',      date: r.raw?.medical },
+              { label: 'MOL',          date: r.raw?.mol },
+              { label: 'Visa',         date: r.raw?.visa },
+              { label: 'Travel',       date: r.travel || r.raw?.travel },
+            ].filter(m => type==='pro' || m.label==='Submitted' || m.label==='Travel');
+            const lastDoneIdx = milestones.reduce((acc,m,i)=>m.date?i:acc, -1);
+            return `<div style="display:flex;flex-direction:column;gap:0;padding:4px 0">
+              ${milestones.map((m,i) => {
+                const isDone = !!m.date;
+                const isActive = !isDone && i === lastDoneIdx+1;
+                const dot = isDone
+                  ? `<div style="width:28px;height:28px;border-radius:50%;background:#C9F035;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1"><i class="ti ti-check" style="font-size:14px;color:#1A1C2E"></i></div>`
+                  : isActive
+                  ? `<div style="width:28px;height:28px;border-radius:50%;background:#AE9CF0;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1"><i class="ti ti-clock" style="font-size:13px;color:#1A1C2E"></i></div>`
+                  : `<div style="width:28px;height:28px;border-radius:50%;background:#F0EFF0;border:2px solid #E0DDE8;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1"><i class="ti ti-minus" style="font-size:12px;color:#B0AAC0"></i></div>`;
+                const connector = i < milestones.length-1
+                  ? `<div style="width:2px;height:22px;margin-left:13px;background:${isDone?'#C9F035':'#E5E3F0'}"></div>`
+                  : '';
+                return `<div style="display:flex;flex-direction:column">
+                  <div style="display:flex;align-items:center;gap:12px">
+                    ${dot}
+                    <div style="flex:1;min-width:0">
+                      <div style="font-size:12px;font-weight:500;color:${isDone?'#1A1C2E':isActive?'#5A3EAD':'#9A96B0'}">${h(m.label)}</div>
+                      <div style="font-size:11px;color:${isDone?'#6A8018':isActive?'#7B65CC':'#B0AAC0'};margin-top:1px">${isDone?h(fmt(m.date)):isActive?'In Progress':'Pending'}</div>
+                    </div>
+                  </div>
+                  ${connector}
+                </div>`;
+              }).join('')}
+            </div>`;
+          })()}
         </div>
       </div>
 
