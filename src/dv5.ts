@@ -2673,6 +2673,12 @@ export function injectDepsToD5(deps) {
   --dreco-danger-bg:#FFE1E2;
   --dreco-info:#5347CE;
   --dreco-info-bg:#E9DDFB;
+  --dreco-card-pink:#FFC2C6;
+  --dreco-card-lavender:#D9D8F2;
+  --dreco-card-lime:#F3FFC6;
+  --dreco-card-pink-line:#F0AEB5;
+  --dreco-card-lavender-line:#C8C6E8;
+  --dreco-card-lime-line:#E3F3A5;
 }
 .dv5-card,
 .dv5-table-card,
@@ -2689,6 +2695,34 @@ export function injectDepsToD5(deps) {
 }
 .dv5-card-pipeline {
   background:linear-gradient(135deg,#FFFFFF 0%,#FAFAF8 58%,#F5F4F1 100%)!important;
+}
+.dv5-kpi:nth-child(3n+1),
+.dv5-priority:nth-child(3n+1),
+.dv5-stat-card:nth-child(3n+1),
+.dv5-file-card:nth-child(3n+1) {
+  background:var(--dreco-card-pink)!important;
+  border-color:var(--dreco-card-pink-line)!important;
+}
+.dv5-kpi:nth-child(3n+2),
+.dv5-priority:nth-child(3n+2),
+.dv5-stat-card:nth-child(3n+2),
+.dv5-file-card:nth-child(3n+2) {
+  background:var(--dreco-card-lavender)!important;
+  border-color:var(--dreco-card-lavender-line)!important;
+}
+.dv5-kpi:nth-child(3n),
+.dv5-priority:nth-child(3n),
+.dv5-stat-card:nth-child(3n),
+.dv5-file-card:nth-child(3n) {
+  background:var(--dreco-card-lime)!important;
+  border-color:var(--dreco-card-lime-line)!important;
+}
+.dv5-kpi-label,
+.dv5-kpi-val,
+.dv5-priority span,
+.dv5-priority strong,
+.dv5-stat-card * {
+  color:var(--dreco-ink)!important;
 }
 .dv5-btn.primary {
   background:var(--dreco-brand)!important;
