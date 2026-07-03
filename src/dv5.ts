@@ -415,28 +415,35 @@ export function injectDepsToD5(deps) {
     </div>`;
   }
 
-  function buildLineChart(rows) {
-    const now = new Date();
-    const dayMs = 86400000;
-    const thisWeek = Array(7).fill(0);
-    const lastWeek = Array(7).fill(0);
+  function buildLineChart(rows: any[], selectedMonth: string) {
+    const [selYear, selMonthNum] = selectedMonth.split('-').map(Number);
+    const selMonthIdx = selMonthNum - 1; // 0-indexed
+    const prevYear = selMonthNum === 1 ? selYear - 1 : selYear;
+    const prevMonthIdx = selMonthNum === 1 ? 11 : selMonthIdx - 1;
+    const daysInSel = new Date(selYear, selMonthIdx + 1, 0).getDate();
+    const daysInPrev = new Date(prevYear, prevMonthIdx + 1, 0).getDate();
+    const selWeeks = [0, 0, 0, 0];
+    const prevWeeks = [0, 0, 0, 0];
     rows.forEach(r => {
       const ds = r.raw?.intake || r.raw?.created_at || r.raw?.createdAt;
       if (!ds) return;
       const d = new Date(ds); if (isNaN(d as any)) return;
-      const daysAgo = Math.floor((now.getTime() - d.getTime()) / dayMs);
-      if (daysAgo >= 0 && daysAgo < 7)   thisWeek[6 - daysAgo]++;
-      else if (daysAgo >= 7 && daysAgo < 14) lastWeek[6 - (daysAgo - 7)]++;
+      const y = d.getFullYear(), m = d.getMonth(), day = d.getDate();
+      const wk = day <= 7 ? 0 : day <= 14 ? 1 : day <= 21 ? 2 : 3;
+      if (y === selYear && m === selMonthIdx) selWeeks[wk]++;
+      else if (y === prevYear && m === prevMonthIdx) prevWeeks[wk]++;
     });
     const inProcess = rows.filter(r=>String(r.stage||'').toUpperCase()!=='TRAVELLED').length;
     const travelledCount = rows.filter(r=>String(r.stage||'').toUpperCase()==='TRAVELLED').length;
-    const thisTotal = thisWeek.reduce((s,v)=>s+v,0);
-    const lastTotal = lastWeek.reduce((s,v)=>s+v,0);
-    const diff = thisTotal - lastTotal;
-    const diffLabel = diff===0?'same as last week':diff>0?`+${diff} vs last week`:`${diff} vs last week`;
-    const maxVal = Math.max(...thisWeek, ...lastWeek, 1);
+    const selTotal = selWeeks.reduce((s,v)=>s+v,0);
+    const prevTotal = prevWeeks.reduce((s,v)=>s+v,0);
+    const diff = selTotal - prevTotal;
+    const selMonthName = new Date(selYear, selMonthIdx, 1).toLocaleString('default',{month:'short'});
+    const prevMonthName = new Date(prevYear, prevMonthIdx, 1).toLocaleString('default',{month:'short'});
+    const diffLabel = diff===0?`same as ${prevMonthName}`:diff>0?`+${diff} vs ${prevMonthName}`:`${diff} vs ${prevMonthName}`;
+    const maxVal = Math.max(...selWeeks, ...prevWeeks, 1);
     const W=680, H=200, PX=24, PY=16;
-    const xStep = (W - PX*2) / 6;
+    const xStep = (W - PX*2) / 3;
     const pts = (data: number[]) => data.map((v,i)=>[PX+i*xStep, H-PY-(v/maxVal)*(H-PY*2)] as [number,number]);
     const curve = (data: number[]) => {
       const p = pts(data);
@@ -444,22 +451,30 @@ export function injectDepsToD5(deps) {
       for (let i=0;i<p.length-1;i++) { const cx=(p[i][0]+p[i+1][0])/2; d+=` C${cx.toFixed(1)},${p[i][1].toFixed(1)} ${cx.toFixed(1)},${p[i+1][1].toFixed(1)} ${p[i+1][0].toFixed(1)},${p[i+1][1].toFixed(1)}`; }
       return d;
     };
-    const twPath = curve(thisWeek), lwPath = curve(lastWeek);
-    const twPts = pts(thisWeek), lwPts = pts(lastWeek);
-    const areaD = `${twPath} L${(PX+6*xStep).toFixed(1)},${H-PY} L${PX},${H-PY} Z`;
-    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    const labels = Array(7).fill(0).map((_,i)=>dayNames[new Date(now.getTime()-(6-i)*dayMs).getDay()]);
+    const twPath = curve(selWeeks), lwPath = curve(prevWeeks);
+    const twPts = pts(selWeeks), lwPts = pts(prevWeeks);
+    const areaD = `${twPath} L${(PX+3*xStep).toFixed(1)},${H-PY} L${PX},${H-PY} Z`;
+    const now = new Date();
+    const monthOptions = Array.from({length:12},(_,i)=>{
+      const d = new Date(now.getFullYear(), now.getMonth()-11+i, 1);
+      const val = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+      const label = d.toLocaleString('default',{month:'long',year:'numeric'});
+      return `<option value="${val}"${val===selectedMonth?' selected':''}>${label}</option>`;
+    }).join('');
     return `<div class="dv5-line-chart">
-      <div class="dv5-line-legend"><span><b></b>This week (${thisTotal})</span><span><b></b>Last week (${lastTotal})</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px">
+        <div class="dv5-line-legend"><span><b></b>${selMonthName} (${selTotal})</span><span><b></b>${prevMonthName} (${prevTotal})</span></div>
+        <select class="dv5-select" style="font-size:11px;padding:3px 8px;height:26px;border-radius:7px;min-width:0;width:auto;flex-shrink:0" onchange="window.setCandMovMonth(this.value)">${monthOptions}</select>
+      </div>
       <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
         <defs><linearGradient id="dv5LineFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#AE9CF0" stop-opacity=".28"/><stop offset="1" stop-color="#AE9CF0" stop-opacity=".02"/></linearGradient></defs>
         <path d="${areaD}" fill="url(#dv5LineFill)"/>
         <path d="${twPath}" fill="none" stroke="#AE9CF0" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="${lwPath}" fill="none" stroke="#1A1C2E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6,4"/>
-        ${twPts.map(([x,y],i)=>thisWeek[i]>0?`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" fill="#AE9CF0" stroke="#fff" stroke-width="2.5"/>`:``).join('')}
-        ${lwPts.map(([x,y],i)=>lastWeek[i]>0?`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="#1A1C2E" stroke="#fff" stroke-width="2"/>`:``).join('')}
+        ${twPts.map(([x,y],i)=>selWeeks[i]>0?`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" fill="#AE9CF0" stroke="#fff" stroke-width="2.5"/>`:``).join('')}
+        ${lwPts.map(([x,y],i)=>prevWeeks[i]>0?`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="#1A1C2E" stroke="#fff" stroke-width="2"/>`:``).join('')}
       </svg>
-      <div class="dv5-line-axis">${labels.map(l=>`<span>${l}</span>`).join('')}</div>
+      <div class="dv5-line-axis"><span>Week 1</span><span>Week 2</span><span>Week 3</span><span>Week 4</span></div>
       <div class="dv5-line-summary"><span>${inProcess} in process</span><span>${travelledCount} travelled</span><span style="font-size:10px;color:#7E7C8C">${diffLabel}</span></div>
     </div>`;
   }
@@ -517,6 +532,50 @@ export function injectDepsToD5(deps) {
         ${paths}
         <text x="${CX}" y="${CY+3}" text-anchor="middle" dominant-baseline="middle" font-size="28" font-weight="700" fill="#1A1C2E" font-family="inherit">${total}</text>
         <text x="${CX}" y="${CY+21}" text-anchor="middle" font-size="9" fill="#999" font-family="inherit" letter-spacing=".06em">CANDIDATES</text>
+      </svg>
+      <div style="flex:1;min-width:0">${legend}</div>
+    </div>`;
+  }
+
+  function buildFinanceDonut(entries: any[], isPro: boolean) {
+    const byPos: Record<string,number> = {};
+    entries.forEach(e => { const pos = e.r?.position || 'Other'; byPos[pos] = (byPos[pos]||0) + (Number(e.amt)||0); });
+    const sorted = Object.entries(byPos).sort((a,b)=>b[1]-a[1]);
+    const topN: [string,number][] = sorted.slice(0,6) as any;
+    const otherAmt = sorted.slice(6).reduce((s:[number],_:[string,number])=>s+_[1], 0);
+    if (otherAmt > 0) topN.push(['Other', otherAmt]);
+    if (!topN.length) return `<div style="text-align:center;padding:24px;font-size:12px;color:#9ca3af">No collections data for this period.</div>`;
+    const totalAmt = topN.reduce((s,_)=>s+_[1], 0) || 1;
+    const colors = ['#AE9CF0','#F9B3AA','#C5C7F0','#C9F035','#EDFAA8','#1A1C2E','#E5E3F8'];
+    const CX=85, CY=85, R=65, RI=42;
+    let angle = -Math.PI/2;
+    const GAP = topN.length > 1 ? 0.05 : 0;
+    const paths = topN.map(([,amt],i) => {
+      const sweep = (amt/totalAmt)*2*Math.PI;
+      const a0=angle+GAP/2, a1=angle+sweep-GAP/2; angle+=sweep;
+      const ox1=CX+R*Math.cos(a0),oy1=CY+R*Math.sin(a0);
+      const ox2=CX+R*Math.cos(a1),oy2=CY+R*Math.sin(a1);
+      const ix1=CX+RI*Math.cos(a0),iy1=CY+RI*Math.sin(a0);
+      const ix2=CX+RI*Math.cos(a1),iy2=CY+RI*Math.sin(a1);
+      const large=sweep>Math.PI?1:0; const color=colors[i%colors.length];
+      if(topN.length===1) return `<circle cx="${CX}" cy="${CY}" r="${R}" fill="${color}"/><circle cx="${CX}" cy="${CY}" r="${RI}" fill="var(--edu-bg,#fff)"/>`;
+      return `<path d="M${ox1.toFixed(1)},${oy1.toFixed(1)} A${R},${R} 0 ${large},1 ${ox2.toFixed(1)},${oy2.toFixed(1)} L${ix2.toFixed(1)},${iy2.toFixed(1)} A${RI},${RI} 0 ${large},0 ${ix1.toFixed(1)},${iy1.toFixed(1)} Z" fill="${color}" stroke="var(--edu-bg,#fff)" stroke-width="2"/>`;
+    }).join('');
+    const topLabel = String(topN[0][0]).length > 14 ? String(topN[0][0]).slice(0,12)+'…' : topN[0][0];
+    const centerAmt = isPro ? money(topN[0][1]) : moneyUSD(topN[0][1]);
+    const legend = topN.map(([name,amt],i) => {
+      const color=colors[i%colors.length];
+      return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0">
+        <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></span>
+        <span style="font-size:11px;flex:1;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(name)}</span>
+        <span style="font-size:11px;font-weight:500;color:#18191B;flex-shrink:0">${isPro?money(amt):moneyUSD(amt)}</span>
+      </div>`;
+    }).join('');
+    return `<div style="display:flex;align-items:center;gap:16px">
+      <svg width="170" height="170" viewBox="0 0 170 170" style="flex-shrink:0;display:block">
+        ${paths}
+        <text x="${CX}" y="${CY-8}" text-anchor="middle" font-size="9" fill="#9ca3af" font-family="inherit" letter-spacing=".04em">${h(topLabel.toUpperCase())}</text>
+        <text x="${CX}" y="${CY+10}" text-anchor="middle" font-size="17" font-weight="700" fill="#1A1C2E" font-family="inherit">${centerAmt}</text>
       </svg>
       <div style="flex:1;min-width:0">${legend}</div>
     </div>`;
@@ -841,11 +900,11 @@ export function injectDepsToD5(deps) {
             <div class="dv5-card-head">
               <div>
                 <span class="dv5-card-title">Candidate Movement</span>
-                <div class="dv5-card-sub">${isPro?'Professional':'General'} — new candidates added per day</div>
+                <div class="dv5-card-sub">${isPro?'Professional':'General'} — new candidates added per week</div>
               </div>
               <button class="dv5-link" style="color:rgba(190,18,60,.7)" onclick="switchTab('candidates')">All →</button>
             </div>
-            ${buildLineChart(normRows)}
+            ${buildLineChart(normRows, candMovMonth)}
           </div>
 
           <div class="dv5-card" style="margin-bottom:0">
@@ -1247,13 +1306,18 @@ export function injectDepsToD5(deps) {
 
   // ── 5. FINANCE ────────────────────────────────────────────
   let financePositionFilter = '';
+  let candMovMonth = new Date().toISOString().slice(0,7); // "YYYY-MM"
+  window.setCandMovMonth = (v: string) => { candMovMonth = v; renderDash(); };
+
   let financeTab = 'latest'; // 'latest' | 'upcoming'
   let financeDatePreset = 'all'; // 'all','this_month','last_month','this_quarter','this_year'
   let financeClientSearch = '';
+  let financeShowAllTx = false;
   window.setFinancePosition   = v => { financePositionFilter = v; renderFinance(); };
   window.setFinanceTab        = v => { financeTab = v; renderFinance(); };
   window.setFinanceDatePreset = v => { financeDatePreset = v; renderFinance(); };
   window.setFinanceClientSearch = v => { financeClientSearch = v; renderFinance(); };
+  window.setFinanceShowAllTx  = (v: boolean) => { financeShowAllTx = v; renderFinance(); };
 
   function renderFinance() {
     const el = document.getElementById('finance-section'); if (!el) return;
@@ -1356,6 +1420,12 @@ export function injectDepsToD5(deps) {
       ['all','All Time'],['this_month','This Month'],['last_month','Last Month'],
       ['this_quarter','This Quarter'],['this_year','This Year']
     ];
+    const now3 = new Date();
+    const sevenDaysAgo = new Date(now3.getTime() - 7*86400000);
+    const currMonthStart = new Date(now3.getFullYear(), now3.getMonth(), 1);
+    const weeklyPaid = rows.reduce((s,r) => { const d=new Date(r.submitted||r.created_at||''); return !isNaN(d as any)&&d>=sevenDaysAgo?s+r.paid:s; }, 0);
+    const monthlyPaid = rows.reduce((s,r) => { const d=new Date(r.submitted||r.created_at||''); return !isNaN(d as any)&&d>=currMonthStart?s+r.paid:s; }, 0);
+    const TX_CAP = 8;
 
     el.innerHTML = `
       <div class="dv5-page">
@@ -1390,43 +1460,92 @@ export function injectDepsToD5(deps) {
         </div>
 
         <div class="dv5-two-col" style="margin-bottom:16px">
-          <div class="dv5-card">
-            <div class="dv5-card-head"><span class="dv5-card-title">Monthly Breakdown</span><span class="dv5-card-sub">Last 6 months</span></div>
-            <div class="dv5-table-wrap">
-              <table class="dv5-table" style="min-width:0">
-                <thead><tr><th>Month</th><th>Invoiced</th><th>Collected</th><th>Outstanding</th></tr></thead>
-                <tbody>
-                  ${monthly.map(m=>`<tr>
-                    <td style="font-weight:438">${m.label}</td>
-                    <td>${isPro?money(m.invoiced):moneyUSD(m.invoiced)}</td>
-                    <td style="color:#16a34a;font-weight:438">${isPro?money(m.paid):moneyUSD(m.paid)}</td>
-                    <td style="color:${m.invoiced-m.paid>0?'#b91c1c':'#6b7280'}">${isPro?money(m.invoiced-m.paid):moneyUSD(m.invoiced-m.paid)}</td>
-                  </tr>`).join('')}
-                </tbody>
-              </table>
+          <!-- Latest Transactions (capped) -->
+          <div class="dv5-card" style="padding:0;overflow:hidden">
+            <div class="dv5-card-head" style="padding:16px 18px 14px">
+              <div>
+                <span class="dv5-card-title">Latest Transactions</span>
+                <div class="dv5-card-sub">${filteredPayments.length} records${searchQ?' (filtered)':''}</div>
+              </div>
+              <button style="width:32px;height:32px;border-radius:8px;background:#0D9488;border:0;color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0" onclick="window.setFinanceTab('latest');setTimeout(()=>document.querySelector('.dv5-tx-section')?.scrollIntoView({behavior:'smooth'}),50)"><i class="ti ti-arrow-right"></i></button>
             </div>
-          </div>
-          <div class="dv5-card">
-            <div class="dv5-card-head">
-              <span class="dv5-card-title">Outstanding by Position</span>
-              <span class="dv5-card-sub">${isPro?money(bal):moneyUSD(bal)}</span>
-            </div>
-            <div class="dv5-task-list">
-              ${positionDebt.slice(0,8).map(c=>`
-                <div class="dv5-task-item" onclick="setFinancePosition('${js(c.name)}')">
-                  <div class="dv5-task-icon high"><i class="ti ti-briefcase"></i></div>
-                  <div class="dv5-task-body">
-                    <div class="dv5-task-title">${h(c.name)}</div>
-                    <div class="dv5-task-meta">${c.count} candidate${c.count!==1?'s':''}</div>
+            <div style="border-top:1px solid var(--border,#E8E8E8)">
+              ${(financeShowAllTx ? filteredPayments : filteredPayments.slice(0,TX_CAP)).map(({r, label, amt, date, isUSD}) => {
+                const d = new Date(date||'');
+                const dateStr = isNaN(d as any) ? '—' : d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+                const amtStr = '+' + (isUSD ? moneyUSD(amt) : money(amt));
+                return `<div class="dv5-tx-row" onclick="${r.type==='pro'?`editPro(${r.id})`:`editLB(${r.id})`}" style="cursor:pointer">
+                  <div class="dv5-tx-date">${dateStr}</div>
+                  <div class="dv5-tx-info">
+                    <div class="dv5-tx-name">${h(r.name||'—')}</div>
+                    <div class="dv5-tx-status" style="color:#6b7280">${h(r.company||r.position||'—')}</div>
                   </div>
-                  <span class="dv5-pill red">${isPro?money(c.balance):moneyUSD(c.balance)}</span>
-                </div>`).join('') || '<div class="dv5-empty">No outstanding balances.</div>'}
+                  <span class="dv5-badge ${r.type==='pro'?'teal':'blue'}" style="font-size:10px;padding:2px 7px;flex-shrink:0">${r.type==='pro'?'Commission':'Refund'}</span>
+                  <div class="dv5-tx-amt" style="color:#16a34a;font-size:13px;font-weight:600">${amtStr}</div>
+                  <button class="dv5-tx-arrow" onclick="event.stopPropagation();${r.type==='pro'?`editPro(${r.id})`:`editLB(${r.id})`}"><i class="ti ti-chevron-down"></i></button>
+                </div>`;
+              }).join('') || '<div class="dv5-empty" style="padding:32px">No payments recorded.</div>'}
             </div>
+            ${!financeShowAllTx && filteredPayments.length > TX_CAP ? `
+            <div style="display:flex;align-items:center;justify-content:center;padding:12px 0;border-top:1px solid var(--border,#E8E8E8)">
+              <button onclick="window.setFinanceShowAllTx(true)" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#374151;background:none;border:0;cursor:pointer;padding:4px 12px;border-radius:8px">See more <i class="ti ti-arrow-right" style="font-size:12px"></i></button>
+            </div>` : ''}
+          </div>
+
+          <!-- Collections Breakdown (donut) -->
+          <div class="dv5-card" style="padding:0;overflow:hidden">
+            <div class="dv5-card-head" style="padding:16px 18px 14px">
+              <div>
+                <span class="dv5-card-title">${isPro?'Commission':'Refund'} Breakdown</span>
+                <div class="dv5-card-sub">by position · ${isPro?money(paid):moneyUSD(paid)} collected</div>
+              </div>
+              <button style="width:32px;height:32px;border-radius:8px;background:#0D9488;border:0;color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0" onclick="window.setFinanceTab('upcoming');setTimeout(()=>document.querySelector('.dv5-tx-section')?.scrollIntoView({behavior:'smooth'}),50)"><i class="ti ti-arrow-right"></i></button>
+            </div>
+            <div style="display:flex;border-top:1px solid var(--border,#E8E8E8);border-bottom:1px solid var(--border,#E8E8E8)">
+              <div style="flex:1;padding:14px 18px;border-right:1px solid var(--border,#E8E8E8)">
+                <div style="font-size:10px;font-weight:500;color:#9ca3af;margin-bottom:4px;letter-spacing:.04em">weekly</div>
+                <div style="font-size:14px;font-weight:600;color:#18191B">${isPro?money(weeklyPaid):moneyUSD(weeklyPaid)}</div>
+              </div>
+              <div style="flex:1;padding:14px 18px;border-right:1px solid var(--border,#E8E8E8)">
+                <div style="font-size:10px;font-weight:500;color:#9ca3af;margin-bottom:4px;letter-spacing:.04em">monthly</div>
+                <div style="font-size:14px;font-weight:600;color:#18191B">${isPro?money(monthlyPaid):moneyUSD(monthlyPaid)}</div>
+              </div>
+              <div style="flex:1;padding:14px 18px">
+                <div style="font-size:10px;font-weight:500;color:#9ca3af;margin-bottom:4px;letter-spacing:.04em">all time</div>
+                <div style="font-size:14px;font-weight:600;color:#18191B">${isPro?money(paid):moneyUSD(paid)}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px 6px">
+              <span style="font-size:12px;font-weight:500;color:#374151">${(presets.find(([v])=>v===financeDatePreset)||['','All Time'])[1]}</span>
+              <select class="dv5-select" style="font-size:11px;height:28px;padding:0 8px;min-width:0;width:auto" onchange="window.setFinanceDatePreset(this.value)">
+                ${presets.map(([val,label])=>`<option value="${val}"${financeDatePreset===val?' selected':''}>${label}</option>`).join('')}
+              </select>
+            </div>
+            <div style="padding:4px 18px 18px">${buildFinanceDonut(filteredPayments, isPro)}</div>
           </div>
         </div>
 
+        <!-- Outstanding Balances -->
+        ${positionDebt.length ? `<div class="dv5-card" style="margin-bottom:16px;padding:0;overflow:hidden">
+          <div class="dv5-card-head" style="padding:14px 18px">
+            <span class="dv5-card-title">Outstanding Balances</span>
+            <span class="dv5-card-sub">${isPro?money(bal):moneyUSD(bal)}</span>
+          </div>
+          <div class="dv5-task-list" style="padding:0 12px 8px;border-top:1px solid var(--border,#E8E8E8)">
+            ${positionDebt.slice(0,6).map(c=>`
+              <div class="dv5-task-item" onclick="setFinancePosition('${js(c.name)}')">
+                <div class="dv5-task-icon high"><i class="ti ti-briefcase"></i></div>
+                <div class="dv5-task-body">
+                  <div class="dv5-task-title">${h(c.name)}</div>
+                  <div class="dv5-task-meta">${c.count} candidate${c.count!==1?'s':''}</div>
+                </div>
+                <span class="dv5-pill red">${isPro?money(c.balance):moneyUSD(c.balance)}</span>
+              </div>`).join('')}
+          </div>
+        </div>` : ''}
+
         <!-- Transactions section -->
-        <div class="dv5-table-card">
+        <div class="dv5-table-card dv5-tx-section">
           <div class="dv5-tx-header">
             <div>
               <div class="dv5-card-title">Transactions${financePositionFilter?' — '+h(financePositionFilter):''}</div>

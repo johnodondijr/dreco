@@ -5989,6 +5989,10 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
 .dv5-kpi-icon.rose{background:#FCECEA!important;color:#8B2010!important;}
 .dv5-task-icon.high{background:#FCECEA!important;color:#8B2010!important;}
 .dv5-task-icon.med{background:#EDEDFB!important;color:#252677!important;}
+/* ── Topbar: hide duplicate page title, show search bar ── */
+.topbar-title{display:none!important}
+.topbar-search{display:flex!important;align-items:center!important;flex:1 1 auto!important;max-width:300px!important;min-width:140px!important;height:36px!important;background:#F5F4F1!important;border:1.5px solid #E5E2D7!important;border-radius:10px!important;padding:0 14px!important;cursor:pointer!important;gap:0!important}
+.topbar-search .ti-search{display:none!important}
 </style>
 </head>
 <body>
@@ -6286,10 +6290,9 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
           <span id="topbar-workspace-name">Workspace</span>
           <i class="ti ti-chevron-down"></i>
         </button>
-        <div class="topbar-search" onclick="openCmd()" style="cursor:pointer" title="Search or press ⌘K">
-          <i class="ti ti-search" aria-hidden="true"></i>
+        <div class="topbar-search" onclick="openCmd()" style="cursor:pointer" title="Search candidates, jobs, clients">
           <label for="global-search" class="sr-only">Search candidates, jobs, clients</label>
-          <div id="global-search" class="topbar-search-fake" style="flex:1;color:var(--text-3,#999);font-size:12px;font-weight:625;user-select:none">Search candidates, tabs… <kbd style="font-size:10px;font-weight:438;background:var(--bg,#F3F3F3);border:1px solid var(--border,#E8E8E8);border-radius:4px;padding:1px 5px;color:var(--text-3,#999);font-family:inherit">⌘K</kbd></div>
+          <div id="global-search" class="topbar-search-fake" style="flex:1;color:var(--text-3,#999);font-size:12px;font-weight:500;user-select:none">Search candidates, tabs…</div>
         </div>
         <button class="topbar-icon-btn" type="button" onclick="openHelp()" title="Help & Support"><i class="ti ti-help-circle"></i></button>
         <div class="save-dot" id="save-dot"></div>
