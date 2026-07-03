@@ -2422,16 +2422,13 @@ function renderDash(){
   const workspaceEl=document.getElementById('topbar-workspace-name');
   if(workspaceEl) workspaceEl.textContent=companyName;
 
-  const stageColors=['#5347CE','#DDF56C','#49774E','#A05B3F','#426CA8','#8A6A16','#7E7C8C','#E9DDFB'];
+  const stageColors=['#DDF56C','#F8B9B8','#D9D7F1','#FFE2B8','#1E1D2E','#F6EFE6'];
   const stageData=[
-    {label:'Submitted', value:proDB.filter(r=>r.stage==='SUBMITTED').length, icon:'ti-clipboard-list', color:stageColors[0]},
-    {label:'Interview', value:proDB.filter(r=>r.stage==='INTERVIEW').length, icon:'ti-users', color:stageColors[1]},
-    {label:'Offer', value:proDB.filter(r=>r.stage==='OFFER LETTER').length, icon:'ti-file-description', color:stageColors[2]},
-    {label:'Medical', value:proDB.filter(r=>r.stage==='MEDICAL & ATTESTATION').length, icon:'ti-stethoscope', color:stageColors[3]},
-    {label:'MOL', value:proDB.filter(r=>r.stage==='MOL').length, icon:'ti-building-bank', color:stageColors[4]},
-    {label:'Visa', value:proDB.filter(r=>r.stage==='VISA').length, icon:'ti-id-badge-2', color:stageColors[5]},
-    {label:'Travel', value:proDB.filter(r=>r.stage==='PENDING TRAVEL').length, icon:'ti-plane', color:stageColors[6]},
-    {label:'Travelled', value:proTravelled, icon:'ti-plane-departure', color:stageColors[7]}
+    {label:'Offer', value:proDB.filter(r=>proStageMatches(r,['PENDING OFFER LETTER','OFFER LETTER'])).length, icon:'ti-file-description', color:stageColors[0]},
+    {label:'MOL', value:proDB.filter(r=>proStageMatches(r,['PENDING MOL','MOL'])).length, icon:'ti-building-bank', color:stageColors[1]},
+    {label:'Visa', value:proDB.filter(r=>proStageMatches(r,['PENDING VISA','VISA'])).length, icon:'ti-id-badge-2', color:stageColors[2]},
+    {label:'Travel', value:proDB.filter(r=>proStageMatches(r,['PENDING TRAVEL','TICKET BOOKED'])).length, icon:'ti-plane', color:stageColors[3]},
+    {label:'Travelled', value:proTravelled, icon:'ti-plane-departure', color:stageColors[4]}
   ];
   const LB_SEL_STAGES = new Set(['SELECTED','PASSPORT APPLIED','VISA PROCESSING']);
   const LB_TRAV_STAGES = new Set(['TRAVELLED','REFUND PENDING','REFUND COMPLETE']);
@@ -2442,8 +2439,10 @@ function renderDash(){
     {label:'Travelled', value:lbDB.filter(r=>LB_TRAV_STAGES.has(cleanStage(r.stage||r.travelStatus||r.travel_status))).length, icon:'ti-plane-departure', color:stageColors[5]},
   ];
   const stageTotal=Math.max(stageData.reduce((sum,item)=>sum+item.value,0),1);
+  const collectionRate=Math.min(100,Math.round(totalPaid/Math.max(totalComm,1)*100));
 
   const pendingTravel=proDB.filter(r=>r.stage==='PENDING TRAVEL');
+  const travelReadiness=Math.min(100,Math.round((pendingTravel.length+proTravelled)/Math.max(proDB.length,1)*100));
   const upcoming=(pendingTravel.length?pendingTravel:proDB.filter(r=>r.stage!=='TRAVELLED')).slice(0,3);
   const upcomingHTML=upcoming.length?upcoming.map((r,i)=>`<div class="ref-travel-item">
     <div class="ref-travel-icon"><i class="ti ti-plane"></i></div>
@@ -2510,39 +2509,49 @@ function renderDash(){
             <div class="ref-pipe-foot"><span>${lbInProcess} in process</span><span>${lbTravelled} travelled</span></div>
           </section>
 
-          <div class="ref-chart-grid">
-            <section class="ref-card ref-trend-card">
-              <div class="ref-card-head"><div class="ref-card-title">Pipeline Trend</div><button onclick="setTrendPeriod()">This Month <i class="ti ti-chevron-down"></i></button></div>
+          <div class="dreco-home-analytics">
+            <section class="ref-card ref-trend-card ops-line-card">
+              <div class="ref-card-head"><div><div class="ref-card-title">Candidate Movement</div><p>Applications, processing movement, and travels this week</p></div><button onclick="setTrendPeriod()">This Month <i class="ti ti-chevron-down"></i></button></div>
               <div class="ref-legend"><span><b></b>In Process</span><span><b></b>Travelled</span></div>
               <div class="ref-line-chart" onmousemove="updateTrendTooltip(event)" onmouseleave="resetTrendTooltip()">
                 <svg viewBox="0 0 620 210" preserveAspectRatio="none" aria-hidden="true">
-                  <defs><linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DDF56C" stop-opacity=".22"/><stop offset="1" stop-color="#5347CE" stop-opacity=".04"/></linearGradient></defs>
+                  <defs><linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F8B9B8" stop-opacity=".34"/><stop offset="1" stop-color="#F8B9B8" stop-opacity=".03"/></linearGradient></defs>
                   <path d="M0 150 C80 120 95 90 160 86 C235 82 235 112 310 92 C390 70 420 88 480 92 C545 96 570 58 620 42 L620 210 L0 210 Z" fill="url(#trendFill)"/>
-                  <path d="M0 150 C80 120 95 90 160 86 C235 82 235 112 310 92 C390 70 420 88 480 92 C545 96 570 58 620 42" fill="none" stroke="#5347CE" stroke-width="4" stroke-linecap="round"/>
-                  <path d="M0 178 C80 160 105 130 170 126 C245 122 255 132 320 116 C398 96 428 118 492 114 C552 110 580 88 620 78" fill="none" stroke="#5DD6C4" stroke-width="4" stroke-linecap="round"/>
-                  <line x1="318" y1="52" x2="318" y2="210" stroke="#B9C2D7" stroke-dasharray="4 6"/>
+                  <path d="M0 150 C80 120 95 90 160 86 C235 82 235 112 310 92 C390 70 420 88 480 92 C545 96 570 58 620 42" fill="none" stroke="#F79A62" stroke-width="4" stroke-linecap="round"/>
+                  <path d="M0 178 C80 160 105 130 170 126 C245 122 255 132 320 116 C398 96 428 118 492 114 C552 110 580 88 620 78" fill="none" stroke="#171715" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="318" y1="52" x2="318" y2="210" stroke="#D8D5F0" stroke-dasharray="4 6"/>
                 </svg>
                 <div class="ref-tooltip dynamic" id="trend-tooltip"><strong id="trend-tip-date">May 15, 2025</strong><span><b></b>In Process <em id="trend-tip-process">${totalInProcess}</em></span><span><b></b>Travelled <em id="trend-tip-travelled">${totalTravelled}</em></span></div>
                 <div class="ref-axis"><span>May 12</span><span>May 13</span><span>May 14</span><span>May 15</span><span>May 16</span><span>May 17</span><span>May 18</span></div>
               </div>
             </section>
 
-            <section class="ref-card ref-breakdown-card">
-              <div class="ref-card-title">Stage Breakdown</div>
-              <div class="ref-donut-wrap">
-                <div class="ref-donut" style="background:${buildConic(stageData.map(x=>({count:x.value,color:x.color})),stageTotal)}"><div><strong>${totalInProcess}</strong><span>In Process</span></div></div>
-                <div class="ref-donut-legend">${stageData.map(item=>`<div><span><b style="background:${item.color}"></b>${item.label}</span><strong>${item.value} (${Math.round(item.value/stageTotal*100)}%)</strong></div>`).join('')}</div>
-              </div>
-            </section>
+            <div class="ops-side-stack">
+              <section class="ops-status-card">
+                <div><span>Status Summary</span><small>Active processing load</small></div>
+                <strong>${totalInProcess}</strong>
+                <svg viewBox="0 0 220 70" preserveAspectRatio="none" aria-hidden="true"><path d="M6 44 C48 10 82 18 111 42 C146 72 180 66 214 10" fill="none" stroke="#DDF56C" stroke-width="4" stroke-linecap="round"/></svg>
+              </section>
+              <section class="ref-card ops-ring-card">
+                <div class="ops-ring-stat">
+                  <span class="ops-ring" style="background:conic-gradient(#5B5A6D 0 ${collectionRate}%,#EEF0EA ${collectionRate}% 100%)"></span>
+                  <div><small>Collection Rate</small><strong>${collectionRate}%</strong></div>
+                </div>
+                <div class="ops-ring-stat">
+                  <span class="ops-ring" style="background:conic-gradient(#DDF56C 0 ${travelReadiness}%,#EEF0EA ${travelReadiness}% 100%)"></span>
+                  <div><small>Travel Readiness</small><strong>${travelReadiness}%</strong></div>
+                </div>
+              </section>
+            </div>
           </div>
 
-          <div class="ref-bottom-grid">
-            <section class="ref-card"><div class="ref-card-title">Recent Activity</div><div class="ref-list">${recentHTML}</div></section>
-            <section class="ref-card"><div class="ref-card-head"><div class="ref-card-title">Tasks</div><button onclick="switchTab('kanban')">View All</button></div><div class="ref-task-list">
-              ${renderRefTask('Review pending visa documents', `${proDB.filter(r=>r.stage==='PENDING VISA').length} candidates`, 'Overdue')}
-              ${renderRefTask('Follow up with MOL for candidates', `${proDB.filter(r=>r.stage==='PENDING MOL').length} candidates`, 'Due today')}
-              ${renderRefTask('Confirm travel for candidates', `${pendingTravel.length} candidates`, 'Due tomorrow')}
-            </div></section>
+          <section class="ref-card ref-breakdown-card ops-funnel-card">
+            <div class="ref-card-title">Pipeline Funnel</div>
+            <div class="ref-donut-wrap">
+              <div class="ref-donut" style="background:${buildConic(stageData.map(x=>({count:x.value,color:x.color})),stageTotal)}"><div><strong>${stageTotal}</strong><span>Candidates</span></div></div>
+              <div class="ref-donut-legend">${stageData.map(item=>`<div><span><b style="background:${item.color}"></b>${item.label}</span><strong>${item.value} (${Math.round(item.value/stageTotal*100)}%)</strong></div>`).join('')}</div>
+            </div>
+          </section>
           </div>
         </div>
 
