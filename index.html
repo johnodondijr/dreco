@@ -6094,25 +6094,27 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
   /* --- page head: tighter --- */
   .dreco-page-head{margin-bottom:10px!important;}
   .dreco-grid{gap:8px!important;}
-  /* --- LOGIN: fill viewport absolutely edge-to-edge --- */
+  /* --- LOGIN: cover viewport fully, above all app content --- */
   #login-screen{
     position:fixed!important;
     inset:0!important;
+    z-index:9999!important;
     padding:0!important;
     margin:0!important;
-    width:100%!important;
-    height:100%!important;
+    width:100vw!important;
+    height:100dvh!important;
     overflow-y:auto!important;
     overflow-x:hidden!important;
-    align-items:flex-start!important;
+    background:#EEF1F6!important;
     display:flex!important;
     flex-direction:column!important;
+    align-items:stretch!important;
   }
   .lp-window{
     flex:1 1 auto!important;
-    width:100%!important;
-    max-width:100%!important;
-    min-height:100vh!important;
+    width:100vw!important;
+    max-width:100vw!important;
+    min-height:100dvh!important;
     max-height:none!important;
     border-radius:0!important;
     border:none!important;
@@ -6120,6 +6122,7 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
     margin:0!important;
     display:flex!important;
     flex-direction:column!important;
+    overflow:hidden!important;
   }
   .lp-media{display:none!important;}
   .lp-form-panel{
@@ -6129,6 +6132,7 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
     min-width:0!important;
     box-sizing:border-box!important;
     padding:40px 22px 32px!important;
+    background:#fff!important;
     display:flex!important;
     flex-direction:column!important;
     justify-content:center!important;
