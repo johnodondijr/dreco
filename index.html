@@ -6005,26 +6005,113 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
 .dv5-file-icon-box{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .dv5-file-card .dv5-file-icon-box i{background:transparent!important;color:inherit!important;}
 /* ══════════════════════════════════════════════════════
-   MOBILE PREMIUM LAYOUT
-   Overrides the non-responsive padding:24px rule (line ~3049)
-   and polishes the entire small-screen experience.
+   LOGIN PAGE: remove circle decorations, palette preview
+══════════════════════════════════════════════════════ */
+/* Remove circle illustrations from the dark panel */
+.lp-bg-circle{display:none!important;}
+.lp-media::before,.lp-media::after{content:none!important;display:none!important;}
+/* Dashboard preview: apply purppinkgreen palette to KPI cards */
+#login-screen .lp-dash-priority-card i{background:#EDE8FB!important;color:#5347CE!important;}
+#login-screen .lp-dash-priority-card.blue i{background:#EDFAA8!important;color:#4A5E10!important;}
+#login-screen .lp-dash-priority-card.green i{background:#FCECEA!important;color:#8B2010!important;}
+#login-screen .lp-dash-priority-card.purple i{background:#EDE8FB!important;color:#4825B8!important;}
+/* Pipeline flow bars: lime */
+#login-screen .lp-dash-flow i{background:#C9F035!important;}
+/* Activity/reminder row icons: palette */
+#login-screen .lp-dash-row>i{background:#EDFAA8!important;color:#4A5E10!important;}
+#login-screen .lp-dash-task>i{background:#EDE8FB!important;color:#5347CE!important;}
+/* ══════════════════════════════════════════════════════
+   MOBILE LOGIN — full-screen, no grey strip (≤768px)
+   Uses #login-screen .lp-* (specificity 1,1,0) to beat
+   the high-specificity blocks starting at line 1803 that
+   force display:grid and grid-template-columns:42%/57%.
+   Being last in the stylesheet wins the cascade tie-break.
+   No display on #login-screen itself — JS (main.ts:974)
+   sets display:'none' after login; !important blocks that.
+══════════════════════════════════════════════════════ */
+@media(max-width:768px){
+  #login-screen{
+    position:fixed!important;
+    top:0!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    z-index:9999!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    background:#fff!important;
+    padding:0!important;
+    margin:0!important;
+    align-items:flex-start!important;
+  }
+  #login-screen .lp-window{
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    grid-template-columns:unset!important;
+    min-height:100svh!important;
+    min-height:100vh!important;
+    max-height:none!important;
+    height:auto!important;
+    border-radius:0!important;
+    border:none!important;
+    box-shadow:none!important;
+    margin:0!important;
+    padding:0!important;
+    background:#fff!important;
+    overflow-x:hidden!important;
+  }
+  #login-screen .lp-media{display:none!important;}
+  #login-screen .lp-form-panel{
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:flex-start!important;
+    width:100%!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+    padding:44px 24px 36px!important;
+    background:#fff!important;
+    min-height:100vh!important;
+    overflow-y:auto!important;
+  }
+  #login-screen .lp-content-area{
+    margin:20px 0 0!important;
+    max-width:none!important;
+    width:100%!important;
+  }
+  #login-screen .lp-header{margin-bottom:24px!important;}
+  #login-screen .lp-footer-note{
+    position:static!important;
+    left:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    margin-top:28px!important;
+    max-width:none!important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   MOBILE PREMIUM LAYOUT (≤640px)
+   Overrides the non-responsive padding:24px rule and
+   polishes the entire small-screen experience.
 ══════════════════════════════════════════════════════ */
 @media(max-width:640px){
   /* --- root containment --- */
   html,body{overflow-x:hidden!important;max-width:100vw!important;}
   #app{padding:0!important;min-height:100dvh!important;}
   .app-layout{border-radius:0!important;border:none!important;margin:0!important;width:100%!important;max-width:100%!important;}
-  /* --- fix left/right whitespace (overrides the bare padding:24px rule) --- */
-  .content-area>div,
-  .dv5-page{
+  /* --- fix left/right whitespace; #app selector beats dv5.ts runtime injection --- */
+  html body #app .content-area>div,
+  html body #app .dv5-page{
     padding:14px 14px calc(env(safe-area-inset-bottom,0px) + 76px) 14px!important;
     overflow-x:hidden!important;
     min-width:0!important;
   }
   /* --- sidebar: hide on mobile --- */
   .sidebar,.app-sidebar{display:none!important;}
-  /* --- content area takes full width --- */
-  .content-area{width:100%!important;margin:0!important;padding:0!important;}
+  /* --- content area takes full width; #app specificity beats dv5.ts --- */
+  #app .content-area{width:100%!important;margin:0!important;padding:0!important;}
+  .content-area{width:100%!important;margin:0!important;}
   /* --- premium sticky topbar --- */
   .topbar{
     position:sticky!important;
@@ -6077,8 +6164,10 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
   .topbar-search{max-width:none!important;flex:1 1 auto!important;}
 }
 @media(max-width:420px){
-  .content-area>div,.dv5-page{padding:10px 10px calc(env(safe-area-inset-bottom,0px) + 76px) 10px!important;}
+  html body #app .content-area>div,
+  html body #app .dv5-page{padding:10px 10px calc(env(safe-area-inset-bottom,0px) + 76px) 10px!important;}
   .dv5-card{padding:10px!important;}
+  #login-screen .lp-form-panel{padding:32px 16px 24px!important;}
 }
 </style>
 </head>
