@@ -6094,14 +6094,18 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
   /* --- page head: tighter --- */
   .dreco-page-head{margin-bottom:10px!important;}
   .dreco-grid{gap:8px!important;}
-  /* --- LOGIN: block layout — simplest & most reliable full-width approach --- */
+  /* --- LOGIN: full-screen, no grey strip, login-hide still works ---
+     IMPORTANT: do NOT put display:!important here — JS sets display:'none'
+     on #login-screen after successful login (main.ts:974). !important would
+     block that and keep the login screen visible after signing in.        */
   #login-screen{
     position:fixed!important;
     inset:0!important;
     z-index:9999!important;
-    display:block!important;
-    width:100%!important;
-    height:100%!important;
+    /* display intentionally left without !important so JS can hide it */
+    flex-direction:column!important;
+    align-items:stretch!important;
+    justify-content:flex-start!important;
     overflow-y:auto!important;
     overflow-x:hidden!important;
     background:#fff!important;
