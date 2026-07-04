@@ -6021,88 +6021,15 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
 #login-screen .lp-dash-row>i{background:#EDFAA8!important;color:#4A5E10!important;}
 #login-screen .lp-dash-task>i{background:#EDE8FB!important;color:#5347CE!important;}
 /* ══════════════════════════════════════════════════════
-   MOBILE PREMIUM LAYOUT
-   Overrides the non-responsive padding:24px rule (line ~3049)
-   and polishes the entire small-screen experience.
+   MOBILE LOGIN — full-screen, no grey strip (≤768px)
+   No display:!important on #login-screen — JS (main.ts:974)
+   sets display:'none' after login; !important would block it.
 ══════════════════════════════════════════════════════ */
-@media(max-width:640px){
-  /* --- root containment --- */
-  html,body{overflow-x:hidden!important;max-width:100vw!important;}
-  #app{padding:0!important;min-height:100dvh!important;}
-  .app-layout{border-radius:0!important;border:none!important;margin:0!important;width:100%!important;max-width:100%!important;}
-  /* --- fix left/right whitespace (nuclear: highest-specificity override) --- */
-  html body #app .content-area>div,
-  html body #app .dv5-page,
-  .content-area>div,
-  .dv5-page{
-    padding:8px 8px 14px 8px!important;
-    overflow-x:hidden!important;
-    min-width:0!important;
-  }
-  /* --- sidebar: hide on mobile --- */
-  .sidebar,.app-sidebar{display:none!important;}
-  /* --- content area takes full width --- */
-  .content-area{width:100%!important;margin:0!important;padding:0!important;}
-  /* --- premium sticky topbar --- */
-  .topbar{
-    position:sticky!important;
-    top:0!important;
-    z-index:200!important;
-    backdrop-filter:blur(16px)!important;
-    -webkit-backdrop-filter:blur(16px)!important;
-    border-radius:0!important;
-    padding:0 10px!important;
-  }
-  /* --- HIDE bottom nav on mobile --- */
-  .bottom-nav{display:none!important;}
-  /* --- dv5 cards: tighter padding --- */
-  .dv5-card{padding:10px!important;margin-bottom:8px!important;border-radius:12px!important;}
-  .dv5-card-head{margin-bottom:8px!important;}
-  .dv5-kpi{padding:10px!important;border-radius:12px!important;}
-  /* --- dv5 priority cards: compact horizontal layout --- */
-  .dv5-priority{
-    display:grid!important;
-    grid-template-columns:36px 1fr!important;
-    grid-template-rows:auto auto auto!important;
-    column-gap:10px!important;
-    align-items:center!important;
-    padding:10px!important;
-  }
-  .dv5-priority .dv5-priority-icon{
-    grid-column:1!important;
-    grid-row:1/4!important;
-    width:36px!important;
-    height:36px!important;
-    margin-bottom:0!important;
-    align-self:center!important;
-    font-size:16px!important;
-  }
-  .dv5-priority strong{grid-column:2!important;grid-row:1!important;font-size:18px!important;margin-bottom:0!important;}
-  .dv5-priority span{grid-column:2!important;grid-row:2!important;font-size:11px!important;}
-  .dv5-priority small{grid-column:2!important;grid-row:3!important;font-size:10px!important;margin-top:1px!important;}
-  .dv5-priority-grid{gap:8px!important;margin-bottom:10px!important;}
-  /* --- grid gaps --- */
-  .dv5-kpi-grid,.dv5-file-grid{gap:8px!important;}
-  .dv5-vitals{gap:8px!important;}
-  /* --- prevent long words/tables from causing overflow --- */
-  .dv5-section,.dv5-card,.dv5-kpi{overflow-x:hidden!important;min-width:0!important;word-break:break-word!important;}
-  /* --- pipeline steps: smaller on mobile --- */
-  .dv5-step span{width:28px!important;height:28px!important;font-size:11px!important;}
-  .dv5-step-label{font-size:9px!important;}
-  /* --- hide search max-width constraint on mobile --- */
-  .topbar-search{max-width:none!important;flex:1 1 auto!important;}
-  /* --- page head: tighter --- */
-  .dreco-page-head{margin-bottom:10px!important;}
-  .dreco-grid{gap:8px!important;}
-  /* --- LOGIN: full-screen, no grey strip, login-hide still works ---
-     IMPORTANT: do NOT put display:!important here — JS sets display:'none'
-     on #login-screen after successful login (main.ts:974). !important would
-     block that and keep the login screen visible after signing in.        */
+@media(max-width:768px){
   #login-screen{
     position:fixed!important;
     inset:0!important;
     z-index:9999!important;
-    /* display intentionally left without !important so JS can hide it */
     flex-direction:column!important;
     align-items:stretch!important;
     justify-content:flex-start!important;
@@ -6113,8 +6040,11 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
     margin:0!important;
   }
   .lp-window{
-    display:block!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
     width:100%!important;
+    min-height:100svh!important;
     min-height:100vh!important;
     max-height:none!important;
     height:auto!important;
@@ -6126,22 +6056,82 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
   }
   .lp-media{display:none!important;}
   .lp-form-panel{
-    display:block!important;
+    display:flex!important;
+    flex-direction:column!important;
+    flex:1 1 auto!important;
     width:100%!important;
+    min-width:0!important;
     box-sizing:border-box!important;
-    padding:40px 22px 32px!important;
-    min-height:100vh!important;
+    padding:44px 24px 36px!important;
     background:#fff!important;
-    flex:none!important;
   }
   .lp-content-area{margin-top:20px!important;max-width:none!important;width:100%!important;}
   .lp-header{margin-bottom:24px!important;}
-  .lp-header h1{font-size:26px!important;}
-  .lp-header p{font-size:14px!important;}
   .lp-footer-note{position:static!important;left:auto!important;right:auto!important;bottom:auto!important;margin-top:28px!important;max-width:none!important;}
 }
+
+/* ══════════════════════════════════════════════════════
+   MOBILE PREMIUM LAYOUT (≤640px)
+   Higher-specificity selectors beat dv5.ts runtime CSS
+   injection which arrives after static styles.
+══════════════════════════════════════════════════════ */
+@media(max-width:640px){
+  /* root containment */
+  html,body{overflow-x:hidden!important;max-width:100vw!important;}
+  #app{padding:0!important;min-height:100dvh!important;}
+  .app-layout{border-radius:0!important;border:none!important;margin:0!important;width:100%!important;max-width:100%!important;}
+  /* Fix left/right whitespace.
+     html body #app .dv5-page specificity=1,1,2 beats dv5.ts .dv5-page=0,1,0 */
+  html body #app .content-area>div,
+  html body #app .dv5-page{
+    padding:12px 12px 20px!important;
+    overflow-x:hidden!important;
+    min-width:0!important;
+  }
+  /* Fix 88px bottom gap from dv5.ts bottom-nav padding (nav is hidden).
+     #app .content-area specificity=1,1,0 beats dv5.ts .content-area=0,1,0 */
+  #app .content-area{
+    width:100%!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  /* sidebar: hide on mobile */
+  .sidebar,.app-sidebar{display:none!important;}
+  /* content area takes full width */
+  .content-area{width:100%!important;margin:0!important;}
+  /* premium sticky topbar */
+  .topbar{
+    position:sticky!important;
+    top:0!important;
+    z-index:200!important;
+    backdrop-filter:blur(16px)!important;
+    -webkit-backdrop-filter:blur(16px)!important;
+    border-radius:0!important;
+    padding:0 10px!important;
+  }
+  /* HIDE bottom nav on mobile */
+  .bottom-nav{display:none!important;}
+  /* dv5 cards: consistent tighter padding across all tabs */
+  .dv5-card{padding:10px!important;margin-bottom:8px!important;border-radius:12px!important;}
+  .dv5-card-head{margin-bottom:8px!important;}
+  /* Dashboard priority cards: same size/style as kpi cards on other tabs */
+  .dv5-kpi,.dv5-priority{padding:10px!important;border-radius:12px!important;}
+  .dv5-priority-grid{gap:8px!important;margin-bottom:10px!important;}
+  /* grid gaps */
+  .dv5-kpi-grid,.dv5-file-grid{gap:8px!important;}
+  .dv5-vitals{gap:8px!important;}
+  /* prevent overflow */
+  .dv5-section,.dv5-card,.dv5-kpi,.dv5-priority{overflow-x:hidden!important;min-width:0!important;word-break:break-word!important;}
+  /* pipeline steps: smaller on mobile */
+  .dv5-step span{width:28px!important;height:28px!important;font-size:11px!important;}
+  .dv5-step-label{font-size:9px!important;}
+  /* page head: tighter */
+  .dreco-page-head{margin-bottom:10px!important;}
+  .dreco-grid{gap:8px!important;}
+}
 @media(max-width:420px){
-  .content-area>div,.dv5-page{padding:8px 8px 14px 8px!important;}
+  html body #app .content-area>div,
+  html body #app .dv5-page{padding:10px 10px 16px!important;}
   .dv5-card{padding:8px!important;}
   .lp-form-panel{padding:32px 16px 24px!important;}
 }
