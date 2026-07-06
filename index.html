@@ -5771,9 +5771,9 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
 .dv5-kpi-icon.rose{background:#FCECEA!important;color:#8B2010!important;}
 .dv5-task-icon.high{background:#FCECEA!important;color:#8B2010!important;}
 .dv5-task-icon.med{background:#EDEDFB!important;color:#252677!important;}
-/* ── Topbar: hide duplicate page title, show search bar ── */
+/* ── Topbar: search fills available space, actions on right ── */
 .topbar-title{display:none!important}
-.topbar-search{display:flex!important;align-items:center!important;flex:1 1 auto!important;max-width:300px!important;min-width:140px!important;height:36px!important;background:#F5F4F1!important;border:1.5px solid #E5E2D7!important;border-radius:10px!important;padding:0 14px!important;cursor:pointer!important;gap:0!important}
+.topbar-search{display:flex!important;align-items:center!important;flex:1!important;max-width:none!important;min-width:0!important;height:38px!important;background:#F8FAFD!important;border:1px solid #DFE5F1!important;border-radius:10px!important;padding:0 12px!important;cursor:pointer!important;gap:8px!important;margin-left:0!important;order:0!important;}
 .topbar-search .ti-search{display:none!important}
 /* ── purppinkgreen: progress bars ── */
 .dv5-workflow-bar i{background:#C9F035!important;}
@@ -5918,6 +5918,26 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
   html body #app .dv5-page{padding:10px 10px 16px!important;}
   .dv5-card{padding:8px!important;}
   .lp-form-panel{padding:32px 16px 24px!important;}
+}
+/* ── TOPBAR FINAL OVERRIDE — must be last ────────────────────
+   Uses #app prefix (specificity 1,1,0) to beat all earlier
+   .topbar-search rules and placed last to win cascade order.
+────────────────────────────────────────────────────────────── */
+#app .topbar{display:flex!important;align-items:center!important;gap:10px!important;padding:0 16px 0 20px!important;height:64px!important;}
+#app .topbar-search{flex:1!important;max-width:none!important;min-width:0!important;min-height:38px!important;height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;background:#F8FAFD!important;border:1px solid #DFE5F1!important;border-radius:10px!important;cursor:pointer!important;position:static!important;order:0!important;margin-left:0!important;}
+#app .topbar-search i,#app .topbar-search-icon{position:static!important;transform:none!important;top:auto!important;left:auto!important;font-size:15px!important;color:#9BA4B8!important;flex-shrink:0!important;pointer-events:none!important;}
+#app .topbar-search-fake{flex:1!important;color:#9BA4B8!important;font-size:12px!important;font-weight:500!important;user-select:none!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+#app .topbar-search-kbd{flex-shrink:0!important;font-size:10px!important;color:#9BA4B8!important;background:#EEF1F6!important;border:1px solid #DFE5F1!important;border-radius:5px!important;padding:2px 5px!important;}
+#app .topbar-notif-btn{flex-shrink:0!important;width:36px!important;height:36px!important;border-radius:10px!important;border:1px solid #DFE5F1!important;background:#fff!important;color:#5C677D!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:17px!important;cursor:pointer!important;}
+#app .topbar-user-card{flex-shrink:0!important;display:flex!important;align-items:center!important;gap:8px!important;height:38px!important;background:#fff!important;border:1px solid #DFE5F1!important;border-radius:10px!important;padding:0 10px 0 6px!important;cursor:pointer!important;}
+#app .topbar-user-card .topbar-avatar{width:26px!important;height:26px!important;min-width:26px!important;border-radius:7px!important;font-size:10px!important;}
+#app .topbar-user-info{display:flex!important;flex-direction:column!important;gap:1px!important;min-width:0!important;}
+#app .topbar-user-name{font-size:12px!important;font-weight:500!important;color:#1A1C2E!important;max-width:110px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;line-height:1.2!important;}
+#app .topbar-user-sub{font-size:10px!important;color:#9BA4B8!important;max-width:110px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;line-height:1.2!important;}
+#app .topbar-user-caret{font-size:13px!important;color:#9BA4B8!important;flex-shrink:0!important;}
+@media(max-width:640px){
+  #app .topbar-user-info,#app .topbar-user-caret,#app .topbar-search-kbd{display:none!important;}
+  #app .topbar-user-card{padding:0 6px!important;}
 }
 </style>
 </head>
