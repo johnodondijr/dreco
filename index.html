@@ -6071,6 +6071,96 @@ html body #app #sidebar.collapsed,
 html body #app .sidebar.collapsed{padding-bottom:14px!important;}
 html body #app .topbar{padding:0 28px!important;}
 html body #app .content-area>div{padding:22px 28px 28px!important;}
+/* Final shell gutter correction for the marked desktop spacing issues */
+@media(min-width:761px){
+  html body #app{
+    padding:18px!important;
+    overflow:hidden!important;
+    background:var(--edu-bg,#F4F3EE)!important;
+  }
+  html body #app .app-layout{
+    display:grid!important;
+    grid-template-columns:248px minmax(0,1fr)!important;
+    grid-template-rows:56px minmax(0,1fr)!important;
+    column-gap:12px!important;
+    height:calc(100vh - 36px)!important;
+    background:transparent!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    overflow:hidden!important;
+  }
+  html body #app .app-body{display:contents!important;}
+  html body #app #sidebar,
+  html body #app .sidebar{
+    grid-column:1!important;
+    grid-row:1 / span 2!important;
+    width:248px!important;
+    height:100%!important;
+    padding:18px 16px 22px!important;
+    margin:0!important;
+    border-radius:28px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    overflow:hidden!important;
+  }
+  html body #app .main-area{
+    grid-column:2!important;
+    grid-row:2!important;
+    min-width:0!important;
+    min-height:0!important;
+    background:transparent!important;
+  }
+  html body #app .topbar{
+    grid-column:2!important;
+    grid-row:1!important;
+    padding:0 28px!important;
+    border-radius:0 22px 0 0!important;
+  }
+  html body #app .content-area{
+    min-width:0!important;
+    overflow:auto!important;
+    background:transparent!important;
+  }
+  html body #app .sidebar .nav-spacer{
+    flex:1 1 auto!important;
+    min-height:24px!important;
+  }
+  html body #app .sidebar-user-card,
+  html body #app .sidebar-user-card.sidebar-account-trigger{
+    margin:16px 4px 0!important;
+    min-height:58px!important;
+    flex-shrink:0!important;
+  }
+  html body #app .ref-kpi-row,
+  html body #app .dreco-kpis,
+  html body #app .priority-grid,
+  html body #app .dv5-priority-grid{
+    gap:14px!important;
+    margin-bottom:16px!important;
+  }
+  html body #app .ref-pipeline-overview{
+    margin-bottom:16px!important;
+    padding:18px 20px!important;
+  }
+}
+@media(max-width:1180px) and (min-width:761px){
+  html body #app{
+    padding:14px!important;
+  }
+  html body #app .app-layout{
+    grid-template-columns:224px minmax(0,1fr)!important;
+    height:calc(100vh - 28px)!important;
+    column-gap:10px!important;
+  }
+  html body #app #sidebar,
+  html body #app .sidebar{
+    width:224px!important;
+  }
+  html body #app .content-area>div{
+    padding:20px 18px 28px!important;
+  }
+}
 </style>
 </head>
 <body>
