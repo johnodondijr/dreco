@@ -5130,7 +5130,7 @@ tbody tr:hover td,.dreco-table tr:hover td{background:var(--dreco-surface-soft)!
 
 /* ── Mobile topbar: single row, no wrap ──────────────────── */
 @media(max-width:860px){
-  .topbar{flex-wrap:nowrap!important;height:56px!important;overflow:hidden!important;align-items:center!important;min-height:unset!important;}
+  .topbar{flex-wrap:nowrap!important;align-items:center!important;min-height:unset!important;}
   .topbar-workspace{display:none!important;}
 }
 
@@ -5923,7 +5923,7 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
    Uses #app prefix (specificity 1,1,0) to beat all earlier
    .topbar-search rules and placed last to win cascade order.
 ────────────────────────────────────────────────────────────── */
-#app .topbar{display:flex!important;align-items:center!important;gap:10px!important;padding:0 16px 0 20px!important;height:64px!important;}
+#app .topbar{display:flex!important;align-items:center!important;gap:10px!important;padding:0 20px!important;height:64px!important;overflow:visible!important;flex-wrap:nowrap!important;}
 #app .topbar-search{flex:1!important;max-width:none!important;min-width:0!important;min-height:38px!important;height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;background:#F8FAFD!important;border:1px solid #DFE5F1!important;border-radius:10px!important;cursor:pointer!important;position:static!important;order:0!important;margin-left:0!important;}
 #app .topbar-search i,#app .topbar-search-icon{position:static!important;transform:none!important;top:auto!important;left:auto!important;font-size:15px!important;color:#9BA4B8!important;flex-shrink:0!important;pointer-events:none!important;}
 #app .topbar-search-fake{flex:1!important;color:#9BA4B8!important;font-size:12px!important;font-weight:500!important;user-select:none!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
