@@ -793,6 +793,7 @@ function toggleSidebar() {
     sb.classList.contains('mobile-open') ? closeMobileSidebar() : openMobileSidebar();
   } else {
     sb.classList.toggle('collapsed');
+    document.getElementById('app')?.classList.toggle('sidebar-collapsed', sb.classList.contains('collapsed'));
   }
 }
 function openMobileSidebar() {
