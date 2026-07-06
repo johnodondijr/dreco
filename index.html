@@ -5985,6 +5985,78 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
   #app .topbar-search-kbd,#app .topbar-user-info{display:none!important;}
   #app .topbar-user-card{padding:0!important;}
 }
+/* Topbar squeeze fix: reserve action/user space and keep search visually clean */
+#app .topbar{
+  display:grid!important;
+  grid-template-columns:minmax(240px,1fr) 30px 30px minmax(112px,max-content)!important;
+  align-items:center!important;
+  column-gap:14px!important;
+  padding:0 32px 0 22px!important;
+  overflow:visible!important;
+}
+#app .topbar-search{
+  width:100%!important;
+  min-width:0!important;
+  border:0!important;
+  background:#F7F7F8!important;
+  box-shadow:none!important;
+}
+#app .topbar-search:hover,
+#app .topbar-search:focus,
+#app .topbar-search:focus-within,
+#app .topbar-search:active{
+  border:0!important;
+  background:#F7F7F8!important;
+  box-shadow:none!important;
+}
+#app .topbar-search-fake,
+#app .topbar-search-kbd{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+#app .profile-wrap{
+  min-width:112px!important;
+  max-width:180px!important;
+  flex-shrink:0!important;
+  overflow:visible!important;
+}
+#app .topbar-user-card{
+  width:100%!important;
+  min-width:112px!important;
+  max-width:180px!important;
+  height:34px!important;
+  padding:0 8px 0 0!important;
+  background:transparent!important;
+  border:0!important;
+  overflow:visible!important;
+}
+#app .topbar-user-info{
+  min-width:0!important;
+  flex:1 1 auto!important;
+  overflow:hidden!important;
+}
+#app .topbar-user-name{
+  display:block!important;
+  max-width:none!important;
+}
+@media(max-width:900px){
+  #app .topbar{
+    display:flex!important;
+    padding:0 14px!important;
+    gap:10px!important;
+  }
+  #app .profile-wrap{
+    min-width:auto!important;
+    max-width:none!important;
+  }
+  #app .topbar-user-card{
+    width:auto!important;
+    min-width:30px!important;
+    max-width:none!important;
+    padding:0!important;
+  }
+}
 </style>
 </head>
 <body>
