@@ -468,6 +468,7 @@ function setCurrentWorkspace(account) {
 function updateWorkspaceLabels() {
   const mappings = [
     ['#topbar-workspace-name', getCompanyName()],
+    ['#topbar-user-sub', getCompanyName()],
     ['#nav-lb .nav-item-label', 'General Jobs'],
     ['#nav-lb', 'General Jobs', 'data-title'],
     ['#bnav-lb span', 'General'],
@@ -3898,7 +3899,7 @@ function setUserDisplay(display, role) {
     ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
     : display.substring(0, 2).toUpperCase();
 
-  ['user-chip','sidebar-user-name'].forEach(id => {
+  ['user-chip','sidebar-user-name','topbar-user-name'].forEach(id => {
     const el = document.getElementById(id); if (el) el.textContent = display;
   });
   const sucName = document.getElementById('suc-name');

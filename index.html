@@ -2079,13 +2079,53 @@ td,th,.badge,.btn,.toolbar-select,.pill-tab,.country-tab,.field input,.field sel
   border-bottom:1px solid var(--dreco-line)!important;
   box-shadow:0 8px 24px rgba(31,42,73,.04)!important;
   backdrop-filter:blur(12px)!important;
-  padding:0 24px!important;
+  padding:0 16px 0 20px!important;
+  gap:10px!important;
 }
 .topbar-title{
   color:var(--dreco-ink)!important;
   font-size:20px!important;
   font-weight:475!important;
   letter-spacing:-.02em!important;
+}
+.topbar-search{
+  flex:1!important;
+  max-width:none!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  height:38px!important;
+  background:#F8FAFD!important;
+  border:1px solid #DFE5F1!important;
+  border-radius:10px!important;
+  padding:0 12px!important;
+}
+.topbar-search-icon{
+  font-size:15px!important;
+  color:#9BA4B8!important;
+  flex-shrink:0!important;
+}
+.topbar-search-fake{
+  flex:1!important;
+  color:#9BA4B8!important;
+  font-size:12px!important;
+  font-weight:500!important;
+  user-select:none!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.topbar-search-kbd{
+  flex-shrink:0!important;
+  font-size:10px!important;
+  font-weight:500!important;
+  color:#9BA4B8!important;
+  background:#EEF1F6!important;
+  border:1px solid #DFE5F1!important;
+  border-radius:5px!important;
+  padding:2px 5px!important;
+  font-family:inherit!important;
+  letter-spacing:0!important;
 }
 .topbar-search input,.search-wrap input{
   height:38px!important;
@@ -2098,6 +2138,81 @@ td,th,.badge,.btn,.toolbar-select,.pill-tab,.country-tab,.field input,.field sel
   background:#fff!important;
   border-color:var(--dreco-purple)!important;
   box-shadow:0 0 0 4px rgba(83,71,206,.11)!important;
+}
+.topbar-notif-btn{
+  flex-shrink:0!important;
+  width:36px!important;
+  height:36px!important;
+  border-radius:10px!important;
+  border:1px solid #DFE5F1!important;
+  background:#fff!important;
+  color:#5C677D!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-size:17px!important;
+  cursor:pointer!important;
+  transition:border-color .15s,box-shadow .15s!important;
+}
+.topbar-notif-btn:hover{
+  border-color:#A9B3C8!important;
+  box-shadow:0 0 0 3px rgba(83,71,206,.08)!important;
+}
+.topbar-user-card{
+  flex-shrink:0!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  height:38px!important;
+  background:#fff!important;
+  border:1px solid #DFE5F1!important;
+  border-radius:10px!important;
+  padding:0 10px 0 6px!important;
+  cursor:pointer!important;
+  transition:border-color .15s,box-shadow .15s!important;
+}
+.topbar-user-card:hover{
+  border-color:#A9B3C8!important;
+  box-shadow:0 0 0 3px rgba(83,71,206,.08)!important;
+}
+.topbar-user-card .topbar-avatar{
+  width:26px!important;
+  height:26px!important;
+  border-radius:7px!important;
+  font-size:10px!important;
+  flex-shrink:0!important;
+}
+.topbar-user-info{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  gap:1px!important;
+  min-width:0!important;
+}
+.topbar-user-name{
+  font-size:12px!important;
+  font-weight:500!important;
+  color:var(--dreco-ink)!important;
+  max-width:110px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  line-height:1.2!important;
+}
+.topbar-user-sub{
+  font-size:10px!important;
+  font-weight:400!important;
+  color:#9BA4B8!important;
+  max-width:110px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  line-height:1.2!important;
+}
+.topbar-user-caret{
+  font-size:13px!important;
+  color:#9BA4B8!important;
+  flex-shrink:0!important;
 }
 .topbar-user{
   background:#fff!important;
@@ -3373,6 +3488,9 @@ tr:last-child td{border-bottom:none!important}
   #sidebar.mobile-open .sidebar-workspace-badge{display:flex!important}
   /* Hamburger always visible */
   .topbar-hamburger{display:flex!important;color:#374151!important}
+  /* Compact topbar user card on mobile */
+  .topbar-user-info,.topbar-user-caret,.topbar-search-kbd{display:none!important}
+  .topbar-user-card{padding:0 6px!important;gap:0!important}
   /* Metrics 2-col compact */
   .metrics-strip{grid-template-columns:repeat(2,1fr)!important;gap:8px!important;margin-bottom:14px!important}
   .metric-card{padding:12px!important}
@@ -6111,23 +6229,28 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
         <button class="topbar-hamburger" id="topbar-hamburger" type="button" aria-label="Open menu" onclick="openMobileSidebar()">
           <i class="ti ti-menu-2"></i>
         </button>
-        <span class="topbar-title" id="topbar-title">Dashboard</span>
-        <button class="topbar-workspace" type="button" onclick="switchTab('settings')" title="Workspace settings">
-          <i class="ti ti-building-skyscraper"></i>
-          <span id="topbar-workspace-name">Workspace</span>
-          <i class="ti ti-chevron-down"></i>
-        </button>
+        <span class="topbar-title" id="topbar-title" style="display:none">Dashboard</span>
+        <span id="topbar-workspace-name" style="display:none">Workspace</span>
         <div class="topbar-search" onclick="openCmd()" style="cursor:pointer" title="Search candidates, jobs, clients">
+          <i class="ti ti-search topbar-search-icon"></i>
           <label for="global-search" class="sr-only">Search candidates, jobs, clients</label>
-          <div id="global-search" class="topbar-search-fake" style="flex:1;color:var(--text-3,#999);font-size:12px;font-weight:500;user-select:none">Search candidates, tabs…</div>
+          <div id="global-search" class="topbar-search-fake">Search candidates, tabs…</div>
+          <kbd class="topbar-search-kbd">⌘K</kbd>
         </div>
-        <button class="topbar-icon-btn" type="button" onclick="openHelp()" title="Help & Support"><i class="ti ti-help-circle"></i></button>
-        <div class="save-dot" id="save-dot"></div>
-        <span class="save-label" id="save-label">Saved</span>
+        <button class="topbar-icon-btn topbar-notif-btn" id="topbar-notif-btn" type="button" aria-label="Notifications" title="Notifications">
+          <i class="ti ti-bell"></i>
+        </button>
+        <div class="save-dot" id="save-dot" style="display:none"></div>
+        <span class="save-label" id="save-label" style="display:none">Saved</span>
         <div class="profile-wrap">
-          <!-- Icon-only profile button -->
-          <button type="button" class="topbar-profile-btn topbar-avatar-static" id="topbar-profile-btn" aria-label="Account menu" title="Account" onclick="toggleProfileDropdown(event)" style="display:none">
+          <!-- User card profile button -->
+          <button type="button" class="topbar-profile-btn topbar-user-card" id="topbar-profile-btn" aria-label="Account menu" onclick="toggleProfileDropdown(event)">
             <div class="topbar-avatar" id="topbar-avatar">-</div>
+            <div class="topbar-user-info">
+              <span class="topbar-user-name" id="topbar-user-name">User</span>
+              <span class="topbar-user-sub" id="topbar-user-sub">Company</span>
+            </div>
+            <i class="ti ti-chevron-down topbar-user-caret"></i>
           </button>
 
           <!-- Account menu — JS-only display:none/block, position:fixed, no CSS class conflicts -->
