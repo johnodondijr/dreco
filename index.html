@@ -6058,17 +6058,19 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
   }
 }
 /* ── Spacing balance pass ─────────────────────────────────────
-   1. Sidebar: match bottom gap to top (sidebar-top padding-top=18 +
-      sidebar padding-top=14 ≈ 32px at top; user card was only 8px+14px=22px).
-      Increase user card margin-bottom so bottom ≈ 32px total.
-   2. Topbar + content: make left/right pads symmetric (was 22px left,
-      32px right in topbar; content 24px symmetric). Align both to 28px.
+   1. Sidebar bottom: overflow:hidden clips margins on flex items, so
+      we set padding-bottom on the sidebar itself instead of margin
+      on the user card. Use high-specificity to win cascade.
+   2. Topbar + content: equalise left/right to 28px with full padding
+      shorthand (not just padding-left/right) so the grid+flex topbar
+      and the content sections are both symmetric.
 ──────────────────────────────────────────────────────────────── */
-#app .sidebar-user-card,
-#app .sidebar-user-card.sidebar-account-trigger{margin-bottom:18px!important;}
-#app .sidebar.collapsed .sidebar-user-card{margin-bottom:18px!important;}
-#app .topbar{padding-left:28px!important;padding-right:28px!important;}
-#app .content-area>div{padding-left:28px!important;padding-right:28px!important;}
+html body #app #sidebar,
+html body #app .sidebar{padding-bottom:20px!important;}
+html body #app #sidebar.collapsed,
+html body #app .sidebar.collapsed{padding-bottom:14px!important;}
+html body #app .topbar{padding:0 28px!important;}
+html body #app .content-area>div{padding:22px 28px 28px!important;}
 </style>
 </head>
 <body>
