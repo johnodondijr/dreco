@@ -1321,6 +1321,20 @@ async function loadAllData() {
   switchTab(location.hash ? location.hash.slice(1) : 'dash', false);
 }
 
+window.refreshDrecoData = async function refreshDrecoData() {
+  const btn = document.getElementById('topbar-refresh-btn');
+  btn?.classList.add('is-spinning');
+  try {
+    await loadAllData();
+    showToast('Workspace refreshed', 'success');
+  } catch (err) {
+    console.error('Refresh failed:', err);
+    showToast('Refresh failed', 'error');
+  } finally {
+    btn?.classList.remove('is-spinning');
+  }
+};
+
 function normalizeDateField(v) {
   if (v===''||v===null||v===undefined) return null;
   if (typeof v==='number') return xlToISO(v);

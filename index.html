@@ -5950,6 +5950,41 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
   #app .topbar-user-info,#app .topbar-user-caret,#app .topbar-search-kbd{display:none!important;}
   #app .topbar-user-card{padding:0 6px!important;}
 }
+/* Dreco topbar inspiration pass: sidebar first, search across top, compact actions */
+#app .app-layout{display:grid!important;grid-template-columns:232px minmax(0,1fr)!important;grid-template-rows:56px minmax(0,1fr)!important;height:100vh!important;overflow:hidden!important;background:#fff!important;}
+#app .app-body{display:contents!important;}
+#app .sidebar{grid-column:1!important;grid-row:1 / span 2!important;width:232px!important;height:100vh!important;border-right:1px solid #ECEEF3!important;background:#fff!important;}
+#app .main-area{grid-column:2!important;grid-row:2!important;display:flex!important;flex-direction:column!important;min-width:0!important;overflow:hidden!important;background:#F7F8FB!important;}
+#app .topbar{grid-column:2!important;grid-row:1!important;display:flex!important;align-items:center!important;gap:18px!important;padding:0 26px 0 22px!important;height:56px!important;min-height:56px!important;overflow:visible!important;flex-wrap:nowrap!important;width:100%!important;box-sizing:border-box!important;background:#fff!important;border-bottom:1px solid #F0F2F6!important;box-shadow:none!important;}
+#app .topbar-hamburger{display:none!important;}
+#app .topbar-title,#app #topbar-workspace-name{display:none!important;}
+#app .topbar-search{flex:1!important;max-width:none!important;min-width:0!important;min-height:34px!important;height:34px!important;display:flex!important;align-items:center!important;gap:9px!important;padding:0 14px!important;background:#F8F8F9!important;border:1px solid #F1F2F4!important;border-radius:4px!important;cursor:pointer!important;position:static!important;order:0!important;margin:0!important;box-shadow:none!important;}
+#app .topbar-search:focus,#app .topbar-search:focus-within,#app .topbar-search:hover,#app .topbar-search:active{box-shadow:none!important;border-color:#F1F2F4!important;outline:none!important;background:#F8F8F9!important;}
+#app .topbar-search i,#app .topbar-search-icon{position:static!important;transform:none!important;top:auto!important;left:auto!important;font-size:14px!important;color:#9BA4B8!important;flex-shrink:0!important;pointer-events:none!important;}
+#app .topbar-search-fake{flex:1!important;color:#777F8E!important;font-size:11.5px!important;font-weight:438!important;user-select:none!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+#app .topbar-search-kbd{flex-shrink:0!important;font-size:10px!important;color:#B0B5BF!important;background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;}
+#app .topbar-icon-btn,#app .topbar-refresh-btn,#app .topbar-notif-btn{flex-shrink:0!important;width:26px!important;height:26px!important;border-radius:8px!important;border:0!important;background:transparent!important;color:#171715!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:18px!important;cursor:pointer!important;box-shadow:none!important;padding:0!important;}
+#app .topbar-icon-btn:hover,#app .topbar-refresh-btn:hover,#app .topbar-notif-btn:hover{background:#F3F4F6!important;box-shadow:none!important;}
+#app .topbar-refresh-btn.is-spinning i{animation:drecoTopbarSpin .7s linear infinite;}
+#app .topbar-notif-btn{position:relative!important;}
+#app .topbar-notif-btn::after{content:'';position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:999px;background:#EF233C;border:1.5px solid #fff;}
+#app .topbar-user-card{flex-shrink:0!important;display:flex!important;align-items:center!important;gap:8px!important;height:34px!important;background:transparent!important;border:0!important;border-radius:10px!important;padding:0!important;cursor:pointer!important;box-shadow:none!important;}
+#app .topbar-user-card:hover{background:transparent!important;box-shadow:none!important;border-color:transparent!important;}
+#app .topbar-user-card .topbar-avatar{width:30px!important;height:30px!important;min-width:30px!important;border-radius:999px!important;font-size:10px!important;}
+#app .topbar-user-info{display:flex!important;flex-direction:column!important;gap:1px!important;min-width:0!important;}
+#app .topbar-user-name{font-size:12px!important;font-weight:562!important;color:#171715!important;max-width:120px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;line-height:1.2!important;}
+#app .topbar-user-sub,#app .topbar-user-caret{display:none!important;}
+@keyframes drecoTopbarSpin{to{transform:rotate(360deg)}}
+@media(max-width:760px){
+  #app .app-layout{display:flex!important;flex-direction:column!important;}
+  #app .app-body{display:block!important;}
+  #app .main-area{display:flex!important;flex:1!important;width:100%!important;}
+  #app .sidebar{display:none!important;}
+  #app .topbar{height:52px!important;min-height:52px!important;padding:0 10px!important;gap:8px!important;grid-column:auto!important;grid-row:auto!important;}
+  #app .topbar-hamburger{display:flex!important;}
+  #app .topbar-search-kbd,#app .topbar-user-info{display:none!important;}
+  #app .topbar-user-card{padding:0!important;}
+}
 </style>
 </head>
 <body>
@@ -6188,6 +6223,9 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
         <div id="global-search" class="topbar-search-fake">Search candidates, tabs…</div>
         <kbd class="topbar-search-kbd">⌘K</kbd>
       </div>
+      <button class="topbar-icon-btn topbar-refresh-btn" id="topbar-refresh-btn" type="button" aria-label="Refresh data" title="Refresh data" onclick="refreshDrecoData()">
+        <i class="ti ti-refresh"></i>
+      </button>
       <button class="topbar-icon-btn topbar-notif-btn" id="topbar-notif-btn" type="button" aria-label="Notifications" title="Notifications">
         <i class="ti ti-bell"></i>
       </button>
