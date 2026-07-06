@@ -129,12 +129,30 @@ export function injectDepsToD5(deps) {
   const js = (v='') => String(v ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ');
   const ini = (name='DR') => String(name||'DR').replace(/[^a-zA-Z ]/g,'').trim()
     .split(/\s+/).filter(Boolean).map(x=>x[0]).join('').slice(0,2).toUpperCase() || 'DR';
+  const CANDIDATE_AVATAR_KEY = 'dreco_candidate_avatars_v1';
+  const candidateAvatarStoreKey = () => `${CANDIDATE_AVATAR_KEY}_${typeof getCompanyId === 'function' ? getCompanyId() : 'default'}`;
+  const readCandidateAvatars = () => {
+    try { return JSON.parse(safeLocalGet(candidateAvatarStoreKey()) || '{}') || {}; }
+    catch { return {}; }
+  };
+  const writeCandidateAvatars = avatars => safeLocalSet(candidateAvatarStoreKey(), JSON.stringify(avatars || {}));
+  const candidateAvatarKey = (type, id) => `${type || 'candidate'}_${id ?? ''}`;
+  const candidateAvatarSrc = (type, id) => {
+    if (!type || id === undefined || id === null || id === '') return '';
+    return readCandidateAvatars()[candidateAvatarKey(type, id)] || '';
+  };
+  const candidateAvatar = (name, type='', id='', cls='dv5-avatar') => {
+    const src = candidateAvatarSrc(type, id);
+    return `<div class="${cls}" data-candidate-avatar="${h(candidateAvatarKey(type, id))}">
+      ${src ? `<img src="${h(src)}" alt="${h(name)}">` : h(ini(name))}
+    </div>`;
+  };
   const money = n => 'KES ' + (Number(n)||0).toLocaleString();
   const moneyUSD = n => '$' + (Number(n)||0).toLocaleString();
   const fmt = v => (typeof fmtDate === 'function' ? fmtDate(v) : (v || '—'));
   const co  = () => (typeof getCompanyName === 'function' ? getCompanyName() : DEFAULT_COMPANY.name);
   const fname = () => String(currentUser?.display || 'John').split(' ')[0] || 'John';
-  const avatar = name => `<div class="dv5-avatar">${h(ini(name))}</div>`;
+  const avatar = (name, type='', id='') => candidateAvatar(name, type, id, 'dv5-avatar');
   const hasDoc  = r => typeof window.hasDocs === 'function' ? window.hasDocs(r.type, r.id) : false;
   const balPro  = r => (typeof proBalance === 'function') ? proBalance(r) : Math.max((Number(r.commission)||0)-(Number(r.paid)||0),0);
   const LB_TRAVELLED_STAGES = new Set(['TRAVELLED','REFUND PENDING','REFUND COMPLETE']);
@@ -1178,7 +1196,7 @@ export function injectDepsToD5(deps) {
                       <input type="checkbox" ${sel?'checked':''} onchange="toggleCandSelect('${key}',this.checked)">
                     </td>
                     <td><div class="dv5-name-cell">
-                      ${avatar(r.name)}
+                      ${avatar(r.name, r.type, r.id)}
                       <div>
                         <div class="dv5-name">${h(r.name)}</div>
                         <div class="dv5-sub">${h(r.pp||'No passport')} · ${h(r.phone||'No phone')}</div>
@@ -1588,7 +1606,7 @@ export function injectDepsToD5(deps) {
           ? `<div class="dv5-doc-empty">No uploads yet</div>`
           : `<div class="dv5-doc-holders">${holders.map(r => `
               <div class="dv5-doc-holder-row" onclick="openCandidateProfile('${r.type}',${r.id})">
-                ${avatar(r.name)}
+                ${avatar(r.name, r.type, r.id)}
                 <div class="dv5-doc-holder-info">
                   <div class="dv5-name">${h(r.name)}</div>
                   <div class="dv5-sub">${h(r.docMeta.fileName||'')}${r.docMeta.size ? ' · '+fmtBytes(r.docMeta.size) : ''}</div>
@@ -1612,7 +1630,7 @@ export function injectDepsToD5(deps) {
         </div>
         <div class="dv5-doc-holders">${withNone.map(r => `
           <div class="dv5-doc-holder-row" onclick="openCandidateProfile('${r.type}',${r.id})">
-            ${avatar(r.name)}
+            ${avatar(r.name, r.type, r.id)}
             <div class="dv5-doc-holder-info">
               <div class="dv5-name">${h(r.name)}</div>
               <div class="dv5-sub">${h(r.company||r.country||'')}</div>
@@ -1948,6 +1966,45 @@ export function injectDepsToD5(deps) {
 
   window.closeProfile = window.closeCandidateProfile;
 
+  window.uploadCandidateAvatar = function(type, id, input) {
+    const file = input?.files?.[0];
+    if (!file) return;
+    if (!file.type?.startsWith('image/')) {
+      showToast?.('Please choose an image file.', 'error');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      showToast?.('Candidate photo must be under 2MB.', 'error');
+      input.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const avatars = readCandidateAvatars();
+      avatars[candidateAvatarKey(type, id)] = String(reader.result || '');
+      writeCandidateAvatars(avatars);
+      try { saveLocalStore?.(); } catch {}
+      try { addTimeline?.(type, id, 'Candidate photo updated'); } catch {}
+      try {
+        const row = allRows().find(x => x.type === type && String(x.id) === String(id));
+        auditAction?.('Candidates', 'Candidate photo updated', row?.name || 'Candidate');
+      } catch {}
+      showToast?.('Candidate photo updated', 'success');
+      renderCandidates();
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.removeCandidateAvatar = function(type, id) {
+    const avatars = readCandidateAvatars();
+    delete avatars[candidateAvatarKey(type, id)];
+    writeCandidateAvatars(avatars);
+    try { saveLocalStore?.(); } catch {}
+    try { addTimeline?.(type, id, 'Candidate photo removed'); } catch {}
+    showToast?.('Candidate photo removed', 'success');
+    renderCandidates();
+  };
+
   function renderCandidateProfilePage(el, type, id) {
     const r = allRows().find(x => x.type===type && String(x.id)===String(id));
     if (!r) { el.innerHTML = '<div class="dv5-page"><div class="dv5-empty">Candidate not found.</div></div>'; return; }
@@ -1984,7 +2041,11 @@ export function injectDepsToD5(deps) {
       <!-- Hero card -->
       <div class="dv5-card" style="margin-bottom:16px">
         <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
-          <div style="width:60px;height:60px;border-radius:14px;background:var(--dreco-ink,#1A1C2E);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:500;flex-shrink:0">${h(ini(r.name))}</div>
+          <label class="dv5-candidate-avatar-upload" title="Upload candidate photo">
+            ${candidateAvatar(r.name, type, id, 'dv5-profile-avatar')}
+            <input type="file" accept="image/*" onchange="window.uploadCandidateAvatar('${type}',${JSON.stringify(id)},this)">
+            <span><i class="ti ti-camera"></i></span>
+          </label>
           <div style="flex:1;min-width:0">
             <h2 style="font-size:20px;font-weight:500;color:#18191B;margin:0 0 3px">${h(r.name)}</h2>
             <div style="font-size:13px;color:#6b7280;margin-bottom:10px">${h(r.position||'—')} · ${h(r.company||r.country||'—')}</div>
@@ -1998,6 +2059,7 @@ export function injectDepsToD5(deps) {
           <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;align-items:flex-start">
             <button class="dv5-btn" onclick="${type==='pro'?`editPro(${r.id})`:`editLB(${r.id})`}"><i class="ti ti-edit"></i>Edit</button>
             <button class="dv5-btn primary" onclick="openDocs('${type}',${JSON.stringify(r.id)},'${js(r.name)}')"><i class="ti ti-upload"></i>Upload Docs</button>
+            ${candidateAvatarSrc(type, id) ? `<button class="dv5-btn" onclick="window.removeCandidateAvatar('${type}',${JSON.stringify(id)})"><i class="ti ti-photo-x"></i>Remove Photo</button>` : ''}
           </div>
         </div>
       </div>
@@ -2476,7 +2538,9 @@ export function injectDepsToD5(deps) {
 .dv5-next-action { font-size:11px; font-weight:438; color:var(--dreco-ink,#1A1C2E); }
 
 /* Avatars */
-.dv5-avatar { width:32px; height:32px; min-width:32px; border-radius:10px; background:#E4E1D6; color:#171715; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:562; }
+.dv5-avatar { width:32px; height:32px; min-width:32px; border-radius:999px; background:#E4E1D6; color:#171715; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:562; overflow:hidden; }
+.dv5-avatar img,
+.dv5-profile-avatar img { width:100%; height:100%; object-fit:cover; display:block; border-radius:inherit; }
 
 /* Badges */
 .dv5-badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
@@ -2568,7 +2632,12 @@ export function injectDepsToD5(deps) {
 .dv5-profile-id { font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:.06em; color:#7B8496; }
 .dv5-profile-actions { display:flex; gap:8px; }
 .dv5-profile-hero { display:grid; grid-template-columns:auto 1fr auto; gap:16px; align-items:center; background:#fff; border:1px solid var(--border,#E8E8E8); border-radius:16px; padding:18px; margin-bottom:12px; }
-.dv5-profile-avatar { width:60px; height:60px; border-radius:18px; background:#111827; color:#fff; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:562; flex-shrink:0; }
+.dv5-profile-avatar { width:60px; height:60px; border-radius:999px; background:#111827; color:#fff; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:562; flex-shrink:0; overflow:hidden; }
+.dv5-candidate-avatar-upload { width:60px; height:60px; border-radius:999px; position:relative; display:block; flex-shrink:0; cursor:pointer; }
+.dv5-candidate-avatar-upload input { display:none; }
+.dv5-candidate-avatar-upload span { position:absolute; right:-1px; bottom:-1px; width:22px; height:22px; border-radius:999px; display:flex; align-items:center; justify-content:center; background:#242330; color:#fff; border:2px solid #fff; box-shadow:0 5px 14px rgba(31,33,51,.18); }
+.dv5-candidate-avatar-upload span i { font-size:11px; }
+.dv5-candidate-avatar-upload:hover .dv5-profile-avatar { filter:brightness(.92); }
 .dv5-profile-info h2 { font-size:20px; font-weight:500; margin:0 0 4px; }
 .dv5-profile-info p { font-size:13px; color:#6B7280; margin:0 0 8px; font-weight:406; }
 .dv5-profile-meta { display:flex; gap:14px; flex-wrap:wrap; }
@@ -2978,7 +3047,20 @@ export function injectDepsToD5(deps) {
 .dv5-flow-fill { background:linear-gradient(180deg,#5347CE,#6A5CF0)!important; }
 .dv5-flow-fill.done { background:#49774E!important; }
 .dv5-profile-avatar,
-.dv5-avatar { background:#E9DDFB!important; color:#5347CE!important; }
+.dv5-avatar {
+  background:#E9DDFB!important;
+  color:#5347CE!important;
+  border-radius:999px!important;
+  overflow:hidden!important;
+}
+.dv5-profile-avatar img,
+.dv5-avatar img {
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  border-radius:999px!important;
+  display:block!important;
+}
 
 /* Rounded corner pass */
 .dv5-card,

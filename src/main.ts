@@ -3707,9 +3707,9 @@ function toggleProfileDropdown(e) {
   const trigger = (e?.currentTarget || e?.target)?.closest?.('.sidebar-account-trigger,.topbar-profile-btn');
   if (trigger) {
     const r = trigger.getBoundingClientRect();
-    const w = Math.min(268, window.innerWidth - 20);
+    const w = Math.min(184, window.innerWidth - 20);
     menu.style.width = w + 'px';
-    menu.style.left = Math.max(10, Math.min(r.left, window.innerWidth - w - 10)) + 'px';
+    menu.style.left = Math.max(10, Math.min(r.right - w, window.innerWidth - w - 10)) + 'px';
     menu.style.right = 'auto';
     if (trigger.classList.contains('sidebar-account-trigger')) {
       menu.style.bottom = Math.max(10, window.innerHeight - r.top + 6) + 'px';
@@ -3723,6 +3723,7 @@ function toggleProfileDropdown(e) {
   // Reset sub-panel and clear fields
   const panel = document.getElementById('pd-edit-panel');
   if (panel) panel.style.display = 'none';
+  menu.classList.remove('profile-editing');
   const msg = document.getElementById('pd-msg');
   if (msg) { msg.textContent = ''; msg.className = 'pd-msg'; }
   ['pd-current-pw','pd-new-pw','pd-confirm-pw'].forEach(id => {
@@ -3742,6 +3743,7 @@ function closeProfileDropdown() {
 function openProfileEdit() {
   const panel=document.getElementById('pd-edit-panel');
   if(panel) panel.style.display='block';
+  document.getElementById('acct-menu')?.classList.add('profile-editing');
   const msg=document.getElementById('pd-msg');
   if(msg){ msg.textContent=''; msg.className='pd-msg'; }
   const userInput=document.getElementById('pd-new-username');
@@ -3754,6 +3756,7 @@ function openProfileEdit() {
 function closeProfileEdit() {
   const panel=document.getElementById('pd-edit-panel');
   if(panel) panel.style.display='none';
+  document.getElementById('acct-menu')?.classList.remove('profile-editing');
   const msg=document.getElementById('pd-msg');
   if(msg){ msg.textContent=''; msg.className='pd-msg'; }
 }
@@ -3866,7 +3869,7 @@ const AVATAR_KEY = 'dreco_avatar_v1';
 function applyUserAvatar(initials) {
   const saved = localStorage.getItem(AVATAR_KEY);
   const imgHtml = saved ? `<img src="${saved}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : '';
-  ['suc-avatar', 'pd-avatar-large'].forEach(id => {
+  ['suc-avatar', 'pd-avatar', 'pd-avatar-large'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     if (saved) { el.innerHTML = imgHtml; el.textContent = ''; }

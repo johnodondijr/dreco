@@ -6205,6 +6205,82 @@ html body #app .sidebar-company-name{
 #app .sidebar.collapsed .sidebar-logo .dreco-wordmark{
   display:none!important;
 }
+/* Final account menu + circular avatar pass */
+html body #app .topbar-user-card .topbar-avatar,
+html body #acct-menu #pd-avatar{
+  width:30px!important;
+  height:30px!important;
+  min-width:30px!important;
+  border-radius:999px!important;
+  background:#242330!important;
+  color:#FFFFFF!important;
+  border:2px solid #FFFFFF!important;
+  box-shadow:0 0 0 3px #ECEAF4,0 10px 22px rgba(31,33,51,.14)!important;
+  overflow:hidden!important;
+  font-size:10px!important;
+  font-weight:500!important;
+}
+html body #app .topbar-user-card .topbar-avatar img,
+html body #acct-menu #pd-avatar img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  border-radius:999px!important;
+  display:block!important;
+}
+html body #app .topbar-user-card:hover .topbar-avatar{
+  box-shadow:0 0 0 3px #E5E1F1,0 12px 24px rgba(31,33,51,.18)!important;
+}
+html body #acct-menu{
+  width:184px!important;
+  padding:6px!important;
+  border-radius:14px!important;
+  background:#F9F9F7!important;
+  border:1px solid rgba(31,33,51,.08)!important;
+  box-shadow:0 18px 48px rgba(31,33,51,.16),0 1px 2px rgba(31,33,51,.05)!important;
+}
+html body #acct-menu.profile-editing{
+  width:288px!important;
+}
+html body #acct-menu .am-item{
+  min-height:29px!important;
+  padding:7px 8px!important;
+  border-radius:8px!important;
+  gap:8px!important;
+  color:#343241!important;
+  font-size:11px!important;
+  font-weight:500!important;
+  line-height:1.2!important;
+}
+html body #acct-menu .am-item:hover{
+  background:#EFEFED!important;
+}
+html body #acct-menu .am-item i{
+  width:16px!important;
+  font-size:14px!important;
+  color:#7C7988!important;
+}
+html body #app .dv5-avatar,
+html body #app .dv5-profile-avatar,
+html body #app .row-avatar,
+html body #app .v4-avatar,
+html body #app .avatar-mini,
+html body #app .ref-avatar-mini{
+  border-radius:999px!important;
+  overflow:hidden!important;
+}
+html body #app .dv5-avatar img,
+html body #app .dv5-profile-avatar img,
+html body #app .row-avatar img,
+html body #app .v4-avatar img,
+html body #app .avatar-mini img,
+html body #app .ref-avatar-mini img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  border-radius:999px!important;
+  display:block!important;
+}
 </style>
 </head>
 <body>
@@ -6455,19 +6531,20 @@ html body #app .sidebar-company-name{
         </button>
 
         <!-- Account menu — JS-only display:none/block, position:fixed, no CSS class conflicts -->
-        <div id="acct-menu" style="display:none;position:fixed;z-index:9999;background:#fff;border:1px solid #E4E4E7;border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 1px 4px rgba(0,0,0,.06);width:268px;overflow:hidden;max-height:calc(100vh - 80px);overflow-y:auto">
-          <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F4F4F5">
-            <div id="pd-avatar" style="width:36px;height:36px;border-radius:7px;background:#18181B;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0;letter-spacing:.02em">-</div>
+        <div id="acct-menu" style="display:none;position:fixed;z-index:9999;background:#F9F9F7;border:1px solid rgba(31,33,51,.08);border-radius:14px;box-shadow:0 18px 48px rgba(31,33,51,.16),0 1px 2px rgba(31,33,51,.05);width:184px;padding:6px;overflow:hidden;max-height:calc(100vh - 80px);overflow-y:auto">
+          <div style="display:flex;align-items:center;gap:9px;padding:7px 8px 9px;border-bottom:1px solid rgba(31,33,51,.06);margin-bottom:3px">
+            <div id="pd-avatar" style="width:30px;height:30px;border-radius:50%;background:#18181B;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0;letter-spacing:.02em;box-shadow:0 0 0 3px #ECEAF4">-</div>
             <div style="min-width:0;flex:1">
-              <div id="pd-name" style="font-size:13px;font-weight:375;color:#09090B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35">-</div>
-              <div style="font-size:11px;color:#71717A;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span id="pd-role-text">-</span></div>
+              <div id="pd-name" style="font-size:12px;font-weight:500;color:#242330;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25">-</div>
+              <div style="font-size:10px;color:#8A8797;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span id="pd-role-text">-</span></div>
             </div>
           </div>
-          <div id="acct-menu-items" style="padding:4px">
-            <button class="am-item" onclick="openProfileEdit()"><i class="ti ti-user-circle"></i>Edit Profile</button>
-            <button class="am-item" onclick="openChangePassword()"><i class="ti ti-lock"></i>Change Password</button>
-            <div style="height:1px;background:#F4F4F5;margin:3px 6px"></div>
-            <button class="am-item am-danger" onclick="doLogout()"><i class="ti ti-logout"></i>Log out</button>
+          <div id="acct-menu-items">
+            <button class="am-item" onclick="openProfileEdit()"><i class="ti ti-user"></i>Profile</button>
+            <button class="am-item" onclick="switchTab('team');closeProfileDropdown()"><i class="ti ti-users"></i>Team</button>
+            <button class="am-item" onclick="switchTab('settings');closeProfileDropdown()"><i class="ti ti-settings"></i>Settings</button>
+            <div style="height:1px;background:rgba(31,33,51,.06);margin:4px 3px"></div>
+            <button class="am-item" onclick="doLogout()"><i class="ti ti-logout"></i>Sign out</button>
           </div>
           <div id="pd-edit-panel" style="display:none">
             <div class="pd-edit-header">
