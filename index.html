@@ -5919,17 +5919,22 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
   .dv5-card{padding:8px!important;}
   .lp-form-panel{padding:32px 16px 24px!important;}
 }
+/* ── APP LAYOUT: topbar full-width, sidebar+content in row below ── */
+#app .app-layout{display:flex!important;flex-direction:column!important;height:100vh!important;overflow:hidden!important;}
+#app .app-body{display:flex!important;flex-direction:row!important;flex:1!important;min-height:0!important;overflow:hidden!important;}
+#app .main-area{display:flex!important;flex-direction:column!important;flex:1!important;min-width:0!important;overflow:hidden!important;}
 /* ── TOPBAR FINAL OVERRIDE — must be last ────────────────────
    Uses #app prefix (specificity 1,1,0) to beat all earlier
    .topbar-search rules and placed last to win cascade order.
 ────────────────────────────────────────────────────────────── */
-#app .topbar{display:flex!important;align-items:center!important;gap:10px!important;padding:0 20px!important;height:64px!important;overflow:visible!important;flex-wrap:nowrap!important;}
-#app .topbar-search{flex:1!important;max-width:none!important;min-width:0!important;min-height:38px!important;height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;background:#F8FAFD!important;border:1px solid #DFE5F1!important;border-radius:10px!important;cursor:pointer!important;position:static!important;order:0!important;margin-left:0!important;}
+#app .topbar{display:flex!important;align-items:center!important;gap:10px!important;padding:0 20px!important;height:64px!important;min-height:64px!important;overflow:visible!important;flex-wrap:nowrap!important;flex-shrink:0!important;width:100%!important;box-sizing:border-box!important;}
+#app .topbar-search{flex:1!important;max-width:none!important;min-width:0!important;min-height:38px!important;height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;background:#F8FAFD!important;border:1px solid #DFE5F1!important;border-radius:10px!important;cursor:pointer!important;position:static!important;order:0!important;margin-left:0!important;box-shadow:none!important;}
+#app .topbar-search:focus,#app .topbar-search:focus-within,#app .topbar-search:hover,#app .topbar-search:active{box-shadow:none!important;border-color:#DFE5F1!important;outline:none!important;}
 #app .topbar-search i,#app .topbar-search-icon{position:static!important;transform:none!important;top:auto!important;left:auto!important;font-size:15px!important;color:#9BA4B8!important;flex-shrink:0!important;pointer-events:none!important;}
 #app .topbar-search-fake{flex:1!important;color:#9BA4B8!important;font-size:12px!important;font-weight:500!important;user-select:none!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
 #app .topbar-search-kbd{flex-shrink:0!important;font-size:10px!important;color:#9BA4B8!important;background:#EEF1F6!important;border:1px solid #DFE5F1!important;border-radius:5px!important;padding:2px 5px!important;}
-#app .topbar-notif-btn{flex-shrink:0!important;width:36px!important;height:36px!important;border-radius:10px!important;border:1px solid #DFE5F1!important;background:#fff!important;color:#5C677D!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:17px!important;cursor:pointer!important;}
-#app .topbar-user-card{flex-shrink:0!important;display:flex!important;align-items:center!important;gap:8px!important;height:38px!important;background:#fff!important;border:1px solid #DFE5F1!important;border-radius:10px!important;padding:0 10px 0 6px!important;cursor:pointer!important;}
+#app .topbar-notif-btn{flex-shrink:0!important;width:36px!important;height:36px!important;border-radius:10px!important;border:1px solid #DFE5F1!important;background:#fff!important;color:#5C677D!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:17px!important;cursor:pointer!important;box-shadow:none!important;}
+#app .topbar-user-card{flex-shrink:0!important;display:flex!important;align-items:center!important;gap:8px!important;height:38px!important;background:#fff!important;border:1px solid #DFE5F1!important;border-radius:10px!important;padding:0 10px 0 6px!important;cursor:pointer!important;box-shadow:none!important;}
 #app .topbar-user-card .topbar-avatar{width:26px!important;height:26px!important;min-width:26px!important;border-radius:7px!important;font-size:10px!important;}
 #app .topbar-user-info{display:flex!important;flex-direction:column!important;gap:1px!important;min-width:0!important;}
 #app .topbar-user-name{font-size:12px!important;font-weight:500!important;color:#1A1C2E!important;max-width:110px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;line-height:1.2!important;}
@@ -6163,6 +6168,104 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
 <div id="app">
   <div class="app-layout">
 
+  <!-- TOPBAR -->
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <button class="topbar-hamburger" id="topbar-hamburger" type="button" aria-label="Open menu" onclick="openMobileSidebar()">
+        <i class="ti ti-menu-2"></i>
+      </button>
+      <span class="topbar-title" id="topbar-title" style="display:none">Dashboard</span>
+      <span id="topbar-workspace-name" style="display:none">Workspace</span>
+      <div class="topbar-search" onclick="openCmd()" style="cursor:pointer" title="Search candidates, jobs, clients">
+        <i class="ti ti-search topbar-search-icon"></i>
+        <label for="global-search" class="sr-only">Search candidates, jobs, clients</label>
+        <div id="global-search" class="topbar-search-fake">Search candidates, tabs…</div>
+        <kbd class="topbar-search-kbd">⌘K</kbd>
+      </div>
+      <button class="topbar-icon-btn topbar-notif-btn" id="topbar-notif-btn" type="button" aria-label="Notifications" title="Notifications">
+        <i class="ti ti-bell"></i>
+      </button>
+      <div class="save-dot" id="save-dot" style="display:none"></div>
+      <span class="save-label" id="save-label" style="display:none">Saved</span>
+      <div class="profile-wrap">
+        <!-- User card profile button -->
+        <button type="button" class="topbar-profile-btn topbar-user-card" id="topbar-profile-btn" aria-label="Account menu" onclick="toggleProfileDropdown(event)">
+          <div class="topbar-avatar" id="topbar-avatar">-</div>
+          <div class="topbar-user-info">
+            <span class="topbar-user-name" id="topbar-user-name">User</span>
+            <span class="topbar-user-sub" id="topbar-user-sub">Company</span>
+          </div>
+          <i class="ti ti-chevron-down topbar-user-caret"></i>
+        </button>
+
+        <!-- Account menu — JS-only display:none/block, position:fixed, no CSS class conflicts -->
+        <div id="acct-menu" style="display:none;position:fixed;z-index:9999;background:#fff;border:1px solid #E4E4E7;border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 1px 4px rgba(0,0,0,.06);width:268px;overflow:hidden;max-height:calc(100vh - 80px);overflow-y:auto">
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F4F4F5">
+            <div id="pd-avatar" style="width:36px;height:36px;border-radius:7px;background:#18181B;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0;letter-spacing:.02em">-</div>
+            <div style="min-width:0;flex:1">
+              <div id="pd-name" style="font-size:13px;font-weight:375;color:#09090B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35">-</div>
+              <div style="font-size:11px;color:#71717A;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span id="pd-role-text">-</span></div>
+            </div>
+          </div>
+          <div id="acct-menu-items" style="padding:4px">
+            <button class="am-item" onclick="openProfileEdit()"><i class="ti ti-user-circle"></i>Edit Profile</button>
+            <button class="am-item" onclick="openChangePassword()"><i class="ti ti-lock"></i>Change Password</button>
+            <div style="height:1px;background:#F4F4F5;margin:3px 6px"></div>
+            <button class="am-item am-danger" onclick="doLogout()"><i class="ti ti-logout"></i>Log out</button>
+          </div>
+          <div id="pd-edit-panel" style="display:none">
+            <div class="pd-edit-header">
+              <button class="pd-back-btn" onclick="closeProfileEdit()"><i class="ti ti-arrow-left"></i> Back</button>
+              <span>Edit Profile</span>
+            </div>
+            <div class="pd-section">Profile photo</div>
+            <div class="pd-field" style="flex-direction:row;align-items:center;gap:14px">
+              <div style="position:relative;cursor:pointer;flex-shrink:0" onclick="document.getElementById('pd-avatar-upload').click()">
+                <div id="pd-avatar-large" style="width:56px;height:56px;border-radius:50%;background:#111827;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:438;overflow:hidden;font-family:inherit">-</div>
+                <div style="position:absolute;bottom:0;right:0;width:20px;height:20px;border-radius:50%;background:#171715;color:#fff;display:flex;align-items:center;justify-content:center;border:2px solid #fff"><i class="ti ti-camera" style="font-size:10px"></i></div>
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:438;color:#111827">Upload photo</div>
+                <div style="font-size:11px;color:#6b7280;margin-top:2px">JPG, PNG or GIF · max 2MB</div>
+                <button type="button" id="pd-avatar-remove" onclick="removeUserAvatar()" style="display:none;margin-top:6px;font-size:11px;color:#ef4444;background:none;border:none;cursor:pointer;padding:0;font-family:inherit">Remove photo</button>
+              </div>
+              <input type="file" id="pd-avatar-upload" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)">
+            </div>
+            <div class="pd-section">Display name</div>
+            <div class="pd-field">
+              <label for="pd-display-name">Name shown in Dreco</label>
+              <input type="text" id="pd-display-name" placeholder="e.g. Fred">
+            </div>
+            <div class="pd-section">Change username</div>
+            <div class="pd-field">
+              <label for="pd-new-username">New username</label>
+              <input type="text" id="pd-new-username" placeholder="e.g. fred_admin" autocomplete="off">
+            </div>
+            <div class="pd-section">Change password</div>
+            <div class="pd-field">
+              <label for="pd-current-pw">Current password</label>
+              <input type="password" id="pd-current-pw" placeholder="Current password">
+            </div>
+            <div class="pd-field">
+              <label for="pd-new-pw">New password</label>
+              <input type="password" id="pd-new-pw" placeholder="New password">
+            </div>
+            <div class="pd-field">
+              <label for="pd-confirm-pw">Confirm new password</label>
+              <input type="password" id="pd-confirm-pw" placeholder="Repeat new password">
+            </div>
+            <div class="pd-msg" id="pd-msg"></div>
+            <div class="pd-actions">
+              <button class="pd-save" onclick="saveProfileChanges()">Save changes</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- APP BODY -->
+    <div class="app-body">
+
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-top">
@@ -6208,6 +6311,10 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
         <i class="ti ti-building"></i><span class="nav-item-label">Clients</span>
       </button>
 
+      <button type="button" class="nav-item" id="nav-settings" data-title="Settings" aria-label="Settings" onclick="switchTab('settings')">
+        <i class="ti ti-settings"></i><span class="nav-item-label">Settings</span>
+      </button>
+
       <div class="nav-spacer"></div>
 
       <!-- USER CARD at bottom -->
@@ -6224,100 +6331,6 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
 
     <!-- MAIN -->
     <div class="main-area">
-
-      <!-- TOPBAR -->
-      <div class="topbar">
-        <button class="topbar-hamburger" id="topbar-hamburger" type="button" aria-label="Open menu" onclick="openMobileSidebar()">
-          <i class="ti ti-menu-2"></i>
-        </button>
-        <span class="topbar-title" id="topbar-title" style="display:none">Dashboard</span>
-        <span id="topbar-workspace-name" style="display:none">Workspace</span>
-        <div class="topbar-search" onclick="openCmd()" style="cursor:pointer" title="Search candidates, jobs, clients">
-          <i class="ti ti-search topbar-search-icon"></i>
-          <label for="global-search" class="sr-only">Search candidates, jobs, clients</label>
-          <div id="global-search" class="topbar-search-fake">Search candidates, tabs…</div>
-          <kbd class="topbar-search-kbd">⌘K</kbd>
-        </div>
-        <button class="topbar-icon-btn topbar-notif-btn" id="topbar-notif-btn" type="button" aria-label="Notifications" title="Notifications">
-          <i class="ti ti-bell"></i>
-        </button>
-        <div class="save-dot" id="save-dot" style="display:none"></div>
-        <span class="save-label" id="save-label" style="display:none">Saved</span>
-        <div class="profile-wrap">
-          <!-- User card profile button -->
-          <button type="button" class="topbar-profile-btn topbar-user-card" id="topbar-profile-btn" aria-label="Account menu" onclick="toggleProfileDropdown(event)">
-            <div class="topbar-avatar" id="topbar-avatar">-</div>
-            <div class="topbar-user-info">
-              <span class="topbar-user-name" id="topbar-user-name">User</span>
-              <span class="topbar-user-sub" id="topbar-user-sub">Company</span>
-            </div>
-            <i class="ti ti-chevron-down topbar-user-caret"></i>
-          </button>
-
-          <!-- Account menu — JS-only display:none/block, position:fixed, no CSS class conflicts -->
-          <div id="acct-menu" style="display:none;position:fixed;z-index:9999;background:#fff;border:1px solid #E4E4E7;border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,.12),0 1px 4px rgba(0,0,0,.06);width:268px;overflow:hidden;max-height:calc(100vh - 80px);overflow-y:auto">
-            <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #F4F4F5">
-              <div id="pd-avatar" style="width:36px;height:36px;border-radius:7px;background:#18181B;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0;letter-spacing:.02em">-</div>
-              <div style="min-width:0;flex:1">
-                <div id="pd-name" style="font-size:13px;font-weight:375;color:#09090B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35">-</div>
-                <div style="font-size:11px;color:#71717A;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span id="pd-role-text">-</span></div>
-              </div>
-            </div>
-            <div id="acct-menu-items" style="padding:4px">
-              <button class="am-item" onclick="openProfileEdit()"><i class="ti ti-user-circle"></i>Edit Profile</button>
-              <button class="am-item" onclick="openChangePassword()"><i class="ti ti-lock"></i>Change Password</button>
-              <div style="height:1px;background:#F4F4F5;margin:3px 6px"></div>
-              <button class="am-item am-danger" onclick="doLogout()"><i class="ti ti-logout"></i>Log out</button>
-            </div>
-            <div id="pd-edit-panel" style="display:none">
-              <div class="pd-edit-header">
-                <button class="pd-back-btn" onclick="closeProfileEdit()"><i class="ti ti-arrow-left"></i> Back</button>
-                <span>Edit Profile</span>
-              </div>
-              <div class="pd-section">Profile photo</div>
-              <div class="pd-field" style="flex-direction:row;align-items:center;gap:14px">
-                <div style="position:relative;cursor:pointer;flex-shrink:0" onclick="document.getElementById('pd-avatar-upload').click()">
-                  <div id="pd-avatar-large" style="width:56px;height:56px;border-radius:50%;background:#111827;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:438;overflow:hidden;font-family:inherit">-</div>
-                  <div style="position:absolute;bottom:0;right:0;width:20px;height:20px;border-radius:50%;background:#171715;color:#fff;display:flex;align-items:center;justify-content:center;border:2px solid #fff"><i class="ti ti-camera" style="font-size:10px"></i></div>
-                </div>
-                <div>
-                  <div style="font-size:12px;font-weight:438;color:#111827">Upload photo</div>
-                  <div style="font-size:11px;color:#6b7280;margin-top:2px">JPG, PNG or GIF · max 2MB</div>
-                  <button type="button" id="pd-avatar-remove" onclick="removeUserAvatar()" style="display:none;margin-top:6px;font-size:11px;color:#ef4444;background:none;border:none;cursor:pointer;padding:0;font-family:inherit">Remove photo</button>
-                </div>
-                <input type="file" id="pd-avatar-upload" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)">
-              </div>
-              <div class="pd-section">Display name</div>
-              <div class="pd-field">
-                <label for="pd-display-name">Name shown in Dreco</label>
-                <input type="text" id="pd-display-name" placeholder="e.g. Fred">
-              </div>
-              <div class="pd-section">Change username</div>
-              <div class="pd-field">
-                <label for="pd-new-username">New username</label>
-                <input type="text" id="pd-new-username" placeholder="e.g. fred_admin" autocomplete="off">
-              </div>
-              <div class="pd-section">Change password</div>
-              <div class="pd-field">
-                <label for="pd-current-pw">Current password</label>
-                <input type="password" id="pd-current-pw" placeholder="Current password">
-              </div>
-              <div class="pd-field">
-                <label for="pd-new-pw">New password</label>
-                <input type="password" id="pd-new-pw" placeholder="New password">
-              </div>
-              <div class="pd-field">
-                <label for="pd-confirm-pw">Confirm new password</label>
-                <input type="password" id="pd-confirm-pw" placeholder="Repeat new password">
-              </div>
-              <div class="pd-msg" id="pd-msg"></div>
-              <div class="pd-actions">
-                <button class="pd-save" onclick="saveProfileChanges()">Save changes</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- CONTENT -->
       <div class="content-area">
@@ -6526,6 +6539,7 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
         <div id="clients-section" class="dv5-section" style="display:none"></div>
       </div><!-- /content-area -->
     </div><!-- /main-area -->
+  </div><!-- /app-body -->
   </div><!-- /app-layout -->
 </div><!-- /app -->
 
