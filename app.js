@@ -1521,7 +1521,7 @@ function renderReports(){
   const money=n=>'KES '+Number(n||0).toLocaleString();
   const short=s=>{
     const v=String(s||'-').replace(/^PENDING\s+/,'').trim();
-    return v.length>11?v.slice(0,10)+'...':v;
+    return v.length>16?v.slice(0,15)+'...':v;
   };
   const palette=['#5347CE','#887CFD','#4896FE','#16C8C7','#DDEBFF','#EFEEFF','#E8FAF7','#F8FAFC'];
   const chartBars=(items,max,colorFn)=>items.map((item,i)=>{
@@ -2511,7 +2511,31 @@ function renderTeam(){
   const users=(typeof getCompanyUsers==='function'?getCompanyUsers():[]).map(([username,account])=>({username,...account}));
   const fallback=currentUser?[{username:currentUser.username||'user',...currentUser}]:[{display:DEFAULT_ADMIN_USERNAME,role:'admin',username:DEFAULT_ADMIN_USERNAME}];
   const list=users.length?users:fallback;
-  grid.innerHTML=list.map(u=>`<div class="team-card"><div class="team-card-head"><div class="team-avatar">${escHTML((u.display||u.username||'U').slice(0,2).toUpperCase())}</div><div><div class="team-name">${escHTML(u.display||u.username||'User')}</div><div class="team-role">${u.role==='admin'?'Administrator':'Staff'} @${escHTML(u.username||'user')}</div></div></div><div class="team-perms"><span>Dashboard</span><span>Professional Jobs</span><span>General Jobs</span><span>Finance</span><span>Reports</span></div></div>`).join('');
+  grid.innerHTML=list.map(u=>`<div class="team-card"><div class="team-card-head"><div class="team-avatar">${escHTML((u.display||u.username||'U').slice(0,2).toUpperCase())}</div><div style="flex:1"><div class="team-name">${escHTML(u.display||u.username||'User')}</div><div class="team-role">${u.role==='admin'?'Administrator':'Staff'} @${escHTML(u.username||'user')}</div></div>${currentUser?.role==='admin'?`<button class="dv5-btn" style="margin-left:auto;font-size:12px;padding:0 10px;height:28px" onclick="openEditTeamMember('${escHTML(u.username||'')}')"><i class="ti ti-edit"></i>Edit</button>`:''}</div><div class="team-perms"><span>Dashboard</span><span>Professional Jobs</span><span>General Jobs</span><span>Finance</span><span>Reports</span></div></div>`).join('');
+}
+function openEditTeamMember(username){
+  if(!requireAdminAction('Editing users')) return;
+  const account=STAFF_ACCOUNTS[username]||{};
+  const el=document.getElementById('edit-team-modal'); if(!el) return;
+  const disp=document.getElementById('edit-team-display'); if(disp) disp.value=account.display||'';
+  const role=document.getElementById('edit-team-role'); if(role) role.value=account.role||'staff';
+  const uEl=document.getElementById('edit-team-username'); if(uEl) uEl.value=username;
+  const err=document.getElementById('edit-team-error'); if(err){ err.textContent=''; err.style.display='none'; }
+  el.classList.add('open');
+}
+async function submitEditTeamMember(){
+  const username=(document.getElementById('edit-team-username')?.value||'').trim();
+  const display=(document.getElementById('edit-team-display')?.value||'').trim();
+  const role=document.getElementById('edit-team-role')?.value==='admin'?'admin':'staff';
+  const err=document.getElementById('edit-team-error');
+  const fail=msg=>{ if(err){ err.textContent=msg; err.style.display='block'; } };
+  if(!username||!STAFF_ACCOUNTS[username]) return fail('User not found.');
+  if(!display) return fail('Display name is required.');
+  STAFF_ACCOUNTS[username].display=display;
+  STAFF_ACCOUNTS[username].role=role;
+  try{ await saveStaffAccounts(); }
+  catch(e){ return fail(e.message||'Could not save changes.'); }
+  closeModal('edit-team-modal'); renderTeam(); renderCompanyUsers(); showToast('User updated','success');
 }
 function renderSettingsPage(){
   const el=document.getElementById('settings-page-content'); if(!el) return;
@@ -3769,8 +3793,8 @@ function setUserDisplay(display, role) {
   let manualTasks = JSON.parse(localStorage.getItem('dreco_manual_tasks')||'[]');
   function saveDismissedTasks() { localStorage.setItem('dreco_dismissed_tasks', JSON.stringify([...dismissedAutoTasks])); }
   function saveManualTasks() { localStorage.setItem('dreco_manual_tasks', JSON.stringify(manualTasks)); }
-  window.dismissTask = key => { dismissedAutoTasks.add(key); saveDismissedTasks(); renderTasks(); };
-  window.dismissManualTask = idx => { manualTasks.splice(idx,1); saveManualTasks(); renderTasks(); };
+  window.dismissTask = key => { dismissedAutoTasks.add(key); saveDismissedTasks(); renderTasks(); if(typeof renderDash==='function') renderDash(); };
+  window.dismissManualTask = idx => { manualTasks.splice(idx,1); saveManualTasks(); renderTasks(); if(typeof renderDash==='function') renderDash(); };
   window.addManualTask = () => {
     const title = (document.getElementById('new-task-title')?.value||'').trim();
     const due = document.getElementById('new-task-due')?.value||'';
@@ -3876,7 +3900,7 @@ function setUserDisplay(display, role) {
         return `<div class="dv5-bar-col" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;position:relative">
           <div class="dv5-bar-tip" style="position:absolute;bottom:calc(${pct}% + 10px);left:50%;transform:translateX(-50%);background:#18191B;color:#fff;font-size:10px;font-weight:800;padding:3px 7px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;z-index:10">${b.count} placed</div>
           <div style="width:100%;border-radius:5px 5px 3px 3px;background:linear-gradient(180deg,#5347CE 0%,#9B8CFF 100%);height:${pct}%;min-height:3px;transition:height .4s cubic-bezier(.4,0,.2,1),opacity .12s;cursor:default" onmouseenter="this.previousElementSibling.style.opacity=1;this.style.opacity=.7" onmouseleave="this.previousElementSibling.style.opacity=0;this.style.opacity=1"></div>
-          <span style="font-size:10px;color:var(--text-3,#999);font-weight:700">${h(b.label)}</span>
+          <span style="font-size:10px;color:var(--text-3,#999);font-weight:700;white-space:nowrap">${h(b.label)}</span>
         </div>`;
       }).join('')}
     </div>`;
@@ -4175,7 +4199,7 @@ function setUserDisplay(display, role) {
           </div>
           <div class="dv5-head-actions">
             ${jobTypeTabs()}
-            <button class="dv5-btn primary" onclick="${isPro?'openProForm()':'openLBForm()'}"><i class="ti ti-plus"></i>Add ${isPro?'Professional':'General'}</button>
+            <button class="dv5-btn primary" onclick="${isPro?'openProForm()':'openLBForm()'}"><i class="ti ti-plus"></i>Add</button>
           </div>
         </div>
         ${!isPro ? lbCountryBar(lbDB||[]) : ''}
@@ -4305,7 +4329,7 @@ function setUserDisplay(display, role) {
                 style="height:36px;border:1.5px solid var(--border);border-radius:8px;padding:0 10px 0 32px;font-size:13px;background:#fff;width:200px;outline:none">
             </div>
             ${jobTypeTabs()}
-            <button class="dv5-btn primary" onclick="${isPro?'openProForm()':'openLBForm()'}"><i class="ti ti-plus"></i>Add ${isPro?'Professional':'General'}</button>
+            <button class="dv5-btn primary" onclick="${isPro?'openProForm()':'openLBForm()'}"><i class="ti ti-plus"></i>Add</button>
           </div>
         </div>
         ${!isPro ? lbCountryBar(lbDB||[]) : ''}
@@ -4448,7 +4472,7 @@ function setUserDisplay(display, role) {
           <div><h1>Candidates</h1><p>${isPro?'Professional placements — commissions in KES.':'General Jobs — refunds in USD.'}</p></div>
           <div class="dv5-head-actions">
             ${jobTypeTabs()}
-            <button class="dv5-btn primary" onclick="${isPro?'openProForm()':'openLBForm()'}"><i class="ti ti-plus"></i>Add ${isPro?'Professional':'General'}</button>
+            <button class="dv5-btn primary" onclick="${isPro?'openProForm()':'openLBForm()'}"><i class="ti ti-plus"></i>Add</button>
           </div>
         </div>
         ${!isPro ? lbCountryBar(lbDB||[]) : ''}
@@ -4828,7 +4852,7 @@ function setUserDisplay(display, role) {
                       <div class="dv5-tx-status" style="color:#6b7280">${h(r.company||'—')} · ${h(r.stage||'—')}</div>
                     </div>
                     <div class="dv5-tx-amt" style="color:#dc2626">${amtStr}</div>
-                    <button class="dv5-tx-arrow" onclick="event.stopPropagation();${r.type==='pro'?`editPro(${r.id})`:`editLB(${r.id})`}"><i class="ti ti-chevron-right"></i></button>
+                    <button class="dv5-tx-arrow" style="background:#dcfce7;border-color:#86efac;color:#16a34a" onclick="event.stopPropagation();openRecordPaymentPrompt('commission')" title="Record payment"><i class="ti ti-plus"></i></button>
                   </div>`;
                 }).join('') : '<div class="dv5-empty" style="padding:32px">No outstanding balances.</div>')
             }
@@ -5040,13 +5064,13 @@ function setUserDisplay(display, role) {
       const slot=last12.find(s=>s.y===d.getFullYear()&&s.m===d.getMonth()); if(slot) slot.count++;
     });
     const chartMax=Math.max(...last12.map(s=>s.count),1);
-    const monthlyChart=`<div style="display:flex;align-items:flex-end;gap:4px;height:100px;padding-bottom:4px">
+    const monthlyChart=`<div style="overflow-x:auto"><div style="display:flex;align-items:flex-end;gap:4px;height:116px;padding-bottom:4px;min-width:480px">
       ${last12.map(s=>{const pct=Math.max(Math.round(s.count/chartMax*100),s.count>0?5:2);return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end;position:relative">
-        <span style="font-size:9px;font-weight:800;color:#5347CE;position:absolute;bottom:calc(${pct}% + 2px)">${s.count||''}</span>
+        <span style="font-size:9px;font-weight:800;color:#5347CE;position:absolute;bottom:calc(${pct}% + 16px)">${s.count||''}</span>
         <div style="width:100%;border-radius:4px 4px 2px 2px;background:linear-gradient(180deg,#5347CE,#9B8CFF);height:${pct}%;min-height:2px" title="${s.count} placements"></div>
-        <span style="font-size:9px;color:#999;font-weight:700;writing-mode:vertical-lr;transform:rotate(180deg);height:28px;white-space:nowrap">${s.label}</span>
+        <span style="font-size:9px;color:#999;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center">${s.label}</span>
       </div>`}).join('')}
-    </div>`;
+    </div></div>`;
 
     // Avg days per stage (Pro only)
     let stageTimeHTML = '';
@@ -5210,7 +5234,7 @@ function setUserDisplay(display, role) {
         <div class="dv5-table-card">
           <div class="dv5-table-wrap">
             <table class="dv5-table">
-              <thead><tr><th></th><th>Client Name</th><th>Country</th><th>Active</th><th>Total</th><th>Outstanding</th><th>Collected</th><th>Manager</th></tr></thead>
+              <thead><tr><th></th><th>Client Name</th><th>Country</th><th>Active</th><th>Total</th><th>Outstanding</th><th>Collected</th></tr></thead>
               <tbody>
                 ${clients.length ? clients.map(c => {
                   const isOpen = expandedClient === c.name;
@@ -5230,9 +5254,8 @@ function setUserDisplay(display, role) {
                     <td>${c.total}</td>
                     <td>${c.due>0?`<strong style="color:#b91c1c">${fmt2(c.due)}</strong>`:fmt2(0)}</td>
                     <td>${fmt2(c.paid)}</td>
-                    <td>${h(c.manager||'—')}</td>
                   </tr>
-                  ${isOpen ? `<tr class="dv5-expand-row"><td colspan="8" style="padding:0 0 8px 40px;background:#f8fafc">
+                  ${isOpen ? `<tr class="dv5-expand-row"><td colspan="7" style="padding:0 0 8px 40px;background:#f8fafc">
                     <table class="dv5-table" style="min-width:0;border:0;box-shadow:none">
                       <thead><tr><th>Name</th><th>${isPro?'Job Title':'Country'}</th><th>Stage</th><th>Submitted</th><th>Invoice</th><th>Balance</th><th></th></tr></thead>
                       <tbody>

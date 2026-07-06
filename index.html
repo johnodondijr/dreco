@@ -4295,6 +4295,23 @@ tr:last-child td{border-bottom:none!important}
   }
 }
 
+/* ── Login: center form content vertically ─────────────────── */
+@media(min-width:1181px){
+  #login-screen .lp-form-panel{
+    justify-content:center!important;
+    padding-top:130px!important;
+    padding-bottom:120px!important;
+  }
+  #login-screen .lp-content-area{
+    margin:0 auto!important;
+  }
+}
+@media(max-width:1180px){
+  #login-screen .lp-form-panel{
+    padding-bottom:130px!important;
+  }
+}
+
 /* ── Sidebar user card: profile card style ─────────────────── */
 #app .sidebar-user-card,
 #app .sidebar-user-card.sidebar-account-trigger {
@@ -7046,6 +7063,17 @@ html body #app .ref-avatar-mini img{
   </div>
 </div>
 
+<div class="modal-bg" id="edit-team-modal">
+  <div class="modal quick-modal">
+    <div class="modal-header"><h3>Edit user</h3><button class="modal-close" onclick="closeModal('edit-team-modal')">x</button></div>
+    <div class="modal-body"><div class="form-grid">
+      <input type="hidden" id="edit-team-username">
+      <div class="field form-full"><label for="edit-team-display">Display name *</label><input id="edit-team-display" type="text" placeholder="e.g. Mary Wanjiku"></div>
+      <div class="field form-full"><label for="edit-team-role">Role</label><select id="edit-team-role"><option value="staff">Staff</option><option value="admin">Admin</option></select></div>
+    </div><div class="login-error" id="edit-team-error" role="alert" style="display:none"></div></div>
+    <div class="modal-footer"><button class="btn" onclick="closeModal('edit-team-modal')">Cancel</button><button class="btn primary" onclick="submitEditTeamMember()">Save changes</button></div>
+  </div>
+</div>
 <div class="modal-bg" id="quick-user-modal">
   <div class="modal quick-modal">
     <div class="modal-header"><h3>Add user</h3><button class="modal-close" onclick="closeModal('quick-user-modal')">x</button></div>
