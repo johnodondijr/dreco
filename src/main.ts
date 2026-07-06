@@ -469,6 +469,7 @@ function updateWorkspaceLabels() {
   const mappings = [
     ['#topbar-workspace-name', getCompanyName()],
     ['#topbar-user-sub', getCompanyName()],
+    ['#sidebar-company-name', getCompanyName()],
     ['#nav-lb .nav-item-label', 'General Jobs'],
     ['#nav-lb', 'General Jobs', 'data-title'],
     ['#bnav-lb span', 'General'],

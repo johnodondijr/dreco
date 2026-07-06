@@ -776,16 +776,9 @@ export function injectDepsToD5(deps) {
       <div class="nav-section-label" style="font-size:10px;letter-spacing:.08em;font-weight:438;text-transform:uppercase;opacity:.5;margin:12px 0 2px 10px;padding:0">Workspace</div>
       ${['dash','pipeline','candidates'].map(navItem).join('')}
       <div class="nav-section-label" style="font-size:10px;letter-spacing:.08em;font-weight:438;text-transform:uppercase;opacity:.5;margin:12px 0 2px 10px;padding:0">Operations</div>
-      ${['finance','documents','reports','clients'].map(navItem).join('')}
+      ${['finance','documents','reports','clients','settings'].map(navItem).join('')}
       <div class="nav-spacer"></div>
-      <button class="sidebar-user-card sidebar-account-trigger dv5-suc" type="button" onclick="toggleProfileDropdown(event)">
-        <div class="suc-avatar-wrap">
-          <div class="suc-avatar" id="suc-avatar">${h(ini(currentUser?.display))}</div>
-        </div>
-        <div class="suc-name" id="suc-name">${h(currentUser?.display||'User')}</div>
-        <div class="suc-org">${currentUser?.role === 'admin' ? 'Admin' : 'Staff'}</div>
-        <i class="ti ti-dots-horizontal suc-dots" style="color:#c0c4cc;font-size:13px;margin-top:2px"></i>
-      </button>`;
+      <div class="sidebar-company-name" id="sidebar-company-name">${h(co())}</div>`;
     sidebarBuilt = true;
   }
 

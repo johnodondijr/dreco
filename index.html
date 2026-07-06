@@ -6143,6 +6143,26 @@ html body #app .content-area>div{padding:22px 28px 28px!important;}
     margin-bottom:16px!important;
     padding:18px 20px!important;
   }
+  html body #app .sidebar-company-name{
+    width:calc(100% - 8px)!important;
+    margin:16px 4px 0!important;
+    padding:0 10px!important;
+    min-height:34px!important;
+    display:flex!important;
+    align-items:center!important;
+    color:rgba(255,255,255,.74)!important;
+    font-size:12px!important;
+    font-weight:562!important;
+    letter-spacing:0!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    flex-shrink:0!important;
+  }
+  html body #app .sidebar-user-card,
+  html body #app .sidebar-user-card.sidebar-account-trigger{
+    display:none!important;
+  }
 }
 @media(max-width:1180px) and (min-width:761px){
   html body #app{
@@ -6160,6 +6180,9 @@ html body #app .content-area>div{padding:22px 28px 28px!important;}
   html body #app .content-area>div{
     padding:20px 18px 28px!important;
   }
+}
+html body #app .sidebar-company-name{
+  color:rgba(255,255,255,.74)!important;
 }
 </style>
 </head>
@@ -6537,16 +6560,7 @@ html body #app .content-area>div{padding:22px 28px 28px!important;}
 
       <div class="nav-spacer"></div>
 
-      <!-- USER CARD at bottom -->
-      <button class="sidebar-user-card sidebar-account-trigger" onclick="toggleProfileDropdown(event)" type="button">
-        <div class="suc-avatar-wrap">
-          <div class="suc-avatar" id="suc-avatar">-</div>
-        </div>
-        <div class="suc-info">
-          <div class="suc-name" id="suc-name">-</div>
-          <div class="suc-org">Admin</div>
-        </div>
-      </button>
+      <div class="sidebar-company-name" id="sidebar-company-name">Dreco</div>
 </aside>
 
     <!-- MAIN -->
