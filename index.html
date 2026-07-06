@@ -6188,6 +6188,23 @@ html body #app .content-area>div{padding:22px 28px 28px!important;}
 html body #app .sidebar-company-name{
   color:rgba(255,255,255,.74)!important;
 }
+.dreco-wordmark{
+  display:block!important;
+  height:auto!important;
+  object-fit:contain!important;
+  flex-shrink:0!important;
+}
+#login-screen .lp-brand-tag .dreco-wordmark{
+  width:122px!important;
+}
+#app .sidebar-logo .dreco-wordmark{
+  width:112px!important;
+  max-width:100%!important;
+}
+#app.sidebar-collapsed .sidebar-logo .dreco-wordmark,
+#app .sidebar.collapsed .sidebar-logo .dreco-wordmark{
+  display:none!important;
+}
 </style>
 </head>
 <body>
@@ -6215,7 +6232,7 @@ html body #app .sidebar-company-name{
   <div class="lp-window">
     <div class="lp-form-panel">
       <div class="lp-brand-tag" aria-label="Dreco">
-        <span class="lp-brand-name">Dreco</span>
+        <img class="dreco-wordmark dreco-wordmark-dark" src="/wordmark-dark.png" alt="Dreco">
       </div>
       <div class="lp-content-area">
         <div id="login-main">
@@ -6509,7 +6526,7 @@ html body #app .sidebar-company-name{
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-top">
         <a class="sidebar-logo" href="#">
-          <span class="sidebar-logo-text">Dreco</span>
+          <img class="dreco-wordmark dreco-wordmark-light" src="/wordmark-light.png" alt="Dreco">
         </a>
         <button class="sidebar-toggle" type="button" onclick="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">
           <i class="ti ti-layout-sidebar-left-collapse"></i>

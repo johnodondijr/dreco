@@ -4062,7 +4062,7 @@ function setUserDisplay(display, role) {
     side.innerHTML = `
       <div class="sidebar-top">
         <a class="sidebar-logo" onclick="switchTab('dash')" aria-label="Dreco home">
-          <span class="sidebar-logo-text">Dreco</span>
+          <img class="dreco-wordmark dreco-wordmark-light" src="/wordmark-light.png" alt="Dreco">
         </a>
         <button class="sidebar-toggle" onclick="toggleSidebar()" type="button" aria-label="Toggle sidebar">
           <i class="ti ti-chevrons-left"></i>
