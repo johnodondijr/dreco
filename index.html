@@ -6281,6 +6281,178 @@ html body #app .ref-avatar-mini img{
   border-radius:999px!important;
   display:block!important;
 }
+
+/* ============================================================
+   MOBILE FIXES — login full-screen + app responsiveness
+   Last in file → wins over all earlier !important rules
+   ============================================================ */
+
+/* --- LOGIN: no popup card on mobile (≤760px) -------------- */
+@media(max-width:760px){
+  #login-screen{
+    padding:0!important;
+    background:#ffffff!important;
+    align-items:flex-start!important;
+    justify-content:flex-start!important;
+    min-height:100dvh!important;
+    overflow-y:auto!important;
+  }
+  #login-screen .lp-window{
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    height:auto!important;
+    min-height:100dvh!important;
+    max-height:none!important;
+    border-radius:0!important;
+    border:0!important;
+    box-shadow:none!important;
+    background:#ffffff!important;
+    grid-template-columns:1fr!important;
+  }
+  #login-screen .lp-media{display:none!important;}
+  #login-screen .lp-form-panel{
+    width:100%!important;
+    min-height:100dvh!important;
+    padding:48px 24px 56px!important;
+    overflow-y:visible!important;
+    position:relative!important;
+  }
+  #login-screen .lp-content-area{
+    max-width:480px!important;
+    margin:24px auto 0!important;
+  }
+  #login-screen .lp-header{margin-bottom:26px!important;}
+  #login-screen .lp-header h1{font-size:28px!important;letter-spacing:-.025em!important;}
+  #login-screen .lp-header p{font-size:15px!important;line-height:1.5!important;}
+  #login-screen .lp-footer-note{
+    position:static!important;
+    left:auto!important;right:auto!important;bottom:auto!important;
+    margin:36px 0 0!important;
+    font-size:13px!important;
+  }
+  #login-screen .lp-divider{margin:28px 0 20px!important;gap:18px!important;}
+  #login-screen .lp-signup-cta{margin-top:26px!important;}
+}
+
+/* --- LOGIN: very small screens (≤420px) ------------------- */
+@media(max-width:420px){
+  #login-screen .lp-form-panel{padding:36px 18px 44px!important;}
+  #login-screen .lp-header h1{font-size:24px!important;}
+  #login-screen .lp-header p{font-size:14px!important;}
+  #login-screen .lp-input-wrap input{height:50px!important;font-size:15px!important;}
+  #login-screen .lp-submit{height:52px!important;font-size:14px!important;}
+  #login-screen .lp-social-row{grid-template-columns:1fr!important;}
+  #login-screen .lp-social-btn{height:50px!important;font-size:14px!important;}
+}
+
+/* --- APP: mobile layout, spacing and text (≤760px) -------- */
+@media(max-width:760px){
+  html body #app{padding:0!important;background:#F5F4EF!important;}
+  html body #app .app-layout{
+    display:flex!important;
+    flex-direction:column!important;
+    height:100dvh!important;
+    border-radius:0!important;
+    border:0!important;
+    gap:0!important;
+  }
+  html body #app #sidebar,
+  html body #app .sidebar{display:none!important;}
+  html body #app .topbar{
+    grid-column:unset!important;
+    grid-row:unset!important;
+    order:0!important;
+    flex:0 0 auto!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:54px!important;
+    padding:10px 14px!important;
+    border-radius:0!important;
+  }
+  html body #app .app-body{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    overflow:hidden!important;
+  }
+  html body #app .main-area{
+    height:100%!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    grid-column:unset!important;
+    grid-row:unset!important;
+  }
+  html body #app .content-area>div{
+    padding:14px 14px 88px!important;
+  }
+  html body #app .topbar-title{
+    font-size:17px!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+    min-width:0!important;
+  }
+  html body #app .topbar-search{
+    flex:1 1 auto!important;
+    max-width:none!important;
+  }
+  /* Single-column grids on mobile */
+  html body #app .dash-2col,
+  html body #app .pipeline-cards,
+  html body #app .settings-grid,
+  html body #app .settings-kpi-row{
+    grid-template-columns:1fr!important;
+  }
+  /* Horizontal scrollable tab bars */
+  html body #app .tab-nav,
+  html body #app .tab-list,
+  html body #app .sub-tabs{
+    overflow-x:auto!important;
+    white-space:nowrap!important;
+    scrollbar-width:none!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  html body #app .tab-nav::-webkit-scrollbar,
+  html body #app .tab-list::-webkit-scrollbar,
+  html body #app .sub-tabs::-webkit-scrollbar{display:none!important;}
+  /* Tables: horizontally scrollable block */
+  html body #app table{
+    display:block!important;
+    overflow-x:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    max-width:100%!important;
+  }
+  /* KPI / metric numbers: readable size */
+  html body #app .metric-val,
+  html body #app .kpi-val,
+  html body #app .stat-val{
+    font-size:22px!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+  /* Candidate / row names: don't overflow cells */
+  html body #app .candidate-name,
+  html body #app .row-name,
+  html body #app .cell-name{
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+    max-width:160px!important;
+  }
+  /* Bottom sheet modals */
+  html body .modal-bg{
+    padding:0!important;
+    align-items:flex-end!important;
+  }
+  html body .modal{
+    border-radius:20px 20px 0 0!important;
+    max-height:92dvh!important;
+    overflow-y:auto!important;
+    width:100%!important;
+    max-width:100%!important;
+  }
+}
 </style>
 </head>
 <body>
