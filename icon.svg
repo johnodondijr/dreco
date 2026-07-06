@@ -1,4 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" rx="80" fill="#3C3489"/>
-  <text x="256" y="360" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="320" font-weight="800" text-anchor="middle" fill="#EEFA94">D</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Dreco">
+  <rect width="512" height="512" rx="118" fill="#1F2133"/>
+  <path d="M286 92v232" fill="none" stroke="#7B5CFF" stroke-width="21" stroke-linecap="butt"/>
+  <path d="M315 92v232" fill="none" stroke="#E9FF72" stroke-width="66" stroke-linecap="butt"/>
+  <path d="M315 255c0 64-51 116-114 116S87 319 87 255s51-116 114-116c50 0 92 31 108 75" fill="none" stroke="#E9FF72" stroke-width="66" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
