@@ -6057,6 +6057,18 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
     padding:0!important;
   }
 }
+/* ── Spacing balance pass ─────────────────────────────────────
+   1. Sidebar: match bottom gap to top (sidebar-top padding-top=18 +
+      sidebar padding-top=14 ≈ 32px at top; user card was only 8px+14px=22px).
+      Increase user card margin-bottom so bottom ≈ 32px total.
+   2. Topbar + content: make left/right pads symmetric (was 22px left,
+      32px right in topbar; content 24px symmetric). Align both to 28px.
+──────────────────────────────────────────────────────────────── */
+#app .sidebar-user-card,
+#app .sidebar-user-card.sidebar-account-trigger{margin-bottom:18px!important;}
+#app .sidebar.collapsed .sidebar-user-card{margin-bottom:18px!important;}
+#app .topbar{padding-left:28px!important;padding-right:28px!important;}
+#app .content-area>div{padding-left:28px!important;padding-right:28px!important;}
 </style>
 </head>
 <body>
