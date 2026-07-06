@@ -273,8 +273,8 @@ export function injectDepsToD5(deps) {
   let manualTasks = JSON.parse(localStorage.getItem('dreco_manual_tasks')||'[]');
   function saveDismissedTasks() { localStorage.setItem('dreco_dismissed_tasks', JSON.stringify([...dismissedAutoTasks])); }
   function saveManualTasks() { localStorage.setItem('dreco_manual_tasks', JSON.stringify(manualTasks)); }
-  window.dismissTask = key => { dismissedAutoTasks.add(key); saveDismissedTasks(); renderTasks(); };
-  window.dismissManualTask = idx => { manualTasks.splice(idx,1); saveManualTasks(); renderTasks(); };
+  window.dismissTask = key => { dismissedAutoTasks.add(key); saveDismissedTasks(); renderTasks(); if(typeof renderDash==='function') renderDash(); };
+  window.dismissManualTask = idx => { manualTasks.splice(idx,1); saveManualTasks(); renderTasks(); if(typeof renderDash==='function') renderDash(); };
   window.addManualTask = () => {
     const title = (document.getElementById('new-task-title')?.value||'').trim();
     const due = document.getElementById('new-task-due')?.value||'';
@@ -427,7 +427,7 @@ export function injectDepsToD5(deps) {
         return `<div class="dv5-bar-col" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;position:relative">
           <div class="dv5-bar-tip" style="position:absolute;bottom:calc(${pct}% + 10px);left:50%;transform:translateX(-50%);background:#1F2133;color:#DDF56C;font-size:10px;font-weight:500;padding:3px 7px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;z-index:10">${b.count} placed</div>
           <div style="width:100%;border-radius:5px 5px 3px 3px;background:linear-gradient(180deg,#5347CE,#6A5CF0);height:${pct}%;min-height:3px;transition:height .4s cubic-bezier(.4,0,.2,1),opacity .12s;cursor:default" onmouseenter="this.previousElementSibling.style.opacity=1;this.style.background='linear-gradient(180deg,#DDF56C,#D7F266)'" onmouseleave="this.previousElementSibling.style.opacity=0;this.style.background='linear-gradient(180deg,#5347CE,#6A5CF0)'"></div>
-          <span style="font-size:10px;color:var(--text-3,#999);font-weight:438">${h(b.label)}</span>
+          <span style="font-size:10px;color:var(--text-3,#999);font-weight:438;white-space:nowrap">${h(b.label)}</span>
         </div>`;
       }).join('')}
     </div>`;
@@ -596,7 +596,7 @@ export function injectDepsToD5(deps) {
       const color=colors[i%colors.length];
       return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #F3F3F3">
         <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></span>
-        <span style="font-size:11px;flex:1;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${h(name)}</span>
+        <span style="font-size:11px;flex:1;color:#374151;min-width:0;line-height:1.3;word-break:break-word" title="${h(name)}">${h(name)}</span>
         <span style="font-size:11px;font-weight:500;color:#18191B;flex-shrink:0;padding-left:8px">${isPro?money(amt):moneyUSD(amt)}</span>
       </div>`;
     }).join('');
@@ -868,7 +868,7 @@ export function injectDepsToD5(deps) {
           </div>
           <div class="dv5-head-actions">
             ${jobTypeTabs()}
-            <button class="dv5-btn primary" onclick="${isPro?'openProForm()':'openLBForm()'}"><i class="ti ti-plus"></i>Add ${isPro?'Professional':'General'}</button>
+            <button class="dv5-btn primary" onclick="${isPro?'openProForm()':'openLBForm()'}"><i class="ti ti-plus"></i>Add</button>
           </div>
         </div>
         ${!isPro ? lbCountryBar(lbDB||[]) : ''}
@@ -997,7 +997,7 @@ export function injectDepsToD5(deps) {
                 style="height:36px;border:1.5px solid var(--border);border-radius:8px;padding:0 10px 0 32px;font-size:13px;background:#fff;width:200px;outline:none">
             </div>
             ${jobTypeTabs()}
-            <button class="dv5-btn primary" onclick="${isPro?'openProForm()':'openLBForm()'}"><i class="ti ti-plus"></i>Add ${isPro?'Professional':'General'}</button>
+            <button class="dv5-btn primary" onclick="${isPro?'openProForm()':'openLBForm()'}"><i class="ti ti-plus"></i>Add</button>
           </div>
         </div>
         ${!isPro ? lbCountryBar(lbDB||[]) : ''}
@@ -1140,7 +1140,7 @@ export function injectDepsToD5(deps) {
           <div><h1>Candidates</h1><p>${isPro?'Professional placements — commissions in KES.':'General Jobs — refunds in USD.'}</p></div>
           <div class="dv5-head-actions">
             ${jobTypeTabs()}
-            <button class="dv5-btn primary" onclick="${isPro?'openProForm()':'openLBForm()'}"><i class="ti ti-plus"></i>Add ${isPro?'Professional':'General'}</button>
+            <button class="dv5-btn primary" onclick="${isPro?'openProForm()':'openLBForm()'}"><i class="ti ti-plus"></i>Add</button>
           </div>
         </div>
         ${!isPro ? lbCountryBar(lbDB||[]) : ''}
@@ -1483,7 +1483,7 @@ export function injectDepsToD5(deps) {
                 <span class="dv5-card-title">Latest Transactions</span>
                 <div class="dv5-card-sub">${filteredPayments.length} records${searchQ?' (filtered)':''}</div>
               </div>
-              <button style="width:32px;height:32px;border-radius:8px;background:#0D9488;border:0;color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0" onclick="window.setFinanceTab('latest');setTimeout(()=>document.querySelector('.dv5-tx-section')?.scrollIntoView({behavior:'smooth'}),50)"><i class="ti ti-arrow-right"></i></button>
+              <button style="width:32px;height:32px;border-radius:8px;background:#0D9488;border:0;color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0" onclick="openRecordPaymentPrompt('${isPro?'commission':'repayment'}')" title="Record payment"><i class="ti ti-plus"></i></button>
             </div>
             <div style="border-top:1px solid var(--border,#E8E8E8)">
               ${(financeShowAllTx ? filteredPayments : filteredPayments.slice(0,TX_CAP)).map(({r, amt, date, isUSD}) => {
@@ -1516,7 +1516,7 @@ export function injectDepsToD5(deps) {
                 <span class="dv5-card-title">${isPro?'Commission':'Refund'} Breakdown</span>
                 <div class="dv5-card-sub">by position · ${isPro?money(paid):moneyUSD(paid)} collected</div>
               </div>
-              <button style="width:32px;height:32px;border-radius:8px;background:#0D9488;border:0;color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0" onclick="window.setFinanceTab('upcoming');setTimeout(()=>document.querySelector('.dv5-tx-section')?.scrollIntoView({behavior:'smooth'}),50)"><i class="ti ti-arrow-right"></i></button>
+              <button style="width:32px;height:32px;border-radius:8px;background:#0D9488;border:0;color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0" onclick="openRecordPaymentPrompt('${isPro?'commission':'repayment'}')" title="Record payment"><i class="ti ti-plus"></i></button>
             </div>
             <div style="display:flex;border-top:1px solid var(--border,#E8E8E8);border-bottom:1px solid var(--border,#E8E8E8)">
               <div style="flex:1;padding:14px 18px;border-right:1px solid var(--border,#E8E8E8)">
@@ -1720,16 +1720,16 @@ export function injectDepsToD5(deps) {
       const slot=last12.find(s=>s.y===d.getFullYear()&&s.m===d.getMonth()); if(slot) slot.count++;
     });
     const chartMax=Math.max(...last12.map(s=>s.count),1);
-    const monthlyChart=`<div style="display:flex;align-items:flex-end;gap:3px;height:168px;padding:0 4px 4px">
+    const monthlyChart=`<div style="overflow-x:auto"><div style="display:flex;align-items:flex-end;gap:3px;height:140px;padding:0 4px 4px;min-width:480px">
       ${last12.map(s=>{
         const pct=Math.max(Math.round(s.count/chartMax*100),s.count>0?5:2);
         const barColor=s.count>0?'linear-gradient(180deg,#AE9CF0,#C5C7F0)':'#F0F0F0';
         return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end;gap:3px">
           <div class="dv5-mp-bar" data-tip="${s.label}: ${s.count}" style="width:100%;border-radius:4px 4px 2px 2px;background:${barColor};height:${pct}%;min-height:2px"></div>
-          <span style="font-size:8px;color:#999;font-weight:438;writing-mode:vertical-lr;transform:rotate(180deg);height:26px;white-space:nowrap">${s.label.split(' ')[0]}</span>
+          <span style="font-size:8px;color:#999;font-weight:438;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center">${s.label.split(' ')[0]}</span>
         </div>`;
       }).join('')}
-    </div>`;
+    </div></div>`;
 
     // Avg days per stage (Pro only)
     let stageTimeHTML = '';

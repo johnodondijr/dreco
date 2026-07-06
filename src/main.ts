@@ -2837,7 +2837,8 @@ function renderTeam(){
   const users=(typeof getCompanyUsers==='function'?getCompanyUsers():[]).map(([username,account])=>({username,...account}));
   const fallback=currentUser?[{username:currentUser.username||'user',...currentUser}]:[{display:DEFAULT_ADMIN_USERNAME,role:'admin',username:DEFAULT_ADMIN_USERNAME}];
   const list=users.length?users:fallback;
-  grid.innerHTML=list.map(u=>`<div class="team-card"><div class="team-card-head"><div class="team-avatar">${escHTML((u.display||u.username||'U').slice(0,2).toUpperCase())}</div><div><div class="team-name">${escHTML(u.display||u.username||'User')}</div><div class="team-role">${u.role==='admin'?'Administrator':'Staff'} @${escHTML(u.username||'user')}</div></div></div><div class="team-perms"><span>Dashboard</span><span>Professional Jobs</span><span>General Jobs</span><span>Finance</span><span>Reports</span></div></div>`).join('');
+  const isAdmin=currentUser?.role==='admin';
+  grid.innerHTML=list.map(u=>`<div class="team-card"><div class="team-card-head"><div class="team-avatar">${escHTML((u.display||u.username||'U').slice(0,2).toUpperCase())}</div><div><div class="team-name">${escHTML(u.display||u.username||'User')}</div><div class="team-role">${u.role==='admin'?'Administrator':'Staff'} @${escHTML(u.username||'user')}</div></div></div><div class="team-perms"><span>Dashboard</span><span>Professional Jobs</span><span>General Jobs</span><span>Finance</span><span>Reports</span></div>${isAdmin?`<div style="margin-top:10px;text-align:right"><button class="btn" style="font-size:12px;padding:4px 12px" onclick="openEditTeamMember('${u.username.replace(/'/g,"\\'")}')"><i class="ti ti-pencil" style="font-size:11px;margin-right:4px"></i>Edit</button></div>`:''}</div>`).join('');
 }
 function renderSettingsPage(){
   const el=document.getElementById('settings-page-content'); if(!el) return;
@@ -2880,6 +2881,34 @@ async function submitQuickUser(){
   try{ await setAccountPassword(STAFF_ACCOUNTS[username],password); await saveStaffAccounts(); }
   catch(e){ delete STAFF_ACCOUNTS[username]; return fail(e.message||'User could not be created.'); }
   closeModal('quick-user-modal'); renderTeam(); renderCompanyUsers(); showToast('User added','success');
+}
+function openEditTeamMember(username: string){
+  if(!requireAdminAction('Editing users')) return;
+  const account=STAFF_ACCOUNTS[username];
+  if(!account){ showToast('User not found','error'); return; }
+  const unEl=document.getElementById('edit-team-username') as HTMLInputElement;
+  const dispEl=document.getElementById('edit-team-display') as HTMLInputElement;
+  const roleEl=document.getElementById('edit-team-role') as HTMLSelectElement;
+  const errEl=document.getElementById('edit-team-error');
+  if(unEl) unEl.value=username;
+  if(dispEl) dispEl.value=account.display||'';
+  if(roleEl) roleEl.value=account.role==='admin'?'admin':'staff';
+  if(errEl){ errEl.textContent=''; (errEl as HTMLElement).style.display='none'; }
+  document.getElementById('edit-team-modal')?.classList.add('open');
+}
+async function submitEditTeamMember(){
+  if(currentUser?.role!=='admin'){ showToast('Only admins can edit users','error'); return; }
+  const username=(document.getElementById('edit-team-username') as HTMLInputElement)?.value||'';
+  const display=((document.getElementById('edit-team-display') as HTMLInputElement)?.value||'').trim();
+  const role=(document.getElementById('edit-team-role') as HTMLSelectElement)?.value==='admin'?'admin':'staff';
+  const errEl=document.getElementById('edit-team-error');
+  const fail=(msg:string)=>{ if(errEl){ errEl.textContent=msg; (errEl as HTMLElement).style.display='block'; } };
+  if(!display) return fail('Display name is required.');
+  if(!STAFF_ACCOUNTS[username]) return fail('User not found.');
+  STAFF_ACCOUNTS[username]={...STAFF_ACCOUNTS[username],display,role};
+  try{ await saveStaffAccounts(); }
+  catch(e:any){ return fail(e.message||'Could not save changes.'); }
+  closeModal('edit-team-modal'); renderTeam(); renderCompanyUsers(); showToast('User updated','success');
 }
 function openRecordPaymentPrompt(type='commission'){
   if(!requireFinanceAction('Recording payments')) return;
@@ -3983,7 +4012,7 @@ Object.assign(window, {
   addGeneralCountry, setGeneralCountry, submitQuickCountry,
   saveWorkspaceSettings, saveStages, updateCompanyName: typeof updateCompanyName !== 'undefined' ? updateCompanyName : null,
   downloadBackup, restoreBackupFromFile, exportBackup: typeof exportBackup !== 'undefined' ? exportBackup : null,
-  createStaffAccount, createCompanyUser, submitQuickUser,
+  createStaffAccount, createCompanyUser, submitQuickUser, openEditTeamMember, submitEditTeamMember,
   clearLBDates, clearProDates,
   // Modals & UI helpers
   closeModal, switchModalTab, togglePassword,
