@@ -5131,8 +5131,7 @@ tbody tr:hover td,.dreco-table tr:hover td{background:var(--dreco-surface-soft)!
 /* ── Mobile topbar: single row, no wrap ──────────────────── */
 @media(max-width:860px){
   .topbar{flex-wrap:nowrap!important;height:56px!important;overflow:hidden!important;align-items:center!important;min-height:unset!important;}
-  .topbar-search,.topbar-icon-btn,.topbar-workspace{display:none!important;}
-  .topbar-title{flex:1 1 auto!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;}
+  .topbar-workspace{display:none!important;}
 }
 
 /* ── App shell ────────────────────────────────────────────── */
@@ -5141,7 +5140,21 @@ body{background:#F2F4F8!important;}
 .app-layout{background:#F8F9FC!important;border:1px solid #E4E7F0!important;border-radius:18px!important;box-shadow:0 18px 50px rgba(26,28,46,.10)!important;}
 .main-area{background:#F8F9FC!important;}
 .content-area{background:transparent!important;}
-.topbar{background:#fff!important;border-bottom:1px solid #E4E7F0!important;box-shadow:none!important;}
+.topbar{background:#fff!important;border-bottom:1px solid #E4E7F0!important;box-shadow:none!important;padding:0 16px 0 20px!important;gap:10px!important;display:flex!important;align-items:center!important;}
+/* ── New topbar layout: search + notif + user card ────────── */
+.topbar-search{flex:1!important;max-width:none!important;min-width:0!important;order:0!important;margin-left:0!important;display:flex!important;align-items:center!important;gap:8px!important;height:38px!important;background:#F8FAFD!important;border:1px solid #DFE5F1!important;border-radius:10px!important;padding:0 12px!important;cursor:pointer!important;}
+.topbar-search-icon{font-size:15px!important;color:#9BA4B8!important;flex-shrink:0!important;}
+.topbar-search-fake{flex:1!important;color:#9BA4B8!important;font-size:12px!important;font-weight:500!important;user-select:none!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+.topbar-search-kbd{flex-shrink:0!important;font-size:10px!important;font-weight:500!important;color:#9BA4B8!important;background:#EEF1F6!important;border:1px solid #DFE5F1!important;border-radius:5px!important;padding:2px 5px!important;font-family:inherit!important;letter-spacing:0!important;}
+.topbar-notif-btn{flex-shrink:0!important;width:36px!important;height:36px!important;border-radius:10px!important;border:1px solid #DFE5F1!important;background:#fff!important;color:#5C677D!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:17px!important;cursor:pointer!important;}
+.topbar-notif-btn:hover{border-color:#A9B3C8!important;box-shadow:0 0 0 3px rgba(83,71,206,.08)!important;}
+.topbar-user-card{flex-shrink:0!important;display:flex!important;align-items:center!important;gap:8px!important;height:38px!important;background:#fff!important;border:1px solid #DFE5F1!important;border-radius:10px!important;padding:0 10px 0 6px!important;cursor:pointer!important;}
+.topbar-user-card:hover{border-color:#A9B3C8!important;box-shadow:0 0 0 3px rgba(83,71,206,.08)!important;}
+.topbar-user-card .topbar-avatar{width:26px!important;height:26px!important;border-radius:7px!important;font-size:10px!important;flex-shrink:0!important;}
+.topbar-user-info{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:1px!important;min-width:0!important;}
+.topbar-user-name{font-size:12px!important;font-weight:500!important;color:#1A1C2E!important;max-width:110px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;line-height:1.2!important;}
+.topbar-user-sub{font-size:10px!important;font-weight:400!important;color:#9BA4B8!important;max-width:110px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;line-height:1.2!important;}
+.topbar-user-caret{font-size:13px!important;color:#9BA4B8!important;flex-shrink:0!important;}
 
 /* ── Sidebar — dark navy ──────────────────────────────────── */
 #app .sidebar,#app #sidebar,.sidebar{background:#1A1C2E!important;border-right:none!important;}
