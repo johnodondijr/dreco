@@ -4062,14 +4062,7 @@ function setUserDisplay(display, role) {
     side.innerHTML = `
       <div class="sidebar-top">
         <a class="sidebar-logo" onclick="switchTab('dash')" aria-label="Dreco home">
-          <div class="sidebar-logo-mark">
-            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 6C3 4.343 4.343 3 6 3h4c1.657 0 3 1.343 3 3v4c0 1.657-1.343 3-3 3H6c-1.657 0-3-1.343-3-3V6Z"/>
-              <path d="M14 14c0-1.105.895-2 2-2h4c1.105 0 2 .895 2 2v6c0 1.105-.895 2-2 2h-4c-1.105 0-2-.895-2-2v-6Z" opacity=".55"/>
-              <path d="M3 17c0-1.105.895-2 2-2h3c1.105 0 2 .895 2 2v2c0 1.105-.895 2-2 2H5c-1.105 0-2-.895-2-2v-2Z" opacity=".32"/>
-            </svg>
-          </div>
-          <span class="sidebar-logo-text">DRECO</span>
+          <span class="sidebar-logo-text">Dreco</span>
         </a>
         <button class="sidebar-toggle" onclick="toggleSidebar()" type="button" aria-label="Toggle sidebar">
           <i class="ti ti-chevrons-left"></i>
