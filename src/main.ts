@@ -725,6 +725,7 @@ function normalizeProRecord(r={}) {
     paid1,
     paid2,
     paid:toNumOrNull(r.paid),
+    medical:normalizeDateField(r.medical),
     airline:r.airline||'',
     travelTime:r.travelTime||r.travel_time||'',
     travelNotes:r.travelNotes||r.travel_notes||'',
@@ -1385,6 +1386,81 @@ function setSaveStatus(s) {
 // SUPABASE WRITES
 // *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
 function useCloud() { return db && appStorageMode==='cloud'; }
+
+// Map in-memory pro record → DB column names. Core fields match the original schema;
+// extended fields use snake_case and require dreco-schema-v2-migration.sql to be run.
+function toProDbPayload(rec) {
+  return {
+    company_id: rec.company_id,
+    name: rec.name, pp: rec.pp, phone: rec.phone||null,
+    position: rec.position, company: rec.company, country: rec.country||null,
+    stage: rec.stage,
+    submitted: rec.submitted||null, interview: rec.interview||null,
+    ol: rec.ol||null, mol: rec.mol||null, visa: rec.visa||null, travel: rec.travel||null,
+    commission: rec.commission, paid: rec.paid,
+    paid1: rec.paid1??null, paid2: rec.paid2??null,
+    medical: rec.medical||null,
+    airline: rec.airline||null,
+    follow_up: rec.followUp||null,
+    travel_time: rec.travelTime||null,
+    travel_notes: rec.travelNotes||null,
+  };
+}
+// Core-only pro payload — used as fallback when extended columns haven't been migrated yet.
+function toProCorePayload(rec) {
+  return {
+    company_id: rec.company_id,
+    name: rec.name, pp: rec.pp, phone: rec.phone||null,
+    position: rec.position, company: rec.company, country: rec.country||null,
+    stage: rec.stage,
+    submitted: rec.submitted||null, interview: rec.interview||null,
+    ol: rec.ol||null, mol: rec.mol||null, visa: rec.visa||null, travel: rec.travel||null,
+    commission: rec.commission, paid: rec.paid,
+  };
+}
+
+// Map in-memory lb record → DB column names.
+// lb_candidates uses quoted camelCase for original columns and snake_case for new ones.
+function toLBDbPayload(rec) {
+  return {
+    company_id: rec.company_id, country: rec.country,
+    name: rec.name, phone: rec.phone||null,
+    ppStatus: rec.ppStatus||'APPLIED',
+    travelStatus: rec.travelStatus||rec.stage||'DOCS SUBMITTED',
+    stage: rec.stage||rec.travelStatus||'DOCS SUBMITTED',
+    travelDate: rec.travelDate||null,
+    toRefund: rec.toRefund??0,
+    r1Date: rec.r1Date||null, r1Amt: rec.r1Amt??0,
+    r2Date: rec.r2Date||null, r2Amt: rec.r2Amt??0,
+    notes: rec.notes||null,
+    own_passport: !!rec.own_passport,
+    follow_up: rec.followUp||null,
+    submitted_date: rec.submitted_date||null,
+    selected_date: rec.selected_date||null,
+    passport_date: rec.passport_date||null,
+    visa_date: rec.visa_date||null,
+  };
+}
+// Core-only lb payload — used as fallback when extended columns haven't been migrated yet.
+function toLBCorePayload(rec) {
+  return {
+    company_id: rec.company_id, country: rec.country,
+    name: rec.name, phone: rec.phone||null,
+    ppStatus: rec.ppStatus||'APPLIED',
+    travelStatus: rec.travelStatus||rec.stage||'DOCS SUBMITTED',
+    stage: rec.stage||rec.travelStatus||'DOCS SUBMITTED',
+    travelDate: rec.travelDate||null,
+    toRefund: rec.toRefund??0,
+    r1Date: rec.r1Date||null, r1Amt: rec.r1Amt??0,
+    r2Date: rec.r2Date||null, r2Amt: rec.r2Amt??0,
+    notes: rec.notes||null,
+  };
+}
+// Returns true for Supabase/PostgREST "column not found" errors.
+function isMissingColumnError(e) {
+  return e.code==='PGRST204' || e.code==='42703' ||
+    (typeof e.message==='string' && (e.message.includes('column') || e.message.includes('does not exist')));
+}
 async function dbInsert(table, rec) {
   const ts={...rec, company_id:getCompanyId()}; delete ts.id;
   const {data,error}=await db.from(table).insert(ts).select().single();
@@ -1414,53 +1490,67 @@ function fallBackToLocal(err) {
 }
 async function saveProRecord(rec, isUpdate = false) {
   setSaveStatus('saving');
-  if (!useCloud()) {
-    saveLocalStore();
-    setSaveStatus('saved');
-    return;
-  }
-  const tempId=rec.id;
-  try {
+  if (!useCloud()) { saveLocalStore(); setSaveStatus('saved'); return; }
+  const tempId = rec.id;
+  async function doProSave(payload) {
     if (isUpdate) {
-      await dbUpdate('pro_candidates',rec.id,rec);
+      await dbUpdate('pro_candidates', rec.id, payload);
     } else {
-      const data=await dbInsert('pro_candidates',rec);
+      const data = await dbInsert('pro_candidates', payload);
       if (data) {
-        const oldId=rec.id;
-        rec.id=data.id;
-        const i=proDB.findIndex(x=>x.id==oldId); if(i>-1) proDB[i].id=data.id;
+        const oldId = rec.id; rec.id = data.id;
+        const i = proDB.findIndex(x=>x.id==oldId); if(i>-1) proDB[i].id = data.id;
         if(allTimelines[`pro_${tempId}`]){allTimelines[`pro_${rec.id}`]=allTimelines[`pro_${tempId}`];delete allTimelines[`pro_${tempId}`];}
         renderPro();
       }
     }
+  }
+  try {
+    await doProSave(toProDbPayload(rec));
     await saveTimeline(`pro_${rec.id}`);
     setSaveStatus('saved');
-  } catch(e){ fallBackToLocal(e); setSaveStatus('saved'); }
+  } catch(e) {
+    if (isMissingColumnError(e)) {
+      try {
+        await doProSave(toProCorePayload(rec));
+        await saveTimeline(`pro_${rec.id}`);
+        setSaveStatus('saved');
+        showToast('Saved (run dreco-schema-v2-migration.sql in Supabase to enable all fields)', 'error');
+      } catch(e2) { fallBackToLocal(e2); setSaveStatus('saved'); }
+    } else { fallBackToLocal(e); setSaveStatus('saved'); }
+  }
 }
 async function saveLBRecord(rec, isUpdate = false) {
   setSaveStatus('saving');
-  if (!useCloud()) {
-    saveLocalStore();
-    setSaveStatus('saved');
-    return;
-  }
-  const tempId=rec.id;
-  try {
+  if (!useCloud()) { saveLocalStore(); setSaveStatus('saved'); return; }
+  const tempId = rec.id;
+  async function doLBSave(payload) {
     if (isUpdate) {
-      await dbUpdate('lb_candidates',rec.id,rec);
+      await dbUpdate('lb_candidates', rec.id, payload);
     } else {
-      const data=await dbInsert('lb_candidates',rec);
+      const data = await dbInsert('lb_candidates', payload);
       if (data) {
-        const oldId=rec.id;
-        rec.id=data.id;
-        const i=lbDB.findIndex(x=>x.id==oldId); if(i>-1) lbDB[i].id=data.id;
+        const oldId = rec.id; rec.id = data.id;
+        const i = lbDB.findIndex(x=>x.id==oldId); if(i>-1) lbDB[i].id = data.id;
         if(allTimelines[`lb_${tempId}`]){allTimelines[`lb_${rec.id}`]=allTimelines[`lb_${tempId}`];delete allTimelines[`lb_${tempId}`];}
         renderLB();
       }
     }
+  }
+  try {
+    await doLBSave(toLBDbPayload(rec));
     await saveTimeline(`lb_${rec.id}`);
     setSaveStatus('saved');
-  } catch(e){ fallBackToLocal(e); setSaveStatus('saved'); }
+  } catch(e) {
+    if (isMissingColumnError(e)) {
+      try {
+        await doLBSave(toLBCorePayload(rec));
+        await saveTimeline(`lb_${rec.id}`);
+        setSaveStatus('saved');
+        showToast('Saved (run dreco-schema-v2-migration.sql in Supabase to enable all fields)', 'error');
+      } catch(e2) { fallBackToLocal(e2); setSaveStatus('saved'); }
+    } else { fallBackToLocal(e); setSaveStatus('saved'); }
+  }
 }
 async function deleteProRecord(id) {
   setSaveStatus('saving');
