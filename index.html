@@ -6840,9 +6840,74 @@ html body #app .account-avatar-edit{
   cursor:pointer!important;
   padding:0!important;
 }
+html body #app .integrity-card{
+  grid-column:1 / -1!important;
+}
+html body #app .integrity-summary{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:10px!important;
+  margin:12px 0 14px!important;
+}
+html body #app .integrity-summary span{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:6px!important;
+  min-height:32px!important;
+  padding:0 12px!important;
+  border-radius:999px!important;
+  background:#F4F4EC!important;
+  color:#4B4A43!important;
+  font-size:12px!important;
+}
+html body #app .integrity-summary strong{
+  color:#171715!important;
+  font-size:14px!important;
+}
+html body #app .integrity-row{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:12px!important;
+  align-items:center!important;
+  padding:12px 0!important;
+  border-top:1px solid #E4E1D6!important;
+}
+html body #app .integrity-row strong{
+  display:block!important;
+  font-size:13px!important;
+  color:#171715!important;
+  margin-bottom:3px!important;
+}
+html body #app .integrity-row span{
+  display:block!important;
+  font-size:12px!important;
+  color:#76746B!important;
+  line-height:1.4!important;
+}
+html body #app .integrity-row button{
+  height:32px!important;
+  border:1px solid #E4E1D6!important;
+  background:#FFFFFF!important;
+  color:#171715!important;
+  border-radius:18px!important;
+  padding:0 12px!important;
+  font-size:12px!important;
+  cursor:pointer!important;
+}
+html body #app .integrity-row.high{
+  border-left:3px solid #E05858!important;
+  padding-left:10px!important;
+}
+html body #app .integrity-row.medium{
+  border-left:3px solid #D9A441!important;
+  padding-left:10px!important;
+}
 @media(max-width:900px){
   html body #app .account-profile-grid,
   html body #app .account-form-grid{
+    grid-template-columns:1fr!important;
+  }
+  html body #app .integrity-row{
     grid-template-columns:1fr!important;
   }
 }

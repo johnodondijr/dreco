@@ -3030,10 +3030,104 @@ function renderAccountPage(){
       </div>
     </div>`;
 }
+function duplicateMap(rows, getter){
+  const map = new Map();
+  rows.forEach(r => {
+    const key = String(getter(r)||'').trim().toUpperCase();
+    if (!key) return;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(r);
+  });
+  return map;
+}
+function pushIntegrityIssue(issues, severity, stream, record, title, detail, action = ''){
+  issues.push({
+    severity,
+    stream,
+    record,
+    title,
+    detail,
+    action,
+    name: record?.name || 'Workspace',
+  });
+}
+function buildDataIntegrityReport(){
+  const issues = [];
+  const proRows = Array.isArray(proDB) ? proDB : [];
+  const lbRows = Array.isArray(lbDB) ? lbDB : [];
+
+  duplicateMap(proRows, r => r.pp).forEach(list => {
+    if (list.length > 1) list.forEach(r => pushIntegrityIssue(issues, 'high', 'Professional', r, 'Duplicate passport number', `${list.length} professional candidates share passport ${r.pp}.`, `editPro(${r.id})`));
+  });
+  duplicateMap(lbRows, r => r.phone).forEach(list => {
+    if (list.length > 1) list.forEach(r => pushIntegrityIssue(issues, 'medium', 'General Jobs', r, 'Duplicate phone number', `${list.length} general-job candidates share phone ${r.phone}.`, `editLB(${r.id})`));
+  });
+
+  proRows.forEach(r => {
+    const stage = canonicalProStage(r.stage || '');
+    const pipelineStage = proPipelineStageValue(r);
+    const payment = proPaymentStatus(r);
+    const totalPaid = proPaidAmount(r);
+    const commission = Number(r.commission)||0;
+    if (!r.name) pushIntegrityIssue(issues, 'high', 'Professional', r, 'Missing candidate name', 'A professional record has no name.', `editPro(${r.id})`);
+    if (commission < 0 || totalPaid < 0) pushIntegrityIssue(issues, 'high', 'Professional', r, 'Negative finance amount', 'Commission or payment values cannot be negative.', `editPro(${r.id})`);
+    if (commission > 0 && totalPaid > commission) pushIntegrityIssue(issues, 'high', 'Professional', r, 'Payment exceeds commission', `${moneyKES(totalPaid)} paid against ${moneyKES(commission)} billed.`, `openBalancePayment('pro',${r.id})`);
+    if (payment.dueNow > 0) pushIntegrityIssue(issues, 'medium', 'Professional', r, 'Commission due now', `${moneyKES(payment.dueNow)} is due based on the current payment rule.`, `openBalancePayment('pro',${r.id})`);
+    if (pipelineStage !== stage && stage) pushIntegrityIssue(issues, 'medium', 'Professional', r, 'Stage does not match milestones', `Stored stage is ${stage}; milestone dates place this candidate at ${pipelineStage}.`, `editPro(${r.id})`);
+    if (pipelineStage === 'TRAVELLED' && !toInput(r.travel)) pushIntegrityIssue(issues, 'high', 'Professional', r, 'Travelled without travel date', 'Candidate is in Travelled but has no travel date.', `editPro(${r.id})`);
+    if (toInput(r.travel) && pipelineStage !== 'TRAVELLED') pushIntegrityIssue(issues, 'medium', 'Professional', r, 'Travel date before final stage', `Travel date exists but pipeline stage is ${pipelineStage}.`, `editPro(${r.id})`);
+    if (pipelineStage === 'VISA' && toInput(r.travel)) pushIntegrityIssue(issues, 'high', 'Professional', r, 'Travelled candidate still in Visa', 'This record has a travel date but is still showing at Visa.', `editPro(${r.id})`);
+  });
+
+  lbRows.forEach(r => {
+    const stage = lbStageValue(r);
+    const pipelineStage = lbPipelineStageValue(r);
+    const principal = lbRefundPrincipal(r);
+    const paid = lbRefundPaidAmount(r);
+    const outstanding = lbRefundOutstanding(r);
+    const ownPassport = lbOwnPassport(r);
+    if (!r.name) pushIntegrityIssue(issues, 'high', 'General Jobs', r, 'Missing candidate name', 'A general-job record has no name.', `editLB(${r.id})`);
+    if (!r.country) pushIntegrityIssue(issues, 'medium', 'General Jobs', r, 'Missing destination', 'General-job records should have a destination country.', `editLB(${r.id})`);
+    if (principal < 0 || paid < 0) pushIntegrityIssue(issues, 'high', 'General Jobs', r, 'Negative refund amount', 'Refund values cannot be negative.', `editLB(${r.id})`);
+    if (!ownPassport && principal > 0 && paid > principal) pushIntegrityIssue(issues, 'high', 'General Jobs', r, 'Refund paid exceeds expected', `${moneyUSD(paid)} paid against ${moneyUSD(principal)} expected.`, `openBalancePayment('lb',${r.id})`);
+    if (ownPassport && paid > 0) pushIntegrityIssue(issues, 'medium', 'General Jobs', r, 'Own-passport candidate has refund payments', 'Own-passport records should not carry refund balances.', `editLB(${r.id})`);
+    if (['TRAVELLED','REFUND PENDING','REFUND COMPLETE'].includes(stage) && !toInput(r.travelDate||r.travel_date)) pushIntegrityIssue(issues, 'high', 'General Jobs', r, 'Travelled without travel date', 'Candidate is post-travel but has no travel date.', `editLB(${r.id})`);
+    if (toInput(r.travelDate||r.travel_date) && !['TRAVELLED','REFUND PENDING','REFUND COMPLETE'].includes(stage)) pushIntegrityIssue(issues, 'medium', 'General Jobs', r, 'Travel date before travel stage', `Travel date exists but stage is ${stage}.`, `editLB(${r.id})`);
+    if (stage === 'REFUND COMPLETE' && outstanding > 0) pushIntegrityIssue(issues, 'high', 'General Jobs', r, 'Refund complete with balance', `${moneyUSD(outstanding)} is still outstanding.`, `openBalancePayment('lb',${r.id})`);
+    if (pipelineStage !== stage && stage) pushIntegrityIssue(issues, 'medium', 'General Jobs', r, 'Stage does not match pipeline', `Stored stage is ${stage}; pipeline resolves it as ${pipelineStage}.`, `editLB(${r.id})`);
+  });
+
+  const high = issues.filter(i=>i.severity==='high').length;
+  const medium = issues.filter(i=>i.severity==='medium').length;
+  return { issues, high, medium, total: issues.length };
+}
+function renderDataIntegrityPanel(){
+  const report = buildDataIntegrityReport();
+  const rows = report.issues.slice(0, 12).map(issue => `
+    <div class="integrity-row ${issue.severity}">
+      <div>
+        <strong>${escHTML(issue.title)}</strong>
+        <span>${escHTML(issue.name)} · ${escHTML(issue.stream)} · ${escHTML(issue.detail)}</span>
+      </div>
+      ${issue.action ? `<button onclick="${issue.action}">Open</button>` : ''}
+    </div>`).join('');
+  return `
+    <div class="settings-page-card integrity-card">
+      <h3>Data health</h3>
+      <p>Checks stage logic, duplicate identifiers, missing travel dates, and finance/refund maths before reports are trusted.</p>
+      <div class="integrity-summary">
+        <span><strong>${report.total}</strong> total issues</span>
+        <span><strong>${report.high}</strong> high priority</span>
+        <span><strong>${report.medium}</strong> needs review</span>
+      </div>
+      ${rows || '<div class="mini-empty">No data health issues found.</div>'}
+      ${report.total > 12 ? `<div class="mini-empty">${report.total - 12} more issue(s) hidden. Use Candidates and Finance filters to review the rest.</div>` : ''}
+    </div>`;
+}
 function renderSettingsPage(){
   const el=document.getElementById('settings-page-content'); if(!el) return;
   const syncCopy=appStorageMode==='cloud'?'Supabase cloud sync is active. Local fallback remains available if a write fails.':'Local mode is active. Configure Supabase to enable shared office sync.';
-  el.innerHTML=`${renderWorkflowSettingsPanel()}${renderPaymentSettingsPanel()}<div class="settings-page-card"><h3>Workspace</h3><p>Manage company identity and data mode.</p><div class="setting-row"><span>Company</span><button onclick="openSettingsModal()">Edit</button></div><div class="setting-row"><span>Storage</span><span class="settings-pill">${appStorageMode==='cloud'?'Cloud':'Local'}</span></div></div><div class="settings-page-card"><h3>Pipeline</h3><p>Adjust stage lists from workflow templates, or add one-off custom stages from the candidate forms.</p><div class="setting-row"><span>Professional stages</span><span class="settings-pill">${proStages.length} stages</span></div><div class="setting-row"><span>General countries</span><button onclick="switchTab('lb')">Open</button></div></div><div class="settings-page-card"><h3>Team & permissions</h3><p>Add staff and review roles from the Team page.</p><div class="setting-row"><span>Team members</span><button onclick="switchTab('team')">Manage</button></div></div><div class="settings-page-card"><h3>Data</h3><p>Export backups or reset local filters.</p><div class="setting-row"><span>Backup</span><button onclick="downloadBackup()">Download</button></div><div class="setting-row"><span>Saved filters</span><button onclick="resetSavedFilters()">Reset</button></div></div><div class="settings-page-card"><h3>Sync health</h3><p>${syncCopy}</p><div class="setting-row"><span>Mode</span><span class="settings-pill">${appStorageMode==='cloud'?'Cloud first':'Local fallback'}</span></div><div class="setting-row"><span>Last sync issue</span><span>${escHTML(lastSyncError||'None')}</span></div></div><div class="settings-page-card"><h3>Audit log</h3><p>Recent system activity across candidates, finance, users, and documents.</p>${drecoAudit.slice(0,6).map(a=>`<div class="audit-row"><strong>${escHTML(a.action)}</strong><span>${escHTML(a.area)} - ${fmtDate(a.ts)}</span></div>`).join('')||'<div class="mini-empty">No audited actions yet</div>'}</div>`;
+  el.innerHTML=`${renderDataIntegrityPanel()}${renderWorkflowSettingsPanel()}${renderPaymentSettingsPanel()}<div class="settings-page-card"><h3>Workspace</h3><p>Manage company identity and data mode.</p><div class="setting-row"><span>Company</span><button onclick="openSettingsModal()">Edit</button></div><div class="setting-row"><span>Storage</span><span class="settings-pill">${appStorageMode==='cloud'?'Cloud':'Local'}</span></div></div><div class="settings-page-card"><h3>Pipeline</h3><p>Adjust stage lists from workflow templates, or add one-off custom stages from the candidate forms.</p><div class="setting-row"><span>Professional stages</span><span class="settings-pill">${proStages.length} stages</span></div><div class="setting-row"><span>General countries</span><button onclick="switchTab('lb')">Open</button></div></div><div class="settings-page-card"><h3>Team & permissions</h3><p>Add staff and review roles from the Team page.</p><div class="setting-row"><span>Team members</span><button onclick="switchTab('team')">Manage</button></div></div><div class="settings-page-card"><h3>Data</h3><p>Export backups or reset local filters.</p><div class="setting-row"><span>Backup</span><button onclick="downloadBackup()">Download</button></div><div class="setting-row"><span>Saved filters</span><button onclick="resetSavedFilters()">Reset</button></div></div><div class="settings-page-card"><h3>Sync health</h3><p>${syncCopy}</p><div class="setting-row"><span>Mode</span><span class="settings-pill">${appStorageMode==='cloud'?'Cloud first':'Local fallback'}</span></div><div class="setting-row"><span>Last sync issue</span><span>${escHTML(lastSyncError||'None')}</span></div></div><div class="settings-page-card"><h3>Audit log</h3><p>Recent system activity across candidates, finance, users, and documents.</p>${drecoAudit.slice(0,6).map(a=>`<div class="audit-row"><strong>${escHTML(a.action)}</strong><span>${escHTML(a.area)} - ${fmtDate(a.ts)}</span></div>`).join('')||'<div class="mini-empty">No audited actions yet</div>'}</div>`;
 }
 function openQuickAddCandidate(){
   const modal=document.getElementById('quick-add-modal');
