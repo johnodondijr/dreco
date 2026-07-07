@@ -76,7 +76,7 @@ let proBalance, proStageValue, lbStageValue, proStageMatches;
 let lbRefundPrincipal, lbRefundPaidAmount, lbOwnPassport, lbRefundReturned, lbRefundOutstanding;
 let showToast, bindAccountMenuTriggers, fmtDate, getCompanyName;
 let proPaidAmount, proPaymentStatus, proPipelineStageValue, lbPipelineStageValue;
-let addTimeline, auditAction, saveLocalStore, getStorageLabel, getCompanyId;
+let addTimeline, auditAction, saveLocalStore, getStorageLabel, getCompanyId, dbUpdate;
 // Supabase client — named _supabaseDb to avoid shadowing local 'db' variables inside IIFE
 let _supabaseDb = null;
 
@@ -105,7 +105,7 @@ export function injectDepsToD5(deps) {
     lbRefundPrincipal, lbRefundPaidAmount, lbOwnPassport, lbRefundReturned, lbRefundOutstanding,
     showToast, bindAccountMenuTriggers, fmtDate, getCompanyName,
     proPaidAmount, proPaymentStatus, proPipelineStageValue, lbPipelineStageValue,
-    addTimeline, auditAction, saveLocalStore, getStorageLabel, getCompanyId,
+    addTimeline, auditAction, saveLocalStore, getStorageLabel, getCompanyId, dbUpdate,
   } = deps);
   if (deps.DEFAULT_COMPANY) DEFAULT_COMPANY = deps.DEFAULT_COMPANY;
   if (deps.db) _supabaseDb = deps.db;

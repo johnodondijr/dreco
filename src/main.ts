@@ -1412,7 +1412,7 @@ function fallBackToLocal(err) {
   if (dot) dot.className = 'save-dot save-dot-warn';
   if (lbl) lbl.textContent = 'Local only – cloud unavailable';
 }
-async function saveProRecord(rec) {
+async function saveProRecord(rec, isUpdate = false) {
   setSaveStatus('saving');
   if (!useCloud()) {
     saveLocalStore();
@@ -1421,7 +1421,7 @@ async function saveProRecord(rec) {
   }
   const tempId=rec.id;
   try {
-    if (editingProId) {
+    if (isUpdate) {
       await dbUpdate('pro_candidates',rec.id,rec);
     } else {
       const data=await dbInsert('pro_candidates',rec);
@@ -1437,7 +1437,7 @@ async function saveProRecord(rec) {
     setSaveStatus('saved');
   } catch(e){ fallBackToLocal(e); setSaveStatus('saved'); }
 }
-async function saveLBRecord(rec) {
+async function saveLBRecord(rec, isUpdate = false) {
   setSaveStatus('saving');
   if (!useCloud()) {
     saveLocalStore();
@@ -1446,7 +1446,7 @@ async function saveLBRecord(rec) {
   }
   const tempId=rec.id;
   try {
-    if (editingLbId) {
+    if (isUpdate) {
       await dbUpdate('lb_candidates',rec.id,rec);
     } else {
       const data=await dbInsert('lb_candidates',rec);
@@ -3366,8 +3366,9 @@ async function savePro(){
     auditAction('Professional Jobs','Candidate added',rec.name);
     showToast('Candidate added ✓','success');
   }
+  const proWasEditing = !!editingProId;
   editingProId = null;
-  closeModal('pro-modal'); renderPro(); window.renderDash?.(); await saveProRecord(rec);
+  closeModal('pro-modal'); renderPro(); window.renderPipelinePage?.(); window.renderDash?.(); await saveProRecord(rec, proWasEditing);
 }
 async function deletePro(id){
   const r=proDB.find(x=>x.id==id);
@@ -3577,8 +3578,9 @@ async function saveLB(){
     auditAction('General Jobs','Candidate added',rec.name);
     showToast('Candidate added ✓','success');
   }
+  const lbWasEditing = !!editingLbId;
   editingLbId = null;
-  closeModal('lb-modal'); renderLB(); window.renderDash?.(); await saveLBRecord(rec);
+  closeModal('lb-modal'); renderLB(); window.renderPipelinePage?.(); window.renderDash?.(); await saveLBRecord(rec, lbWasEditing);
 }
 async function deleteLB(id){
   const r=lbDB.find(x=>x.id==id);
@@ -3992,7 +3994,7 @@ injectDepsToD5({
   lbRefundPrincipal, lbRefundPaidAmount, lbOwnPassport, lbRefundReturned, lbRefundOutstanding,
   showToast, bindAccountMenuTriggers, fmtDate, getCompanyName, DEFAULT_COMPANY, db,
   proPaidAmount, proPaymentStatus, proPipelineStageValue, lbPipelineStageValue,
-  addTimeline, auditAction, saveLocalStore, getStorageLabel, getCompanyId,
+  addTimeline, auditAction, saveLocalStore, getStorageLabel, getCompanyId, dbUpdate,
 });
 
 // ─── Expose module-scope functions on window ──────────────────────────────────
