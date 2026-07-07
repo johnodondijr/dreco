@@ -210,13 +210,17 @@ export function injectDepsToD5(deps) {
   const fname = () => String(currentUser?.display || 'John').split(' ')[0] || 'John';
   const avatar = (name, type='', id='') => candidateAvatar(name, type, id, 'dv5-avatar');
   const hasDoc  = r => typeof window.hasDocs === 'function' ? window.hasDocs(r.type, r.id) : false;
-  const balPro  = r => (typeof proBalance === 'function') ? proBalance(r) : Math.max((Number(r.commission)||0)-(Number(r.paid)||0),0);
+  const safeCall = (fn, fallback, ...args) => {
+    try { return typeof fn === 'function' ? fn(...args) : fallback; }
+    catch (error) { console.warn('Dreco row helper failed', error); return fallback; }
+  };
+  const balPro  = r => safeCall(proBalance, Math.max((Number(r.commission)||0)-(Number(r.paid)||0),0), r);
   const LB_TRAVELLED_STAGES = new Set(['TRAVELLED','REFUND PENDING','REFUND COMPLETE']);
   const lbHasTravelled = r => LB_TRAVELLED_STAGES.has(String(r.stage||r.travelStatus||r.travel_status||'').toUpperCase());
   const balLB = r => {
-    if (lbOwnPassport(r) || lbRefundReturned(r)) return 0; // no refund owed
+    if (safeCall(lbOwnPassport, false, r) || safeCall(lbRefundReturned, false, r)) return 0; // no refund owed
     if (!lbHasTravelled(r)) return 0; // hasn't travelled yet — not a debt
-    return lbRefundOutstanding(r);
+    return safeCall(lbRefundOutstanding, 0, r);
   };
 
   function stageColor(stage) {
@@ -258,22 +262,27 @@ export function injectDepsToD5(deps) {
     const pro = (Array.isArray(proDB) ? proDB : []).map(r => {
       const paid1=Number(r.paid1)||0;
       const paid2=Number(r.paid2)||0;
-      const paid=proPaidAmount(r);
+      const paid=safeCall(proPaidAmount, Math.max(paid1+paid2, Number(r.paid)||0), r);
       const paymentStatus = typeof proPaymentStatus === 'function'
-        ? proPaymentStatus(r)
+        ? safeCall(proPaymentStatus, null, r)
         : { expected: Number(r.commission)||0, dueNow: Math.max((Number(r.commission)||0)-paid,0), expectedPercent: 100 };
+      const payment = paymentStatus || { expected: Number(r.commission)||0, dueNow: Math.max((Number(r.commission)||0)-paid,0), expectedPercent: 100 };
+      const resolvedStage = resolveProProcessStage({
+        ...r,
+        pipelineStage: safeCall(proPipelineStageValue, canonicalProProcessStage(r.stage || 'INTERVIEW'), r)
+      });
       return {
         type:'pro', id:r.id, name:r.name||'—', pp:r.pp||'', phone:r.phone||'',
         position:r.position||'—', company:r.company||'—', country:r.country||'—',
-        stage:resolveProProcessStage({ ...r, pipelineStage: proPipelineStageValue?.(r) }), pipelineStage:resolveProProcessStage({ ...r, pipelineStage: proPipelineStageValue?.(r) }), submitted:r.submitted, interview:r.interview,
+        stage:resolvedStage, pipelineStage:resolvedStage, submitted:r.submitted, interview:r.interview,
         ol:r.ol, medical:r.medical||null, mol:r.mol, visa:r.visa, travel:r.travel,
         owner:r.owner||currentUser?.display||'Team',
         commission:Number(r.commission)||0,
         paid1, paid2, paid,
-        balance:proBalance(r),
-        expected:paymentStatus.expected||0,
-        dueNow:paymentStatus.dueNow||0,
-        expectedPercent:paymentStatus.expectedPercent||0,
+        balance:balPro(r),
+        expected:payment.expected||0,
+        dueNow:payment.dueNow||0,
+        expectedPercent:payment.expectedPercent||0,
         currency:'KES', raw:r,
         followUp:r.followUp||null,
       };
@@ -287,19 +296,20 @@ export function injectDepsToD5(deps) {
         company:r.company||r.country||'—',
         country:r.country||(typeof getActiveGeneralCountry==='function'?getActiveGeneralCountry():'—')||'—',
         ppStatus:r.ppStatus||r.pp_status||'NOT APPLIED',
-        stage:lbStageValue(r), pipelineStage:lbPipelineStageValue(r),
+        stage:safeCall(lbStageValue, r.stage || r.travelStatus || r.travel_status || 'DOCS SUBMITTED', r),
+        pipelineStage:safeCall(lbPipelineStageValue, r.stage || r.travelStatus || r.travel_status || 'DOCS SUBMITTED', r),
         submitted:r.submitted_date||r.submitted||null,
         travelDate:r.travelDate||r.travel_date||null,
         interview:null, mol:null, visa:null,
         travel:r.travelDate||r.travel_date||null,
-        own_passport:lbOwnPassport(r),
+        own_passport:safeCall(lbOwnPassport, false, r),
         owner:currentUser?.display||'Team',
-        commission:lbRefundPrincipal(r),
+        commission:safeCall(lbRefundPrincipal, Number(r.toRefund||r.to_refund)||0, r),
         r1Amt, r2Amt,
         r1Date:r.r1Date||r.r1_date||null,
         r2Date:r.r2Date||r.r2_date||null,
         refundPayments:Array.isArray(r.refundPayments)?r.refundPayments:[],
-        paid: lbRefundPaidAmount(r),
+        paid: safeCall(lbRefundPaidAmount, r1Amt + r2Amt, r),
         balance:balLB(r), currency:'USD', raw:r,
         followUp:r.followUp||null,
       };
