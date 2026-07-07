@@ -51,6 +51,25 @@ function canonicalProProcessStage(stage) {
   };
   return map[value] || value;
 }
+function hasMilestone(value) {
+  return value !== undefined && value !== null && String(value).trim() !== '';
+}
+function resolveProProcessStage(row = {}) {
+  const raw = row.raw || row;
+  const order = Object.fromEntries(PRO_PROFILE_PROCESS.map((stage, index) => [stage, index]));
+  const stage = canonicalProProcessStage(row.pipelineStage || raw.stage || row.stage || PRO_PROFILE_PROCESS[0]);
+
+  let milestoneStage = PRO_PROFILE_PROCESS[0];
+  if (hasMilestone(raw.interview || row.interview)) milestoneStage = 'INTERVIEW';
+  if (hasMilestone(raw.ol || row.ol)) milestoneStage = 'OFFER LETTER';
+  if (hasMilestone(raw.medical || row.medical)) milestoneStage = 'MEDICAL & ATTESTATION';
+  if (hasMilestone(raw.mol || row.mol)) milestoneStage = 'WORK PERMIT';
+  if (hasMilestone(raw.visa || row.visa)) milestoneStage = 'VISA';
+  if (stage === 'TICKET BOOKED') milestoneStage = 'TICKET BOOKED';
+  if (hasMilestone(raw.travel || row.travel)) milestoneStage = 'TRAVELLED';
+
+  return (order[stage] ?? 0) >= (order[milestoneStage] ?? 0) ? stage : milestoneStage;
+}
 
 // Functions injected by main.ts after all declarations are hoisted
 let proBalance, proStageValue, lbStageValue, proStageMatches;
@@ -246,7 +265,7 @@ export function injectDepsToD5(deps) {
       return {
         type:'pro', id:r.id, name:r.name||'—', pp:r.pp||'', phone:r.phone||'',
         position:r.position||'—', company:r.company||'—', country:r.country||'—',
-        stage:proPipelineStageValue(r), pipelineStage:proPipelineStageValue(r), submitted:r.submitted, interview:r.interview,
+        stage:resolveProProcessStage({ ...r, pipelineStage: proPipelineStageValue?.(r) }), pipelineStage:resolveProProcessStage({ ...r, pipelineStage: proPipelineStageValue?.(r) }), submitted:r.submitted, interview:r.interview,
         ol:r.ol, medical:r.medical||null, mol:r.mol, visa:r.visa, travel:r.travel,
         owner:r.owner||currentUser?.display||'Team',
         commission:Number(r.commission)||0,
@@ -420,7 +439,7 @@ export function injectDepsToD5(deps) {
         {label:'Travelled',         done: ['TRAVELLED','REFUND PENDING','REFUND COMPLETE'].includes(s), action:'stage'},
       ];
     }
-    const processStage = canonicalProProcessStage(r.pipelineStage || r.stage);
+    const processStage = resolveProProcessStage(r);
     const idx = PRO_PROFILE_PROCESS.indexOf(processStage);
     return [
       {label:'Interview done',              done: !!r.raw?.interview || idx >= PRO_PROFILE_PROCESS.indexOf('INTERVIEW'), action:'stage'},
@@ -433,7 +452,7 @@ export function injectDepsToD5(deps) {
     ];
   }
   function checklistPct(r) {
-    const s = String(r.pipelineStage || r.stage || '').toUpperCase();
+    const s = type === 'pro' ? resolveProProcessStage(r) : String(r.pipelineStage || r.stage || '').toUpperCase();
     const travelled = r.type === 'lb'
       ? ['TRAVELLED','REFUND PENDING','REFUND COMPLETE'].includes(s)
       : s === 'TRAVELLED';
@@ -556,7 +575,7 @@ export function injectDepsToD5(deps) {
 
   function buildStageDonut(normRows: any[]) {
     const stageCounts: Record<string,number> = {};
-    normRows.forEach(r => { const s=String(r.pipelineStage||r.stage||'Unknown').toUpperCase(); stageCounts[s]=(stageCounts[s]||0)+1; });
+    normRows.forEach(r => { const s=String(r.type==='pro'?resolveProProcessStage(r):(r.pipelineStage||r.stage||'Unknown')).toUpperCase(); stageCounts[s]=(stageCounts[s]||0)+1; });
     const entries = Object.entries(stageCounts).sort((a,b)=>b[1]-a[1]);
     const total = entries.reduce((s,[,n])=>s+n,0) || 1;
     const colorMap: Record<string,string> = {
@@ -2061,7 +2080,7 @@ export function injectDepsToD5(deps) {
     const stageLabels  = type==='pro'
       ? stageListRef.map(s => PRO_PROFILE_LABELS[s] || s)
       : ['Unselected','Selected','Travelled'];
-    const normalizedStage = type === 'pro' ? canonicalProProcessStage(r.pipelineStage || r.stage) : r.pipelineStage;
+    const normalizedStage = type === 'pro' ? resolveProProcessStage(r) : r.pipelineStage;
     const stageIdxRaw = stageListRef.findIndex(s => s === normalizedStage);
     const stageIdx = Math.max(0, stageIdxRaw);
 
@@ -2082,7 +2101,7 @@ export function injectDepsToD5(deps) {
         </button>
         <i class="ti ti-chevron-right" style="font-size:12px;color:#9ca3af"></i>
         <span style="color:#18191B;font-weight:375">${h(r.name)}</span>
-        <span style="margin-left:auto">${badge(r.pipelineStage)}</span>
+        <span style="margin-left:auto">${badge(normalizedStage)}</span>
       </div>
 
       <!-- Hero card -->
@@ -2115,7 +2134,7 @@ export function injectDepsToD5(deps) {
       <div class="dv5-profile-vitals">
         <div class="dv5-vital-card" style="background:#F8F7EF;border-color:#E4E1D6">
           <div class="dv5-vital-label" style="color:#76746B">Stage</div>
-          ${badge(r.pipelineStage)}
+          ${badge(normalizedStage)}
           <div class="dv5-vital-hint" style="color:#9A978C">${h(nextAction(r))}</div>
         </div>
         <div class="dv5-vital-card" style="background:#EDE8FB;border-color:#C8BAEF">
@@ -2205,7 +2224,7 @@ export function injectDepsToD5(deps) {
                   { key:'TRAVELLED', label:'Travel', date:r.travel || r.raw?.travel },
                 ];
             const currentIdx = type === 'pro'
-              ? Math.max(0, PRO_PROFILE_PROCESS.indexOf(canonicalProProcessStage(r.pipelineStage || r.stage)))
+              ? Math.max(0, PRO_PROFILE_PROCESS.indexOf(resolveProProcessStage(r)))
               : milestones.reduce((acc,m,i)=>m.date?i:acc, -1);
             return `<div style="display:flex;flex-direction:column;gap:0;padding:4px 0">
               ${milestones.map((m,i) => {
