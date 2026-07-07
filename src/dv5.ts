@@ -1036,8 +1036,8 @@ export function injectDepsToD5(deps) {
     const pipelineRows = allRows();
     const q = pipelineSearch.toLowerCase();
     const matchSearch = r => !q || [r.name,r.position,r.company,r.pp,r.country,r.phone].join(' ').toLowerCase().includes(q);
-    const proRows = pipelineRows.filter(r=>r.type==='pro'&&matchSearch(r)).map(r=>({...r, pipelineStage:proPipelineStageValue(r)}));
-    const lbRows = pipelineRows.filter(r=>r.type==='lb'&&matchSearch(r)).map(r=>({...r, pipelineStage:lbPipelineStageValue(r)}));
+    const proRows = pipelineRows.filter(r=>r.type==='pro'&&matchSearch(r));
+    const lbRows = pipelineRows.filter(r=>r.type==='lb'&&matchSearch(r));
     const proStageList = activeWorkflowStages('pro');
     const lbStageList  = activeWorkflowStages('lb');
     const lbFiltered = lbCountryFilter ? lbRows.filter(r=>(r.country||'')=== lbCountryFilter) : lbRows;
