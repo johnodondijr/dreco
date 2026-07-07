@@ -1247,7 +1247,7 @@ export function injectDepsToD5(deps) {
             <table class="dv5-table">
               <thead><tr>
                 <th style="width:36px"><input type="checkbox" id="cand-select-all" ${allSel?'checked':''} onchange="toggleSelectAll(this.checked)"></th>
-                <th>Name</th><th>${isPro?'Job Title':'Destination'}</th><th>${isPro?'Company':'Agency'}</th>
+                <th>Name</th><th>${isPro?'Job Title':'Destination'}</th>${isPro?'<th>Company</th>':''}
                 <th>Stage</th>${!isPro?'<th>Passport</th>':''}<th>Next Action</th><th>Readiness</th>${isPro?'<th>Submitted</th>':''}<th></th>
               </tr></thead>
               <tbody>
@@ -1272,7 +1272,7 @@ export function injectDepsToD5(deps) {
                       </div>
                     </div></td>
                     <td>${h(r.position)}</td>
-                    <td>${h(r.company)}</td>
+                    ${r.type==='pro'?`<td>${h(r.company)}</td>`:''}
                     <td>${badge(r.pipelineStage)}</td>
                     ${r.type==='lb'?`<td>${ppLabel}</td>`:''}
                     <td><span class="dv5-next-action">${h(nextAction(r))}</span></td>
