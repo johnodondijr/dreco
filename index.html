@@ -6733,6 +6733,81 @@ html body #app .ref-avatar-mini img{
   display:block!important;
 }
 
+/* Final radius system: controls use one rounded language, cards stay larger */
+:root{
+  --dreco-control-radius:18px;
+  --dreco-control-radius-inner:16px;
+  --dreco-card-radius:22px;
+}
+html body #app .dv5-job-type-tabs{
+  height:34px!important;
+  border-radius:var(--dreco-control-radius)!important;
+  overflow:hidden!important;
+  background:#FFFFFF!important;
+  border:1px solid #E4E1D6!important;
+  box-shadow:none!important;
+}
+html body #app .dv5-jt-tab{
+  height:100%!important;
+  min-height:0!important;
+  padding:0 16px!important;
+  border-radius:0!important;
+  font-size:12px!important;
+  line-height:1!important;
+}
+html body #app .dv5-jt-tab:first-child{
+  border-radius:var(--dreco-control-radius-inner) 0 0 var(--dreco-control-radius-inner)!important;
+}
+html body #app .dv5-jt-tab:last-child{
+  border-radius:0 var(--dreco-control-radius-inner) var(--dreco-control-radius-inner) 0!important;
+}
+html body #app .dv5-jt-tab.active{
+  background:#FFFFFF!important;
+  box-shadow:0 1px 3px rgba(31,33,51,.08)!important;
+}
+html body #app .btn,
+html body #app .dv5-btn,
+html body #app .dv5-btn-icon,
+html body #app .dv5-action-btn,
+html body #app .topbar-icon-btn,
+html body #app .topbar-refresh-btn,
+html body #app .topbar-notif-btn,
+html body #app .topbar-user-card,
+html body #app .topbar-search,
+html body #app .search-wrap input,
+html body #app .toolbar-select,
+html body #app .field input,
+html body #app .field select,
+html body #app .field textarea,
+html body #app .doc-link-input,
+html body #app .doc-open-btn,
+html body #app .dv5-input,
+html body #app .dv5-select,
+html body #app .dv5-view-tabs,
+html body #app .dv5-bulk-bar,
+html body #app .dv5-preset-btn,
+html body #app .dv5-tx-arrow{
+  border-radius:var(--dreco-control-radius)!important;
+}
+html body #app .dv5-card,
+html body #app .dv5-table-card,
+html body #app .dv5-kpi,
+html body #app .dv5-priority,
+html body #app .dv5-stat-card,
+html body #app .dv5-file-card,
+html body #app .panel,
+html body #app .dash-card,
+html body #app .metric-card,
+html body #app .ref-pipeline-overview{
+  border-radius:var(--dreco-card-radius)!important;
+}
+html body #app .dv5-kpi-icon,
+html body #app .dv5-priority-icon,
+html body #app .dv5-stat-icon,
+html body #app .ref-kpi-icon{
+  border-radius:13px!important;
+}
+
 /* ============================================================
    MOBILE FIXES — login full-screen + app responsiveness
    Last in file → wins over all earlier !important rules
