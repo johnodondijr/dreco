@@ -1211,9 +1211,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   await loadRuntimeConfig();
   await loadStaffAccounts();
   initLoginInteractions();
-  // Clear any stale localStorage session left by older code versions
-  try { localStorage.removeItem('dr_user'); } catch { /* ignore */ }
-  const saved=safeSessionGet('dr_user');
+  const saved=safeLocalGet('dr_user');
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
