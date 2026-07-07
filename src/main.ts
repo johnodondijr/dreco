@@ -686,7 +686,7 @@ function lbRefundPaidAmount(row = {}) {
   const legacyPaid = (Number(row.r1Amt || row.r1_amt) || 0) + (Number(row.r2Amt || row.r2_amt) || 0);
   const newPaid = (Array.isArray(row.refundPayments) ? row.refundPayments : [])
     .reduce((s, p) => s + (Number(p.amount) || 0), 0);
-  return Math.max(legacyPaid, newPaid);
+  return legacyPaid + newPaid;
 }
 function lbOwnPassport(row = {}) {
   return !!row.own_passport || cleanStage(row.ppStatus || row.pp_status) === 'HAD PP';
@@ -755,6 +755,10 @@ function normalizeLBRecord(r={}) {
     airline:r.airline||'',
     travelTime:r.travelTime||r.travel_time||'',
     followUp:normalizeDateField(r.followUp||r.follow_up),
+    submitted_date:normalizeDateField(r.submitted_date||r.submittedDate),
+    selected_date:normalizeDateField(r.selected_date||r.selectedDate),
+    passport_date:normalizeDateField(r.passport_date||r.passportDate),
+    visa_date:normalizeDateField(r.visa_date||r.visaDate),
   };
 }
 function getStorageLabel() {
@@ -1300,6 +1304,8 @@ async function loadAllData() {
     ]);
     appStorageMode='cloud';
     lastSyncError='';
+    if (proRes.error) console.warn('pro_candidates query error:', proRes.error);
+    if (lbRes.error)  console.warn('lb_candidates query error:', lbRes.error);
     if (proRes.data&&proRes.data.length>0) setProDB(proRes.data.map(normalizeProRecord)); else if(companyId===DEFAULT_COMPANY.id) await seedProData(); else setProDB([]);
     if (lbRes.data&&lbRes.data.length>0)   setLbDB(lbRes.data.map(normalizeLBRecord));   else if(companyId===DEFAULT_COMPANY.id) await seedLBData(); else setLbDB([]);
     setAllDocs({});
@@ -1435,6 +1441,7 @@ function toLBDbPayload(rec) {
     notes: rec.notes||null,
     own_passport: !!rec.own_passport,
     follow_up: rec.followUp||null,
+    refundPayments: Array.isArray(rec.refundPayments) ? rec.refundPayments : [],
     submitted_date: rec.submitted_date||null,
     selected_date: rec.selected_date||null,
     passport_date: rec.passport_date||null,
@@ -2496,6 +2503,8 @@ function submitQuickStage(){
   if(pendingStageSelect){ pendingStageSelect.value=name; pendingStageSelect.dataset.prev=name; }
   closeModal('quick-stage-modal');
   pendingStageType=null; pendingStageSelect=null;
+  window.renderPipelinePage?.();
+  window.renderDash?.();
   showToast(`"${name}" added`,'success');
 }
 
@@ -3090,7 +3099,7 @@ async function submitRecordPayment(){
     if(!r.paid1){ updates.paid1=amount; r.paid1=amount; }
     else if(!r.paid2){ updates.paid2=amount; r.paid2=amount; }
     else return fail('Both payment slots are filled. Open the candidate to edit.');
-    updates.paid=(r.paid1||0)+(r.paid2||0);
+    updates.paid=Math.max(r.paid||0,(r.paid1||0)+(r.paid2||0));
     r.paid=updates.paid;
     try{ if(useCloud()) await dbUpdate('pro_candidates',id,updates); else saveLocalStore(); addTimeline('pro',id,`Commission payment: ${moneyKES(amount)}`); auditAction('Finance','Commission payment recorded',`${r.name} - ${moneyKES(amount)}`); }
     catch(e){ return fail(e.message||'Save failed.'); }
@@ -3724,7 +3733,7 @@ async function submitLBRefundPayment() {
   showToast('Payment recorded ✓','success');
   closeModal('lb-refund-modal');
   await saveLBRecord(lbDB[i]);
-  renderLB(); window.renderDash?.(); renderFinance();
+  renderLB(); window.renderDash?.(); window.renderFinancePage?.();
 }
 window.submitLBRefundPayment = submitLBRefundPayment;
 

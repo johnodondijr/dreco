@@ -32,9 +32,9 @@ function cleanStageLocal(value) {
 function canonicalProProcessStage(stage) {
   const value = cleanStageLocal(stage);
   const map = {
-    'PENDING OFFER': 'INTERVIEW',
-    'PENDING OFFER LETTER': 'INTERVIEW',
-    'PENDING OL': 'INTERVIEW',
+    'PENDING OFFER': 'OFFER LETTER',
+    'PENDING OFFER LETTER': 'OFFER LETTER',
+    'PENDING OL': 'OFFER LETTER',
     'OFFER': 'OFFER LETTER',
     'OL': 'OFFER LETTER',
     'MEDICAL': 'MEDICAL & ATTESTATION',
@@ -1161,7 +1161,7 @@ export function injectDepsToD5(deps) {
       await dbUpdate(table, r.id, r.type==='pro' ? {stage} : {stage, travelStatus: stage});
       const db2 = r.type==='pro' ? proDB : lbDB;
       const idx = db2.findIndex(x => x.id===r.id);
-      if (idx >= 0) { if (r.type==='pro') db2[idx].stage = stage; else db2[idx].travelStatus = stage; }
+      if (idx >= 0) { if (r.type==='pro') db2[idx].stage = stage; else { db2[idx].travelStatus = stage; db2[idx].stage = stage; } }
     }
     selectedCandidates.clear();
     renderCandidates();
@@ -1318,21 +1318,31 @@ export function injectDepsToD5(deps) {
     if (type === 'lb' && targetPipelineStage === 'TRAVELLED' && !rec.travelDate) {
       showToast('Set a travel date before marking as Travelled.','error'); return;
     }
+    const prevStage = type === 'pro' ? rec.stage : (rec.travelStatus || rec.stage);
     if (type === 'pro') rec.stage = targetDbStage;
     else { rec.travelStatus = targetDbStage; rec.stage = targetDbStage; }
-    showToast(`Moved to ${targetPipelineStage}`, 'success');
     renderCandidates();
+    window.renderDash?.();
     window.openCandidateProfile?.(type, id);
     try {
       const table = type === 'pro' ? 'pro_candidates' : 'lb_candidates';
       const updateField = type === 'pro' ? { stage: targetDbStage } : { stage: targetDbStage, travelStatus: targetDbStage };
       await dbUpdate(table, id, updateField);
       addTimeline(type, id, `Stage set to ${targetPipelineStage}`);
-    } catch(e) { console.warn('stage save error', e); }
+      showToast(`Moved to ${targetPipelineStage}`, 'success');
+    } catch(e) {
+      if (type === 'pro') rec.stage = prevStage;
+      else { rec.travelStatus = prevStage; rec.stage = prevStage; }
+      renderCandidates();
+      window.renderDash?.();
+      showToast('Stage change failed — please try again', 'error');
+      saveLocalStore?.();
+      console.warn('stage save error', e);
+    }
   }
 
   window.advanceStage = async function(type, id) {
-    const stages = type === 'pro' ? PRO_PROFILE_PROCESS : activeWorkflowStages('lb');
+    const stages = activeWorkflowStages(type);
     const curRow  = allRows().find(r => r.type===type && String(r.id)===String(id));
     const curStage = type === 'pro' ? canonicalProProcessStage(curRow?.pipelineStage || curRow?.stage) : (curRow?.pipelineStage || stages[0]);
     const idx = stages.findIndex(s => s === curStage);
@@ -1341,7 +1351,7 @@ export function injectDepsToD5(deps) {
   };
 
   window.jumpToStage = async function(type, id, targetIdx) {
-    const stages = type === 'pro' ? PRO_PROFILE_PROCESS : activeWorkflowStages('lb');
+    const stages = activeWorkflowStages(type);
     const targetPipelineStage = stages[targetIdx];
     if (!targetPipelineStage) return;
     const curRow = allRows().find(r => r.type===type && String(r.id)===String(id));
@@ -1773,8 +1783,8 @@ export function injectDepsToD5(deps) {
     // Avg processing (Pro: intake→travel; LB: submit→travel)
     let avgProcessing = '—';
     if (isPro) {
-      const withDates = (proDB||[]).filter(r => proPipelineStageValue(r)==='TRAVELLED' && r.travel && (r.intake||r.created||r.createdAt));
-      if (withDates.length) { const avg = Math.round(withDates.reduce((s,r)=>s+Math.max(0,(new Date(r.travel)-new Date(r.intake||r.created||r.createdAt))/86400000),0)/withDates.length); avgProcessing = avg>0?avg+' days':'—'; }
+      const withDates = (proDB||[]).filter(r => proPipelineStageValue(r)==='TRAVELLED' && r.travel && r.submitted);
+      if (withDates.length) { const avg = Math.round(withDates.reduce((s,r)=>s+Math.max(0,(new Date(r.travel)-new Date(r.submitted))/86400000),0)/withDates.length); avgProcessing = avg>0?avg+' days':'—'; }
     } else {
       const withDates = lbBase.filter(r=>r.stage==='TRAVELLED'&&r.travelDate&&r.created_at);
       if (withDates.length) { const avg = Math.round(withDates.reduce((s,r)=>s+Math.max(0,(new Date(r.travelDate)-new Date(r.created_at))/86400000),0)/withDates.length); avgProcessing = avg>0?avg+' days':'—'; }
