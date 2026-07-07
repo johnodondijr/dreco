@@ -462,7 +462,7 @@ export function injectDepsToD5(deps) {
     ];
   }
   function checklistPct(r) {
-    const s = type === 'pro' ? resolveProProcessStage(r) : String(r.pipelineStage || r.stage || '').toUpperCase();
+    const s = r.type === 'pro' ? resolveProProcessStage(r) : String(r.pipelineStage || r.stage || '').toUpperCase();
     const travelled = r.type === 'lb'
       ? ['TRAVELLED','REFUND PENDING','REFUND COMPLETE'].includes(s)
       : s === 'TRAVELLED';
