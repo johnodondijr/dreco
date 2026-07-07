@@ -158,7 +158,7 @@ export function injectDepsToD5(deps) {
   function jobTypeTabs(suffix='') {
     return `<div class="dv5-job-type-tabs" style="display:flex;align-items:center;gap:0;border:1px solid #e4e4e7;border-radius:8px;overflow:hidden;background:#f4f4f5">
       <button class="dv5-jt-tab${jobTypeTab==='pro'?' active':''}" onclick="window.setJobTypeTab('pro')" style="padding:7px 18px;font-size:13px;font-weight:375;border:0;background:${jobTypeTab==='pro'?'#fff':'transparent'};color:${jobTypeTab==='pro'?'#18181b':'#71717a'};cursor:pointer;transition:all .15s;${jobTypeTab==='pro'?'box-shadow:0 1px 3px rgba(0,0,0,.08)':''}">
-        <i class="ti ti-briefcase" style="margin-right:5px;font-size:12px"></i>Professional
+        <i class="ti ti-briefcase" style="margin-right:5px;font-size:12px"></i>Professional Jobs
       </button>
       <button class="dv5-jt-tab${jobTypeTab==='lb'?' active':''}" onclick="window.setJobTypeTab('lb')" style="padding:7px 18px;font-size:13px;font-weight:375;border:0;background:${jobTypeTab==='lb'?'#fff':'transparent'};color:${jobTypeTab==='lb'?'#18181b':'#71717a'};cursor:pointer;transition:all .15s;${jobTypeTab==='lb'?'box-shadow:0 1px 3px rgba(0,0,0,.08)':''}">
         <i class="ti ti-globe" style="margin-right:5px;font-size:12px"></i>General Jobs
@@ -1248,7 +1248,7 @@ export function injectDepsToD5(deps) {
               <thead><tr>
                 <th style="width:36px"><input type="checkbox" id="cand-select-all" ${allSel?'checked':''} onchange="toggleSelectAll(this.checked)"></th>
                 <th>Name</th><th>${isPro?'Job Title':'Destination'}</th><th>${isPro?'Company':'Agency'}</th>
-                <th>Stage</th>${!isPro?'<th>Passport</th>':''}<th>Next Action</th><th>Readiness</th><th>${isPro?'Submitted':'Doc Date'}</th><th></th>
+                <th>Stage</th>${!isPro?'<th>Passport</th>':''}<th>Next Action</th><th>Readiness</th>${isPro?'<th>Submitted</th>':''}<th></th>
               </tr></thead>
               <tbody>
                 ${list.length ? list.map(r => {
@@ -1277,7 +1277,7 @@ export function injectDepsToD5(deps) {
                     ${r.type==='lb'?`<td>${ppLabel}</td>`:''}
                     <td><span class="dv5-next-action">${h(nextAction(r))}</span></td>
                     <td>${progressMini(r)}</td>
-                    <td>${h(fmt(r.submitted))}</td>
+                    ${r.type==='pro'?`<td>${h(fmt(r.submitted))}</td>`:''}
                     <td onclick="event.stopPropagation()">
                       <button class="dv5-action-btn" onclick="${r.type==='pro'?`editPro(${r.id})`:`editLB(${r.id})`}" title="Edit">
                         <i class="ti ti-edit"></i>
@@ -1287,7 +1287,7 @@ export function injectDepsToD5(deps) {
                       </button>
                     </td>
                   </tr>`;
-                }).join('') : `<tr><td colspan="${isPro?9:10}"><div class="dv5-empty">No candidates found.</div></td></tr>`}
+                }).join('') : `<tr><td colspan="9"><div class="dv5-empty">No candidates found.</div></td></tr>`}
               </tbody>
             </table>
           </div>

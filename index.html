@@ -6808,6 +6808,45 @@ html body #app .ref-kpi-icon{
   border-radius:13px!important;
 }
 
+html body #app .account-profile-page{
+  width:100%!important;
+  max-width:1180px!important;
+  margin:0!important;
+}
+html body #app .account-profile-grid{
+  grid-template-columns:1.05fr .95fr .8fr!important;
+}
+html body #app .account-form-grid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:14px!important;
+}
+html body #app .account-form-grid .field{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:7px!important;
+}
+html body #app .account-form-grid .field span{
+  font-size:12px!important;
+  font-weight:500!important;
+  color:#343241!important;
+}
+html body #app .account-form-grid .field input{
+  width:100%!important;
+  height:40px!important;
+}
+html body #app .account-avatar-edit{
+  border:0!important;
+  cursor:pointer!important;
+  padding:0!important;
+}
+@media(max-width:900px){
+  html body #app .account-profile-grid,
+  html body #app .account-form-grid{
+    grid-template-columns:1fr!important;
+  }
+}
+
 /* ============================================================
    MOBILE FIXES — login full-screen + app responsiveness
    Last in file → wins over all earlier !important rules
@@ -7584,7 +7623,7 @@ html body #app .ref-kpi-icon{
             </div>
           </div>
           <div id="acct-menu-items">
-            <button class="am-item" onclick="openProfileEdit()"><i class="ti ti-user"></i>Profile</button>
+            <button class="am-item" onclick="switchTab('account');closeProfileDropdown()"><i class="ti ti-user"></i>Profile</button>
             <button class="am-item" onclick="switchTab('team');closeProfileDropdown()"><i class="ti ti-users"></i>Team</button>
             <button class="am-item" onclick="switchTab('settings');closeProfileDropdown()"><i class="ti ti-settings"></i>Settings</button>
             <div style="height:1px;background:rgba(31,33,51,.06);margin:4px 3px"></div>
@@ -7871,6 +7910,10 @@ html body #app .ref-kpi-icon{
           <div class="panel"><div class="panel-header"><span class="panel-title">Travel register</span><div class="panel-actions"><select class="toolbar-select" id="travel-filter" onchange="renderTravel()"><option value="all">All travel</option><option value="travelled">Travelled</option><option value="pending">Pending travel</option></select></div></div><div class="table-scroll"><table class="ref-table"><thead><tr><th>Name</th><th>Workflow</th><th>Company / Country</th><th>Position / Status</th><th>Travel Date</th><th>Airline</th><th>Time</th><th>Notes</th></tr></thead><tbody id="travel-tbody"></tbody></table></div></div>
         </div>
 
+        <div id="account-section" style="display:none">
+          <div class="section-page-head"><div><h2>Profile</h2><p>Your Dreco account, profile photo, login name, and password.</p></div><button class="btn" onclick="switchTab('settings')"><i class="ti ti-settings"></i> Settings</button></div>
+          <div id="account-page-content"></div>
+        </div>
 
         <div id="team-section" style="display:none">
           <div class="section-page-head"><div><h2>Team</h2><p>Company users, roles, permissions, and account access.</p></div><button class="btn primary" onclick="createStaffAccount()"><i class="ti ti-user-plus"></i> Add user</button></div>

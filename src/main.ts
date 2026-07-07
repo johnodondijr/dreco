@@ -1810,11 +1810,11 @@ function switchTab(tab, _pushHistory = true){
     kanban:'pipeline', travel:'pipeline', tasks:'pipeline',
     calendar:'pipeline',
     commissions:'finance', repayments:'finance', expenses:'finance',
-    team:'settings', help:'settings'
+    team:'settings', account:'settings', help:'settings'
   };
   const DV5_TITLES = {
     dash:'Home', pipeline:'Pipeline', candidates:'Candidates',
-    tasks:'Tasks', finance:'Finance', documents:'Documents',
+    tasks:'Tasks', finance:'Finance', documents:'Documents', account:'Profile',
     reports:'Reports', clients:'Clients', settings:'Settings'
   };
 
@@ -1824,7 +1824,7 @@ function switchTab(tab, _pushHistory = true){
   const allSections = [
     ...DV5_TABS,
     'pro','lb','kanban','travel','calendar',
-    'commissions','repayments','expenses','team','help'
+    'commissions','repayments','expenses','team','account','help'
   ];
   allSections.forEach(x => {
     const sec = document.getElementById(x + '-section');
@@ -1862,6 +1862,7 @@ function switchTab(tab, _pushHistory = true){
     lb: ()=> (typeof renderLB === 'function') && renderLB(),
     travel: ()=> (typeof renderTravel === 'function') && renderTravel(),
     calendar: ()=> (typeof renderCalendar === 'function') && renderCalendar(),
+    account: ()=> (typeof renderAccountPage === 'function') && renderAccountPage(),
     team: ()=> (typeof renderTeam === 'function') && renderTeam(),
     help: ()=> (typeof renderHelpPage === 'function') && renderHelpPage(),
   };
@@ -2955,7 +2956,79 @@ function renderTeam(){
   const fallback=currentUser?[{username:currentUser.username||'user',...currentUser}]:[{display:DEFAULT_ADMIN_USERNAME,role:'admin',username:DEFAULT_ADMIN_USERNAME}];
   const list=users.length?users:fallback;
   const isAdmin=currentUser?.role==='admin';
-  grid.innerHTML=list.map(u=>`<div class="team-card"><div class="team-card-head"><div class="team-avatar">${escHTML((u.display||u.username||'U').slice(0,2).toUpperCase())}</div><div><div class="team-name">${escHTML(u.display||u.username||'User')}</div><div class="team-role">${u.role==='admin'?'Administrator':'Staff'} @${escHTML(u.username||'user')}</div></div></div><div class="team-perms"><span>Dashboard</span><span>Professional Jobs</span><span>General Jobs</span><span>Finance</span><span>Reports</span></div>${isAdmin?`<div style="margin-top:10px;text-align:right"><button class="btn" style="font-size:12px;padding:4px 12px" onclick="openEditTeamMember('${u.username.replace(/'/g,"\\'")}')"><i class="ti ti-pencil" style="font-size:11px;margin-right:4px"></i>Edit</button></div>`:''}</div>`).join('');
+  grid.innerHTML=list.map(u=>`<div class="team-card" onclick="${isAdmin?`openEditTeamMember('${u.username.replace(/'/g,"\\'")}')`:''}" style="${isAdmin?'cursor:pointer':''}"><div class="team-card-head"><div class="team-avatar">${escHTML((u.display||u.username||'U').slice(0,2).toUpperCase())}</div><div><div class="team-name">${escHTML(u.display||u.username||'User')}</div><div class="team-role">${u.role==='admin'?'Administrator':'Staff'} @${escHTML(u.username||'user')}</div></div></div><div class="team-perms"><span>Dashboard</span><span>Professional Jobs</span><span>General Jobs</span><span>Finance</span><span>Reports</span></div>${isAdmin?`<div style="margin-top:10px;text-align:right"><button class="btn" style="font-size:12px;padding:4px 12px" onclick="event.stopPropagation();openEditTeamMember('${u.username.replace(/'/g,"\\'")}')"><i class="ti ti-pencil" style="font-size:11px;margin-right:4px"></i>Edit</button></div>`:''}</div>`).join('');
+}
+function getCurrentUserInitials(){
+  const display=currentUser?.display||currentUser?.username||'User';
+  const parts=display.replace(/[^a-zA-Z ]/g,'').trim().split(/\s+/).filter(Boolean);
+  return parts.length>=2 ? (parts[0][0]+parts[parts.length-1][0]).toUpperCase() : display.substring(0,2).toUpperCase();
+}
+function renderAccountPage(){
+  const el=document.getElementById('account-page-content'); if(!el) return;
+  const savedAvatar=localStorage.getItem(AVATAR_KEY);
+  const avatar=savedAvatar ? `<img src="${savedAvatar}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:999px">` : escHTML(getCurrentUserInitials());
+  const display=escHTML(currentUser?.display||'User');
+  const username=escHTML(currentUser?.username||'user');
+  const role=currentUser?.role==='admin'?'Administrator':'Staff';
+  el.innerHTML=`
+    <div class="dv5-profile-panel account-profile-page">
+      <div class="dv5-profile-hero">
+        <div class="dv5-profile-avatar">${avatar}</div>
+        <div class="dv5-profile-info">
+          <h2>${display}</h2>
+          <p>${escHTML(getCompanyName())}</p>
+          <div class="dv5-profile-meta">
+            <span><i class="ti ti-user"></i>@${username}</span>
+            <span><i class="ti ti-shield"></i>${role}</span>
+            <span><i class="ti ti-building"></i>${escHTML(getCompanyName())}</span>
+          </div>
+        </div>
+        <div class="dv5-profile-stage">
+          <span class="dv5-badge green">Active</span>
+          <small>Workspace account</small>
+        </div>
+      </div>
+      <div class="dv5-profile-grid account-profile-grid">
+        <div class="dv5-card">
+          <div class="dv5-card-title">Profile photo</div>
+          <div style="display:flex;align-items:center;gap:14px">
+            <button type="button" class="dv5-profile-avatar account-avatar-edit" onclick="document.getElementById('account-avatar-upload')?.click()" title="Upload profile photo">${avatar}</button>
+            <div>
+              <button class="dv5-btn" onclick="document.getElementById('account-avatar-upload')?.click()"><i class="ti ti-camera"></i>Upload photo</button>
+              <button class="dv5-btn" style="margin-left:6px;display:${savedAvatar?'inline-flex':'none'}" onclick="removeUserAvatar();renderAccountPage()"><i class="ti ti-trash"></i>Remove</button>
+              <input type="file" id="account-avatar-upload" accept="image/*" style="display:none" onchange="handleAccountAvatarUpload(event)">
+              <p style="margin:9px 0 0;color:#7B8496;font-size:12px">JPG, PNG or GIF under 2MB.</p>
+            </div>
+          </div>
+        </div>
+        <div class="dv5-card">
+          <div class="dv5-card-title">Account access</div>
+          <div class="detail-grid"><span>Role</span><strong>${role}</strong><span>Username</span><strong>@${username}</strong><span>Company</span><strong>${escHTML(getCompanyName())}</strong></div>
+        </div>
+        <div class="dv5-card">
+          <div class="dv5-card-title">Quick links</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <button class="dv5-btn" onclick="switchTab('team')"><i class="ti ti-users"></i>Team</button>
+            <button class="dv5-btn" onclick="switchTab('settings')"><i class="ti ti-settings"></i>Settings</button>
+          </div>
+        </div>
+      </div>
+      <div class="dv5-card">
+        <div class="dv5-card-title">Edit profile</div>
+        <div class="account-form-grid">
+          <label class="field"><span>Display name</span><input id="account-display-name" value="${display}" placeholder="Your name"></label>
+          <label class="field"><span>Username</span><input id="account-username" value="${username}" placeholder="username" autocomplete="off"></label>
+          <label class="field"><span>Current password</span><input id="account-current-pw" type="password" placeholder="Required when changing password"></label>
+          <label class="field"><span>New password</span><input id="account-new-pw" type="password" placeholder="New password"></label>
+          <label class="field"><span>Confirm password</span><input id="account-confirm-pw" type="password" placeholder="Repeat new password"></label>
+        </div>
+        <div class="pd-msg" id="account-profile-msg"></div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+          <button class="dv5-btn" onclick="renderAccountPage()">Reset</button>
+          <button class="dv5-btn primary" onclick="saveAccountPageChanges()"><i class="ti ti-device-floppy"></i>Save changes</button>
+        </div>
+      </div>
+    </div>`;
 }
 function renderSettingsPage(){
   const el=document.getElementById('settings-page-content'); if(!el) return;
@@ -4049,6 +4122,11 @@ function handleAvatarUpload(event) {
   reader.readAsDataURL(file);
 }
 
+function handleAccountAvatarUpload(event) {
+  handleAvatarUpload(event);
+  setTimeout(()=>renderAccountPage(), 80);
+}
+
 function removeUserAvatar() {
   localStorage.removeItem(AVATAR_KEY);
   const d = currentUser?.display || '';
@@ -4058,6 +4136,77 @@ function removeUserAvatar() {
   const inp = document.getElementById('pd-avatar-upload') as HTMLInputElement;
   if (inp) inp.value = '';
   showToast('Profile photo removed', 'success');
+}
+
+async function saveAccountPageChanges() {
+  const msgEl = document.getElementById('account-profile-msg');
+  const showMsg = (txt, type) => {
+    if (!msgEl) return;
+    msgEl.textContent = txt;
+    msgEl.className = 'pd-msg ' + type;
+  };
+  const newDisplay = ((document.getElementById('account-display-name') as HTMLInputElement)?.value || '').trim();
+  const newUsername = ((document.getElementById('account-username') as HTMLInputElement)?.value || '').trim().toLowerCase();
+  const currentPw = (document.getElementById('account-current-pw') as HTMLInputElement)?.value || '';
+  const newPw = (document.getElementById('account-new-pw') as HTMLInputElement)?.value || '';
+  const confirmPw = (document.getElementById('account-confirm-pw') as HTMLInputElement)?.value || '';
+
+  let changed = false;
+  const originalUsername = currentUser?.username;
+  if (!originalUsername || !STAFF_ACCOUNTS[originalUsername]) {
+    showMsg('Current account could not be found. Sign in again.', 'err'); return;
+  }
+  const originalAccount = STAFF_ACCOUNTS[originalUsername];
+
+  if (newDisplay && newDisplay !== currentUser.display) {
+    originalAccount.display = newDisplay;
+    currentUser.display = newDisplay;
+    changed = true;
+  }
+
+  if (newUsername && newUsername !== currentUser.username) {
+    if (!/^[a-z0-9._-]{3,32}$/.test(newUsername)) {
+      showMsg('Use 3-32 letters, numbers, dots, dashes, or underscores for username.', 'err'); return;
+    }
+    if (STAFF_ACCOUNTS[newUsername]) {
+      showMsg('That username is already taken.', 'err'); return;
+    }
+    STAFF_ACCOUNTS[newUsername] = { ...originalAccount };
+    delete STAFF_ACCOUNTS[originalUsername];
+    currentUser.username = newUsername;
+    changed = true;
+  }
+
+  if (currentPw || newPw || confirmPw) {
+    if (!currentPw) { showMsg('Enter your current password.', 'err'); return; }
+    const account = STAFF_ACCOUNTS[currentUser.username];
+    let passwordCheck = { ok: false };
+    try {
+      passwordCheck = await verifyAccountPassword(account, currentPw);
+    } catch (err: any) {
+      showMsg(err.message || 'Current password could not be verified.', 'err'); return;
+    }
+    if (!passwordCheck.ok) { showMsg('Current password is incorrect.', 'err'); return; }
+    if (!newPw) { showMsg('Enter a new password.', 'err'); return; }
+    if (newPw.length < 8) { showMsg('New password must be at least 8 characters.', 'err'); return; }
+    if (newPw !== confirmPw) { showMsg('New passwords do not match.', 'err'); return; }
+    try {
+      await setAccountPassword(STAFF_ACCOUNTS[currentUser.username], newPw);
+    } catch (err: any) {
+      showMsg(err.message || 'New password could not be secured.', 'err'); return;
+    }
+    changed = true;
+  }
+
+  if (!changed) { showMsg('No changes to save.', 'err'); return; }
+  _saveSession(currentUser);
+  await saveStaffAccounts();
+  setUserDisplay(currentUser.display, currentUser.role);
+  showMsg('Changes saved successfully.', 'ok');
+  ['account-current-pw','account-new-pw','account-confirm-pw'].forEach(id => {
+    const el = document.getElementById(id) as HTMLInputElement; if (el) el.value = '';
+  });
+  renderAccountPage();
 }
 
 function setUserDisplay(display, role) {
@@ -4138,7 +4287,8 @@ Object.assign(window, {
   hideForgotPassword, showForgotPassword, hideSignup, showSignup,
   goPage,
   // Account / profile
-  saveProfileChanges, applyUserAvatar, handleAvatarUpload, removeUserAvatar,
+  renderAccountPage, saveAccountPageChanges, saveProfileChanges,
+  applyUserAvatar, handleAvatarUpload, handleAccountAvatarUpload, removeUserAvatar,
   // Workspace
   getCompanyName, getCompanyId, getGeneralCountries, getActiveGeneralCountry,
 });
