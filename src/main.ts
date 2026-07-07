@@ -1810,7 +1810,7 @@ function switchTab(tab, _pushHistory = true){
     kanban:'pipeline', travel:'pipeline', tasks:'pipeline',
     calendar:'pipeline',
     commissions:'finance', repayments:'finance', expenses:'finance',
-    team:'settings', account:'settings', help:'settings'
+    help:'settings'
   };
   const DV5_TITLES = {
     dash:'Home', pipeline:'Pipeline', candidates:'Candidates',
