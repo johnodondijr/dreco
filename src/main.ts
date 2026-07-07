@@ -2257,40 +2257,45 @@ function recordChanges(before={},after={},fields=[]) {
 function renderProSummary(r){
   const el=document.getElementById('pro-summary'); if(!el) return;
   const isNew=!r;
-  const rec=r||{name:'New professional candidate',pp:'Passport pending',position:'Position not set',company:'Company not set',stage:proStages[0]||'PENDING OFFER LETTER',commission:0,paid:0};
+  const rec=r||{name:'New professional candidate',pp:'',position:'',company:'',stage:proStages[0]||'INTERVIEW',commission:0,paid:0};
   const bal=proBalance(rec);
-  el.innerHTML=`<div class="candidate-summary-main">
-    <div class="candidate-summary-name">${rec.name||'New professional candidate'}</div>
+  const initials=(rec.name||'?').split(/\s+/).filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  el.innerHTML=`<div class="cs-avatar">${initials}</div>
+  <div class="candidate-summary-main">
+    <div class="candidate-summary-name">${escHTML(rec.name||'New professional candidate')}</div>
     <div class="candidate-summary-meta">
-      <span><i class="ti ti-id"></i>${rec.pp||'No passport'}</span>
-      <span><i class="ti ti-briefcase"></i>${rec.position||'No position'}</span>
-      <span><i class="ti ti-building"></i>${rec.company||'No company'}</span>
-      <span class="summary-status">${stageBadge(rec.stage||'PENDING OFFER LETTER')}</span>
+      ${rec.pp?`<span><i class="ti ti-id"></i>${escHTML(rec.pp)}</span>`:''}
+      ${rec.position?`<span><i class="ti ti-briefcase"></i>${escHTML(rec.position)}</span>`:''}
+      ${rec.company?`<span><i class="ti ti-building"></i>${escHTML(rec.company)}</span>`:''}
+      <span class="summary-status">${stageBadge(rec.stage||'INTERVIEW')}</span>
     </div>
   </div>
   <div class="candidate-summary-kpis">
-    <div class="candidate-kpi"><strong>${isNew?'-':moneyKES(rec.commission)}</strong><span>Billed</span></div>
-    <div class="candidate-kpi"><strong>${isNew?'-':moneyKES(Math.max(0,bal))}</strong><span>Balance</span></div>
+    <div class="candidate-kpi"><strong>${isNew?'—':moneyKES(rec.commission)}</strong><span>Billed</span></div>
+    <div class="candidate-kpi ${!isNew&&bal<=0?'cs-kpi-paid':'cs-kpi-due'}"><strong>${isNew?'—':moneyKES(Math.max(0,bal))}</strong><span>Balance</span></div>
   </div>`;
 }
 function renderLBSummary(r){
   const el=document.getElementById('lb-summary'); if(!el) return;
   const isNew=!r;
-  const rec=r||{name:'New General Jobs candidate',phone:'No phone',ppStatus:'APPLIED',travelStatus:lbStages[0]||'NOT YET',toRefund:0,r1Amt:0,r2Amt:0};
+  const rec=r||{name:'New General Jobs candidate',phone:'',ppStatus:'APPLIED',travelStatus:lbStages[0]||'NOT YET',toRefund:0,r1Amt:0,r2Amt:0};
   const paid=(Number(rec.r1Amt||rec.r1_amt)||0)+(Number(rec.r2Amt||rec.r2_amt)||0);
   const owed=Number(rec.toRefund||rec.to_refund)||0;
-  el.innerHTML=`<div class="candidate-summary-main">
-    <div class="candidate-summary-name">${rec.name||'New General Jobs candidate'}</div>
+  const bal=Math.max(0,owed-paid);
+  const initials=(rec.name||'?').split(/\s+/).filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  el.innerHTML=`<div class="cs-avatar cs-avatar-lb">${initials}</div>
+  <div class="candidate-summary-main">
+    <div class="candidate-summary-name">${escHTML(rec.name||'New General Jobs candidate')}</div>
     <div class="candidate-summary-meta">
-      <span><i class="ti ti-phone"></i>${rec.phone||'No phone'}</span>
+      ${rec.phone?`<span><i class="ti ti-phone"></i>${escHTML(rec.phone)}</span>`:''}
       <span class="summary-status">${ppBadge(rec.ppStatus||rec.pp_status||'APPLIED')}</span>
       <span class="summary-status">${travelBadge(rec.travelStatus||rec.travel_status||'NOT YET')}</span>
       <span class="summary-status">${refundBadge(isNew?'N/A':getRefundStatus(rec))}</span>
     </div>
   </div>
   <div class="candidate-summary-kpis">
-    <div class="candidate-kpi"><strong>${isNew?'-':moneyUSD(owed)}</strong><span>To refund</span></div>
-    <div class="candidate-kpi"><strong>${isNew?'-':moneyUSD(Math.max(0,owed-paid))}</strong><span>Balance</span></div>
+    <div class="candidate-kpi"><strong>${isNew?'—':moneyUSD(owed)}</strong><span>To refund</span></div>
+    <div class="candidate-kpi ${!isNew&&bal<=0?'cs-kpi-paid':'cs-kpi-due'}"><strong>${isNew?'—':moneyUSD(bal)}</strong><span>Balance</span></div>
   </div>`;
 }
 function readProFormSummary(){
@@ -3300,7 +3305,7 @@ function openProForm(){
 function editPro(id){
   const r=proDB.find(x=>x.id==id); if(!r) return;
   editingProId=id;
-  document.getElementById('pro-modal-title').textContent='Edit - '+r.name;
+  document.getElementById('pro-modal-title').textContent='Edit candidate';
   document.getElementById('pf-name').value=r.name; document.getElementById('pf-pp').value=r.pp||'';
   document.getElementById('pf-phone').value=r.phone||''; document.getElementById('pf-position').value=r.position||'';
   document.getElementById('pf-company').value=r.company||''; document.getElementById('pf-country').value=r.country||'';
@@ -3501,7 +3506,7 @@ function openLBForm(){
 function editLB(id){
   const r=lbDB.find(x=>x.id==id); if(!r) return;
   editingLbId=id;
-  document.getElementById('lb-modal-title').textContent='Edit - '+r.name;
+  document.getElementById('lb-modal-title').textContent='Edit candidate';
   document.getElementById('lf-name').value=r.name; document.getElementById('lf-phone').value=r.phone||'';
   document.getElementById('lf-pp').value=r.ppStatus||r.pp_status||'APPLIED';
   const ownPP=!!r.own_passport;

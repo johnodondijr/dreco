@@ -6472,6 +6472,254 @@ html body #app .ref-avatar-mini img{
     max-width:100%!important;
   }
 }
+
+/* ── Candidate edit modal redesign ─────────────────────────── */
+
+/* Modal shell */
+.modal{
+  max-width:600px!important;
+  border-radius:22px!important;
+  overflow:hidden!important;
+  box-shadow:0 32px 80px rgba(13,14,12,.28),0 0 0 1px rgba(255,255,255,.7)!important;
+}
+
+/* Header — eyebrow label + close button, no name */
+.modal-header{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  padding:16px 20px 12px!important;
+  background:#fff!important;
+  border-bottom:0!important;
+}
+.modal-header h3{
+  font-size:11px!important;
+  font-weight:438!important;
+  color:#9a9b90!important;
+  text-transform:uppercase!important;
+  letter-spacing:.08em!important;
+}
+.modal-close{
+  width:30px!important;
+  height:30px!important;
+  padding:0!important;
+  border-radius:50%!important;
+  background:#F2F2EC!important;
+  color:#6F7066!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-size:16px!important;
+  line-height:1!important;
+  transition:background .15s,color .15s!important;
+}
+.modal-close:hover{ background:#20221C!important; color:#fff!important; }
+
+/* Hero candidate-summary card */
+.candidate-summary{
+  display:grid!important;
+  grid-template-columns:auto minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:14px!important;
+  margin:0 16px 0!important;
+  padding:14px 16px!important;
+  background:linear-gradient(135deg,#F8F7FF 0%,#F5F4EF 100%)!important;
+  border:1px solid #E2DFF8!important;
+  border-radius:18px!important;
+  box-shadow:0 2px 12px rgba(72,37,184,.06)!important;
+}
+
+/* Avatar — gradient square with initials */
+.cs-avatar{
+  width:52px;
+  height:52px;
+  min-width:52px;
+  border-radius:16px;
+  background:linear-gradient(145deg,#4825B8 0%,#7063F0 100%);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:17px;
+  font-weight:562;
+  letter-spacing:-.01em;
+  flex-shrink:0;
+  box-shadow:0 6px 18px rgba(72,37,184,.30);
+}
+/* General Jobs avatar — teal variant */
+.cs-avatar.cs-avatar-lb{
+  background:linear-gradient(145deg,#0D7A6A 0%,#0D9488 100%)!important;
+  box-shadow:0 6px 18px rgba(13,148,136,.28)!important;
+}
+
+/* Name */
+.candidate-summary-name{
+  font-size:16px!important;
+  font-weight:531!important;
+  color:#20221C!important;
+  letter-spacing:-.02em!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+
+/* Meta chips */
+.candidate-summary-meta{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:5px!important;
+  margin-top:8px!important;
+}
+.candidate-summary-meta span{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:4px!important;
+  background:#fff!important;
+  border:1px solid #E2DFF8!important;
+  border-radius:999px!important;
+  padding:4px 9px!important;
+  font-size:10px!important;
+  font-weight:500!important;
+  color:#4F4C6A!important;
+}
+.candidate-summary-meta i{ font-size:10px; color:#9592B0; }
+
+/* KPI boxes */
+.candidate-summary-kpis{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:6px!important;
+}
+.candidate-kpi{
+  width:96px!important;
+  padding:8px 10px!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  border:1px solid #E2DFF8!important;
+  text-align:right!important;
+  box-shadow:0 1px 4px rgba(72,37,184,.06)!important;
+}
+.candidate-kpi strong{
+  display:block!important;
+  font-size:13px!important;
+  font-weight:562!important;
+  color:#20221C!important;
+  letter-spacing:-.02em!important;
+}
+.candidate-kpi span{
+  display:block!important;
+  font-size:9px!important;
+  font-weight:438!important;
+  text-transform:uppercase!important;
+  letter-spacing:.06em!important;
+  margin-top:2px!important;
+  color:#9a9b90!important;
+}
+/* Paid off KPI — green tint */
+.cs-kpi-paid strong{ color:#16813D!important; }
+/* Still owed KPI — amber tint */
+.cs-kpi-due strong{ color:#4825B8!important; }
+
+/* Tabs — sit flush below the summary */
+.modal-tabs{
+  margin-top:12px!important;
+  padding:0 18px!important;
+  background:#fff!important;
+  border-top:1px solid #EEECE2!important;
+  border-bottom:1px solid #E5E2D7!important;
+  gap:4px!important;
+}
+.modal-tab{
+  margin:7px 0!important;
+  padding:8px 12px!important;
+  border-radius:9px!important;
+  border-bottom:0!important;
+  font-size:12px!important;
+  font-weight:438!important;
+  color:#77786D!important;
+  transition:background .12s,color .12s!important;
+}
+.modal-tab:hover{ background:#F3F3EA!important; color:#20221C!important; }
+.modal-tab.active{
+  background:#20221C!important;
+  color:#fff!important;
+  border-bottom:0!important;
+}
+
+/* Form body */
+.modal-body{
+  padding:18px 20px 20px!important;
+  background:#FAFAF6!important;
+}
+.form-grid{ gap:12px 16px!important; }
+.field{ gap:5px!important; }
+.field label{
+  font-size:10px!important;
+  color:#77786D!important;
+  font-weight:438!important;
+  letter-spacing:.04em!important;
+  text-transform:uppercase!important;
+}
+.field input,.field select,.field textarea{
+  height:40px!important;
+  background:#fff!important;
+  border:1px solid #DCD9CB!important;
+  border-radius:11px!important;
+  padding:0 12px!important;
+  color:#20221C!important;
+  font-size:13px!important;
+  font-weight:500!important;
+  box-shadow:none!important;
+  transition:border-color .15s,box-shadow .15s!important;
+}
+.field textarea{ height:auto!important; min-height:72px!important; padding:10px 12px!important; }
+.field input:focus,.field select:focus,.field textarea:focus{
+  border-color:#7063F0!important;
+  box-shadow:0 0 0 3px rgba(72,37,184,.10)!important;
+  outline:none!important;
+}
+
+/* Footer */
+.modal-footer{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  padding:13px 20px!important;
+  background:#fff!important;
+  border-top:1px solid #E5E2D7!important;
+}
+.modal-footer .btn{
+  height:36px!important;
+  border-radius:10px!important;
+  font-size:12px!important;
+  font-weight:500!important;
+}
+.modal-footer .btn.primary{
+  background:linear-gradient(135deg,#4825B8,#7063F0)!important;
+  border-color:transparent!important;
+  color:#fff!important;
+  box-shadow:0 6px 16px rgba(72,37,184,.24)!important;
+}
+.modal-footer .btn.primary:hover{
+  box-shadow:0 8px 22px rgba(72,37,184,.35)!important;
+  transform:translateY(-1px)!important;
+}
+
+/* Mobile: keep avatar visible but stack */
+@media(max-width:640px){
+  .candidate-summary{
+    grid-template-columns:auto minmax(0,1fr)!important;
+    grid-template-rows:auto auto!important;
+  }
+  .candidate-summary-kpis{
+    grid-column:1 / -1!important;
+    flex-direction:row!important;
+    gap:6px!important;
+  }
+  .candidate-kpi{ flex:1!important; width:auto!important; }
+  .cs-avatar{ width:44px!important; height:44px!important; min-width:44px!important; font-size:15px!important; border-radius:13px!important; }
+}
 </style>
 </head>
 <body>
