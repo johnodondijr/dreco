@@ -5816,12 +5816,303 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
 .lp-bg-circle{display:none!important;}
 .lp-media::before,.lp-media::after{content:none!important;display:none!important;}
 /* Dashboard preview: apply purppinkgreen palette to KPI cards */
+#login-screen .lp-preview-card{
+  padding:18px 22px 20px!important;
+  background:#FFFFFF!important;
+  border:1px solid rgba(255,255,255,.82)!important;
+}
+#login-screen .lp-preview-topbar{
+  height:34px;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin:-2px 0 16px;
+}
+#login-screen .lp-preview-search{
+  flex:1;
+  height:32px;
+  border-radius:8px;
+  background:#F8F8F6;
+  color:#7E7C8C;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:0 11px;
+  font-size:10px;
+  line-height:1;
+  min-width:0;
+}
+#login-screen .lp-preview-search span{
+  flex:1;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#login-screen .lp-preview-search i{font-size:13px;color:#9A98A5}
+#login-screen .lp-preview-search kbd{
+  border:0;
+  background:transparent;
+  color:#B0ADBA;
+  font-size:10px;
+  font-family:inherit;
+}
+#login-screen .lp-preview-topbar button{
+  width:28px;
+  height:28px;
+  border:0;
+  background:transparent;
+  color:#171715;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:8px;
+}
+#login-screen .lp-preview-topbar button i{font-size:15px}
+#login-screen .lp-dash-top{
+  margin-bottom:14px!important;
+}
+#login-screen .lp-dash-top span{
+  font-size:10px!important;
+  color:#7E7C8C!important;
+}
+#login-screen .lp-dash-top strong{
+  font-size:17px!important;
+  font-weight:500!important;
+  letter-spacing:-.02em!important;
+}
+#login-screen .lp-dash-user,
+#login-screen .lp-dash-user img{
+  width:34px!important;
+  height:34px!important;
+  border-radius:999px!important;
+}
+#login-screen .lp-dash-user{
+  border:2px solid #fff!important;
+  box-shadow:0 10px 22px rgba(23,23,21,.18)!important;
+}
+#login-screen .lp-dash-priority{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:10px!important;
+  margin-bottom:12px!important;
+}
+#login-screen .lp-dash-priority-card{
+  min-height:86px!important;
+  border-radius:12px!important;
+  border:1px solid #E9E7DD!important;
+  background:#fff!important;
+  padding:12px 12px 10px!important;
+  box-shadow:0 12px 32px rgba(23,23,21,.06)!important;
+}
+#login-screen .lp-dash-priority-card i{
+  width:26px!important;
+  height:26px!important;
+  border-radius:9px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-size:14px!important;
+  margin-bottom:8px!important;
+  background:#EDE8FB!important;
+  color:#5347CE!important;
+}
 #login-screen .lp-dash-priority-card i{background:#EDE8FB!important;color:#5347CE!important;}
 #login-screen .lp-dash-priority-card.blue i{background:#EDFAA8!important;color:#4A5E10!important;}
 #login-screen .lp-dash-priority-card.green i{background:#FCECEA!important;color:#8B2010!important;}
 #login-screen .lp-dash-priority-card.purple i{background:#EDE8FB!important;color:#4825B8!important;}
+#login-screen .lp-dash-priority-card.neutral i{background:#F4F4EC!important;color:#1A1C2E!important;}
+#login-screen .lp-dash-priority-card strong{
+  display:block!important;
+  font-size:21px!important;
+  line-height:1!important;
+  font-weight:520!important;
+  color:#171715!important;
+  margin:0 0 4px!important;
+}
+#login-screen .lp-dash-priority-card span{
+  display:block!important;
+  color:#6F6B7A!important;
+  font-size:9.5px!important;
+  line-height:1.2!important;
+  white-space:normal!important;
+}
+#login-screen .lp-dash-pipeline{
+  border:1px solid #E9E7DD!important;
+  border-radius:13px!important;
+  background:#fff!important;
+  padding:13px 16px 15px!important;
+  margin-bottom:12px!important;
+  box-shadow:0 14px 34px rgba(23,23,21,.06)!important;
+}
+#login-screen .lp-dash-card-head{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  margin-bottom:11px!important;
+}
+#login-screen .lp-dash-card-head strong{
+  font-size:12px!important;
+  line-height:1.1!important;
+  font-weight:520!important;
+  letter-spacing:-.015em!important;
+}
+#login-screen .lp-dash-card-head span{
+  font-size:10px!important;
+  color:#7E7C8C!important;
+}
+#login-screen .lp-dash-flow{
+  display:grid!important;
+  grid-template-columns:repeat(7,minmax(0,1fr))!important;
+  gap:0!important;
+  align-items:end!important;
+}
+#login-screen .lp-dash-flow b{
+  display:none!important;
+}
+#login-screen .lp-dash-flow div{
+  min-width:0!important;
+  padding:0 7px!important;
+  text-align:center!important;
+}
+#login-screen .lp-dash-flow strong{
+  display:block!important;
+  font-size:19px!important;
+  line-height:1!important;
+  color:#171715!important;
+  font-weight:520!important;
+  margin-bottom:6px!important;
+}
+#login-screen .lp-dash-flow span{
+  display:block!important;
+  color:#7E7C8C!important;
+  font-size:8.5px!important;
+  text-transform:uppercase!important;
+  letter-spacing:.045em!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
 /* Pipeline flow bars: lime */
-#login-screen .lp-dash-flow i{background:#C9F035!important;}
+#login-screen .lp-dash-flow i{
+  display:block!important;
+  height:3px!important;
+  border-radius:999px!important;
+  margin:10px auto 0!important;
+  background:#AE9CF0!important;
+  max-width:100%!important;
+}
+#login-screen .lp-dash-flow i.done{background:#497A58!important;}
+#login-screen .lp-dash-bottom{
+  display:grid!important;
+  grid-template-columns:1.25fr .75fr!important;
+  gap:12px!important;
+}
+#login-screen .lp-dash-panel{
+  min-height:148px!important;
+  border:1px solid #E9E7DD!important;
+  border-radius:13px!important;
+  background:#fff!important;
+  padding:14px 16px!important;
+  box-shadow:0 14px 34px rgba(23,23,21,.06)!important;
+}
+#login-screen .lp-chart-legend{
+  display:flex;
+  gap:16px;
+  align-items:center;
+  color:#6F6B7A;
+  font-size:10px;
+  margin-bottom:4px;
+}
+#login-screen .lp-chart-legend b{
+  display:inline-block;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#AE9CF0;
+  margin-right:6px;
+}
+#login-screen .lp-chart-legend span:nth-child(2) b{background:#1A1C2E}
+#login-screen .lp-line-chart{
+  display:block;
+  width:100%;
+  height:78px;
+  margin-top:2px;
+}
+#login-screen .lp-chart-axis{
+  display:flex;
+  justify-content:space-between;
+  color:#7E7C8C;
+  font-size:9.5px;
+}
+#login-screen .lp-status-card{
+  position:relative;
+  min-height:74px;
+  border-radius:14px;
+  background:#1A1C2E;
+  color:#fff;
+  padding:13px 15px;
+  overflow:hidden;
+  margin-bottom:12px;
+}
+#login-screen .lp-status-card span{
+  display:block;
+  font-size:10px;
+  color:rgba(255,255,255,.70);
+  margin-bottom:6px;
+}
+#login-screen .lp-status-card strong{
+  display:block;
+  color:#00B9A9!important;
+  font-size:26px!important;
+  line-height:1!important;
+  font-weight:560!important;
+}
+#login-screen .lp-status-card svg{
+  position:absolute;
+  right:13px;
+  top:14px;
+  width:92px;
+  height:48px;
+}
+#login-screen .lp-ring-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+#login-screen .lp-ring-row div{
+  display:grid;
+  grid-template-columns:28px 1fr;
+  column-gap:8px;
+  align-items:center;
+}
+#login-screen .lp-ring{
+  grid-row:1 / span 2;
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  position:relative;
+  display:block;
+}
+#login-screen .lp-ring::after{
+  content:'';
+  position:absolute;
+  inset:7px;
+  border-radius:50%;
+  background:#fff;
+}
+#login-screen .lp-ring.dark{background:conic-gradient(#1A1C2E 0 77%,#EEF0EA 77% 100%)}
+#login-screen .lp-ring.lime{background:conic-gradient(#DDF56C 0 67%,#EEF0EA 67% 100%)}
+#login-screen .lp-ring-row b{
+  font-size:17px!important;
+  line-height:1!important;
+  color:#171715!important;
+  font-weight:560!important;
+}
+#login-screen .lp-ring-row small{
+  color:#6F6B7A!important;
+  font-size:9px!important;
+  line-height:1.1!important;
+}
 /* Activity/reminder row icons: palette */
 #login-screen .lp-dash-row>i{background:#EDFAA8!important;color:#4A5E10!important;}
 #login-screen .lp-dash-task>i{background:#EDE8FB!important;color:#5347CE!important;}
@@ -6855,16 +7146,21 @@ html body #app .ref-avatar-mini img{
           <span class="active"><i class="ti ti-layout-grid"></i></span>
           <span><i class="ti ti-briefcase"></i></span>
           <span><i class="ti ti-users"></i></span>
-          <span><i class="ti ti-id-badge-2"></i></span>
+          <span><i class="ti ti-wallet"></i></span>
           <span><i class="ti ti-file-description"></i></span>
           <span><i class="ti ti-chart-line"></i></span>
           <span><i class="ti ti-settings"></i></span>
         </div>
         <div class="lp-preview-card">
+          <div class="lp-preview-topbar">
+            <div class="lp-preview-search"><i class="ti ti-search"></i><span>Search candidates, tabs...</span><kbd>⌘K</kbd></div>
+            <button type="button"><i class="ti ti-refresh"></i></button>
+            <button type="button"><i class="ti ti-bell"></i></button>
+          </div>
           <div class="lp-dash-top">
             <div>
               <span>Dashboard</span>
-              <strong>Good morning, Admin</strong>
+              <strong>Good afternoon, Admin</strong>
             </div>
             <div class="lp-dash-user"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&amp;fit=crop&amp;w=96&amp;h=96&amp;q=80" alt="Admin profile"></div>
           </div>
@@ -6889,6 +7185,11 @@ html body #app .ref-avatar-mini img{
               <strong>9</strong>
               <span>Tickets Pending</span>
             </div>
+            <div class="lp-dash-priority-card neutral">
+              <i class="ti ti-users"></i>
+              <strong>36</strong>
+              <span>Total Candidates</span>
+            </div>
           </div>
           <div class="lp-dash-pipeline">
             <div class="lp-dash-card-head">
@@ -6896,35 +7197,51 @@ html body #app .ref-avatar-mini img{
               <span>View all</span>
             </div>
             <div class="lp-dash-flow">
+              <div><strong>4</strong><span>Interview</span><i style="width:22%"></i></div>
+              <b class="ti ti-chevron-right"></b>
               <div><strong>18</strong><span>Offer</span><i style="width:72%"></i></div>
+              <b class="ti ti-chevron-right"></b>
+              <div><strong>6</strong><span>Medical</span><i style="width:34%"></i></div>
               <b class="ti ti-chevron-right"></b>
               <div><strong>21</strong><span>Permit</span><i style="width:84%"></i></div>
               <b class="ti ti-chevron-right"></b>
               <div><strong>12</strong><span>Visa</span><i style="width:48%"></i></div>
               <b class="ti ti-chevron-right"></b>
-              <div><strong>9</strong><span>Travel</span><i style="width:36%"></i></div>
+              <div><strong>9</strong><span>Ticket</span><i style="width:36%"></i></div>
               <b class="ti ti-chevron-right"></b>
-              <div><strong>31</strong><span>Travelled</span><i style="width:100%"></i></div>
+              <div><strong>31</strong><span>Travelled</span><i class="done" style="width:100%"></i></div>
             </div>
           </div>
           <div class="lp-dash-bottom">
-            <div class="lp-dash-panel">
+            <div class="lp-dash-panel lp-movement-panel">
               <div class="lp-dash-card-head">
-                <strong>Recent Activity</strong>
-                <span>Latest changes</span>
+                <strong>Candidate Movement</strong>
+                <span>May 2026</span>
               </div>
-              <div class="lp-dash-row"><i class="ti ti-user-check"></i><div><b>John Doe</b><span>Moved to Visa</span></div><em>2h</em></div>
-              <div class="lp-dash-row"><i class="ti ti-cash"></i><div><b>John Kagechu</b><span>Commission received</span></div><em>4h</em></div>
-              <div class="lp-dash-row"><i class="ti ti-plane"></i><div><b>Edwin Limo</b><span>Travel pending</span></div><em>1d</em></div>
+              <div class="lp-chart-legend"><span><b></b>May (3)</span><span><b></b>Apr (0)</span></div>
+              <svg class="lp-line-chart" viewBox="0 0 360 120" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M12 70 C82 70 92 112 164 110 C226 108 222 34 296 34 C326 34 338 48 350 68 L350 110 L12 110 Z" fill="rgba(174,156,240,.18)"></path>
+                <path d="M12 70 C82 70 92 112 164 110 C226 108 222 34 296 34 C326 34 338 48 350 68" fill="none" stroke="#AE9CF0" stroke-width="4" stroke-linecap="round"></path>
+                <path d="M12 108 L350 108" fill="none" stroke="#1A1C2E" stroke-width="3" stroke-dasharray="7 6" stroke-linecap="round"></path>
+                <circle cx="12" cy="70" r="5" fill="#AE9CF0" stroke="#fff" stroke-width="3"></circle>
+                <circle cx="296" cy="34" r="5" fill="#AE9CF0" stroke="#fff" stroke-width="3"></circle>
+              </svg>
+              <div class="lp-chart-axis"><span>Week 1</span><span>Week 2</span><span>Week 3</span><span>Week 4</span></div>
             </div>
-            <div class="lp-dash-panel">
+            <div class="lp-dash-panel lp-status-panel">
               <div class="lp-dash-card-head">
-                <strong>Upcoming Reminders</strong>
-                <span>View all</span>
+                <strong>Status Summary</strong>
+                <span>At a glance</span>
               </div>
-              <div class="lp-dash-task"><i class="ti ti-alert-circle"></i><div><b>Missing documents</b><span>5 candidates need files</span></div></div>
-              <div class="lp-dash-task"><i class="ti ti-receipt"></i><div><b>Outstanding balance</b><span>KES 215,000 due</span></div></div>
-              <div class="lp-dash-mini-chart"><span style="height:42%"></span><span style="height:74%"></span><span style="height:58%"></span><span style="height:90%"></span><span style="height:66%"></span></div>
+              <div class="lp-status-card">
+                <span>Active Processing</span>
+                <strong>18</strong>
+                <svg viewBox="0 0 180 70" preserveAspectRatio="none" aria-hidden="true"><path d="M8 46 C42 14 70 18 98 42 C126 68 152 65 174 10" fill="none" stroke="#DDF56C" stroke-width="4" stroke-linecap="round"></path></svg>
+              </div>
+              <div class="lp-ring-row">
+                <div><span class="lp-ring dark"></span><b>77%</b><small>Collection Rate</small></div>
+                <div><span class="lp-ring lime"></span><b>67%</b><small>Travel Readiness</small></div>
+              </div>
             </div>
           </div>
         </div>
