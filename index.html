@@ -6116,6 +6116,76 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
 /* Activity/reminder row icons: palette */
 #login-screen .lp-dash-row>i{background:#EDFAA8!important;color:#4A5E10!important;}
 #login-screen .lp-dash-task>i{background:#EDE8FB!important;color:#5347CE!important;}
+/* Login preview: exact Dreco dashboard shell with neutral demo data */
+#login-screen .lp-product-preview{display:block!important;grid-template-columns:none!important;left:66px!important;right:60px!important;bottom:0!important;height:338px!important;background:transparent!important;border:0!important;box-shadow:none!important}
+#login-screen .lp-product-preview>.lp-preview-sidebar,#login-screen .lp-product-preview>.lp-preview-card{display:none!important}
+#login-screen .lp-dreco-preview{width:100%;height:100%;display:grid;grid-template-columns:132px minmax(0,1fr);gap:8px;background:#F4F4EC;border-radius:18px 18px 0 0;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.24);color:#070B1D}
+#login-screen .lp-real-sidebar{position:relative;margin:6px 0 6px 6px;padding:14px 11px 12px;border-radius:18px;background:linear-gradient(180deg,#232235 0%,#1F2133 100%);box-shadow:0 18px 42px rgba(31,33,51,.22);overflow:hidden;min-width:0}
+#login-screen .lp-real-logo{display:block;width:74px;height:auto;margin:0 0 20px 3px}
+#login-screen .lp-real-section{display:block;margin:13px 0 8px 5px;color:rgba(255,255,255,.28);font-size:7px;line-height:1;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+#login-screen .lp-real-nav{height:28px;display:flex;align-items:center;gap:8px;padding:0 9px;margin:0 0 7px;border-radius:999px;color:rgba(255,255,255,.78);font-size:8.5px;line-height:1;font-weight:650}
+#login-screen .lp-real-nav i{width:12px;font-size:12px;color:inherit}
+#login-screen .lp-real-nav b{font:inherit;color:inherit}
+#login-screen .lp-real-nav.active{background:#DDF56C;color:#1F2133;box-shadow:0 12px 24px rgba(221,245,108,.24)}
+#login-screen .lp-real-company{position:absolute;left:15px;right:15px;bottom:15px;color:#fff;font-size:8px;line-height:1.2;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#login-screen .lp-real-main{min-width:0;overflow:hidden;background:#F4F4EC}
+#login-screen .lp-real-topbar{height:42px;display:flex;align-items:center;gap:12px;padding:6px 14px 5px;background:#fff;border-bottom:1px solid rgba(31,33,51,.06)}
+#login-screen .lp-real-search{flex:1;height:24px;display:flex;align-items:center;gap:8px;padding:0 9px;border-radius:3px;background:#F7F7F7;color:#667085;font-size:8.5px;min-width:0}
+#login-screen .lp-real-search span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#login-screen .lp-real-search kbd{color:#A0A3AD;background:transparent;border:0;font:inherit}
+#login-screen .lp-real-topbar>i{color:#171715;font-size:13px}
+#login-screen .lp-real-avatar{width:22px;height:22px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:#1F2133;color:#fff;border:2px solid #fff;box-shadow:0 0 0 2px rgba(31,33,51,.09);font-size:7px;font-weight:700}
+#login-screen .lp-real-topbar>b{color:#171715;font-size:9px;font-weight:650;white-space:nowrap}
+#login-screen .lp-real-content{padding:16px 16px 18px}
+#login-screen .lp-real-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+#login-screen .lp-real-head h3{margin:0 0 4px;color:#070B1D;font-size:18px;line-height:1;font-weight:500;letter-spacing:-.02em}
+#login-screen .lp-real-head p{margin:0;color:#596071;font-size:9px;line-height:1.2}
+#login-screen .lp-real-actions{display:flex;align-items:center;gap:0;white-space:nowrap;transform:scale(.82);transform-origin:top right}
+#login-screen .lp-real-actions span,#login-screen .lp-real-actions button{height:25px;display:flex;align-items:center;gap:5px;padding:0 12px;border:1px solid #E4E2DC;background:#fff;color:#1F2133;font-size:9px;font-weight:600}
+#login-screen .lp-real-actions span:first-child{border-radius:7px 0 0 7px}
+#login-screen .lp-real-actions span:nth-child(2){border-left:0;border-radius:0 7px 7px 0;color:#596071}
+#login-screen .lp-real-actions button{margin-left:8px;border-radius:999px;background:#5347CE;border-color:#5347CE;color:#fff;box-shadow:0 12px 24px rgba(83,71,206,.20)}
+#login-screen .lp-real-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:10px}
+#login-screen .lp-real-kpis>div,#login-screen .lp-real-card{background:#fff;border:1px solid #E4E2DC;border-radius:15px;box-shadow:0 16px 38px rgba(31,33,51,.055)}
+#login-screen .lp-real-kpis>div{min-height:75px;padding:11px 12px 9px}
+#login-screen .lp-real-kpis i{width:25px;height:25px;display:flex;align-items:center;justify-content:center;border-radius:9px;color:#1F2133;font-size:13px;margin-bottom:7px}
+#login-screen .lp-real-kpis i.pink{background:#F9B3BA}
+#login-screen .lp-real-kpis i.lavender{background:#C5C7F0}
+#login-screen .lp-real-kpis i.lime{background:#EDFAA8}
+#login-screen .lp-real-kpis strong{display:block;color:#070B1D;font-size:20px;line-height:1;font-weight:560;margin-bottom:5px}
+#login-screen .lp-real-kpis span{display:block;color:#596071;font-size:8px;line-height:1.1;margin-bottom:4px}
+#login-screen .lp-real-kpis small{display:block;color:#7B8192;font-size:7.4px;line-height:1.1}
+#login-screen .lp-real-pipeline{padding:12px 14px 14px;margin-bottom:10px}
+#login-screen .lp-real-card header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:11px}
+#login-screen .lp-real-card header strong{color:#070B1D;font-size:10.5px;line-height:1.1;font-weight:600}
+#login-screen .lp-real-card header span{display:block;color:#667085;font-size:8px;line-height:1.2;font-weight:500}
+#login-screen .lp-real-flow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:0;align-items:end}
+#login-screen .lp-real-flow>b{display:none}
+#login-screen .lp-real-flow div{min-width:0;padding:0 7px;text-align:center}
+#login-screen .lp-real-flow strong{display:block;color:#070B1D;font-size:18px;line-height:1;font-weight:520;margin-bottom:6px}
+#login-screen .lp-real-flow span{display:block;color:#667085;font-size:7.2px;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#login-screen .lp-real-flow em{display:block;height:3px;margin:9px auto 0;border-radius:999px;background:#5347CE}
+#login-screen .lp-real-flow em.done{background:#497A58}
+#login-screen .lp-real-analytics{display:grid;grid-template-columns:1.7fr .72fr;gap:10px}
+#login-screen .lp-real-chart,#login-screen .lp-real-status{min-height:122px;padding:12px 14px}
+#login-screen .lp-real-chart select{height:20px;border:1px solid #E4E2DC;border-radius:999px;background:#fff;color:#070B1D;font-size:8px;padding:0 8px}
+#login-screen .lp-real-legend{display:flex;align-items:center;gap:14px;color:#596071;font-size:8px;margin-bottom:3px}
+#login-screen .lp-real-legend i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:#AE9CF0}
+#login-screen .lp-real-legend span:nth-child(2) i{background:#1A1C2E}
+#login-screen .lp-real-chart svg{display:block;width:100%;height:80px}
+#login-screen .lp-real-chart footer{display:flex;justify-content:space-between;color:#667085;font-size:7.5px}
+#login-screen .lp-real-status-hero{position:relative;height:72px;border-radius:15px;background:#1F2133;color:#fff;padding:12px 14px;overflow:hidden;margin-bottom:10px}
+#login-screen .lp-real-status-hero span{display:block;color:#fff;font-size:10px;font-weight:700;margin-bottom:12px}
+#login-screen .lp-real-status-hero small{display:block;color:rgba(255,255,255,.66);font-size:7.5px}
+#login-screen .lp-real-status-hero strong{display:block;color:#00B9A9;font-size:24px;line-height:1;font-weight:700}
+#login-screen .lp-real-status-hero svg{position:absolute;right:12px;top:20px;width:74px;height:38px}
+#login-screen .lp-real-rings{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#login-screen .lp-real-rings div{display:grid;grid-template-columns:25px 1fr;gap:4px 8px;align-items:center}
+#login-screen .lp-real-rings i{grid-row:1 / span 2;width:25px;height:25px;border-radius:50%;background:conic-gradient(#1F2133 0 76%,#EEF0EA 76% 100%);position:relative}
+#login-screen .lp-real-rings div:nth-child(2) i{background:conic-gradient(#DDF56C 0 63%,#EEF0EA 63% 100%)}
+#login-screen .lp-real-rings i::after{content:'';position:absolute;inset:7px;border-radius:50%;background:#fff}
+#login-screen .lp-real-rings b{color:#070B1D;font-size:16px;line-height:1;font-weight:700}
+#login-screen .lp-real-rings span{color:#667085;font-size:7.5px;line-height:1.1}
 /* ══════════════════════════════════════════════════════
    MOBILE LOGIN — full-screen, no grey strip (≤768px)
    No display:!important on #login-screen — JS (main.ts:974)
@@ -7142,6 +7212,78 @@ html body #app .ref-avatar-mini img{
       </div>
 
       <div class="lp-product-preview">
+        <div class="lp-dreco-preview">
+          <aside class="lp-real-sidebar">
+            <img class="lp-real-logo" src="/wordmark-lime.png" alt="Dreco">
+            <span class="lp-real-section">Workspace</span>
+            <div class="lp-real-nav active"><i class="ti ti-layout-grid"></i><b>Home</b></div>
+            <div class="lp-real-nav"><i class="ti ti-briefcase"></i><b>Pipeline</b></div>
+            <div class="lp-real-nav"><i class="ti ti-users"></i><b>Candidates</b></div>
+            <span class="lp-real-section">Operations</span>
+            <div class="lp-real-nav"><i class="ti ti-wallet"></i><b>Finance</b></div>
+            <div class="lp-real-nav"><i class="ti ti-clipboard-text"></i><b>Documents</b></div>
+            <div class="lp-real-nav"><i class="ti ti-chart-line"></i><b>Reports</b></div>
+            <div class="lp-real-nav"><i class="ti ti-building"></i><b>Clients</b></div>
+            <div class="lp-real-nav"><i class="ti ti-settings"></i><b>Settings</b></div>
+            <strong class="lp-real-company">Dreco Workspace</strong>
+          </aside>
+          <main class="lp-real-main">
+            <div class="lp-real-topbar">
+              <div class="lp-real-search"><span>Search candidates, tabs...</span><kbd>⌘K</kbd></div>
+              <i class="ti ti-refresh"></i>
+              <i class="ti ti-bell"></i>
+              <span class="lp-real-avatar">AD</span>
+              <b>Admin</b>
+            </div>
+            <div class="lp-real-content">
+              <div class="lp-real-head">
+                <div><h3>Good afternoon, Admin</h3><p>Here's what needs your attention today.</p></div>
+                <div class="lp-real-actions"><span><i class="ti ti-briefcase"></i> Professional</span><span>General Jobs</span><button>+ Add</button></div>
+              </div>
+              <div class="lp-real-kpis">
+                <div><i class="ti ti-file-description pink"></i><strong>4</strong><span>Work Permits</span><small>Follow permits</small></div>
+                <div><i class="ti ti-id-badge-2 lavender"></i><strong>11</strong><span>Visas Ready</span><small>Ready to travel</small></div>
+                <div><i class="ti ti-coin lime"></i><strong>8</strong><span>Unpaid Commissions</span><small>Requires follow up</small></div>
+                <div><i class="ti ti-plane-departure pink"></i><strong>5</strong><span>Tickets Pending</span><small>Awaiting issue</small></div>
+                <div><i class="ti ti-users lavender"></i><strong>32</strong><span>Total Candidates</span><small>In pipeline</small></div>
+              </div>
+              <section class="lp-real-card lp-real-pipeline">
+                <header><strong>Candidates Pipeline</strong><span>View all →</span></header>
+                <div class="lp-real-flow">
+                  <div><strong>3</strong><span>INTERVIEW</span><em style="width:22%"></em></div><b>›</b>
+                  <div><strong>5</strong><span>OFFER</span><em style="width:38%"></em></div><b>›</b>
+                  <div><strong>2</strong><span>MEDICAL</span><em style="width:15%"></em></div><b>›</b>
+                  <div><strong>4</strong><span>PERMIT</span><em style="width:30%"></em></div><b>›</b>
+                  <div><strong>11</strong><span>VISA</span><em style="width:78%"></em></div><b>›</b>
+                  <div><strong>5</strong><span>TICKET</span><em style="width:36%"></em></div><b>›</b>
+                  <div><strong>12</strong><span>TRAVELLED</span><em class="done" style="width:86%"></em></div>
+                </div>
+              </section>
+              <div class="lp-real-analytics">
+                <section class="lp-real-card lp-real-chart">
+                  <header><div><strong>Candidate Movement</strong><span>Professional - new candidates added per week</span></div><select><option>May 2026</option></select></header>
+                  <div class="lp-real-legend"><span><i></i> May (3)</span><span><i></i> Apr (0)</span></div>
+                  <svg viewBox="0 0 560 150" preserveAspectRatio="none" aria-hidden="true">
+                    <path d="M18 74 C128 72 148 138 248 136 C350 132 340 28 458 34 C508 38 528 76 544 98 L544 136 L18 136 Z" fill="rgba(174,156,240,.18)"></path>
+                    <path d="M18 74 C128 72 148 138 248 136 C350 132 340 28 458 34 C508 38 528 76 544 98" fill="none" stroke="#AE9CF0" stroke-width="5" stroke-linecap="round"></path>
+                    <path d="M18 134 L544 134" fill="none" stroke="#1A1C2E" stroke-width="4" stroke-dasharray="8 7" stroke-linecap="round"></path>
+                    <circle cx="18" cy="74" r="6" fill="#AE9CF0" stroke="#fff" stroke-width="3"></circle>
+                    <circle cx="458" cy="34" r="6" fill="#AE9CF0" stroke="#fff" stroke-width="3"></circle>
+                  </svg>
+                  <footer><span>Week 1</span><span>Week 2</span><span>Week 3</span><span>Week 4</span></footer>
+                </section>
+                <section class="lp-real-card lp-real-status">
+                  <header><div><strong>Status Summary</strong><span>Professional - at a glance</span></div></header>
+                  <div class="lp-real-status-hero">
+                    <span>Active Processing</span><small>Professionals in progress</small><strong>20</strong>
+                    <svg viewBox="0 0 180 70" preserveAspectRatio="none" aria-hidden="true"><path d="M8 46 C42 14 70 18 98 42 C126 68 152 65 174 10" fill="none" stroke="#DDF56C" stroke-width="4" stroke-linecap="round"></path></svg>
+                  </div>
+                  <div class="lp-real-rings"><div><i></i><b>76%</b><span>Collection Rate</span></div><div><i></i><b>63%</b><span>Travel Readiness</span></div></div>
+                </section>
+              </div>
+            </div>
+          </main>
+        </div>
         <div class="lp-preview-sidebar">
           <span class="active"><i class="ti ti-layout-grid"></i></span>
           <span><i class="ti ti-briefcase"></i></span>
