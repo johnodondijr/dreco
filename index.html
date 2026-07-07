@@ -6568,6 +6568,77 @@ html body #app .content-area>div{padding:22px 28px 28px!important;}
 html body #app .sidebar-company-name{
   color:rgba(255,255,255,.74)!important;
 }
+/* Final shell flattening: one continuous app background, floating sidebar only */
+@media(min-width:761px){
+  html body,
+  html body #app,
+  html body #app .app-layout,
+  html body #app .app-body,
+  html body #app .main-area,
+  html body #app .content-area{
+    background:#F4F4EC!important;
+  }
+  html body #app .app-layout{
+    border:0!important;
+    box-shadow:none!important;
+    border-radius:0!important;
+    overflow:visible!important;
+  }
+  html body #app .topbar{
+    background:transparent!important;
+    border:0!important;
+    box-shadow:none!important;
+    border-radius:0!important;
+  }
+  html body #app .topbar-search,
+  html body #app .topbar-search-fake{
+    background:#FFFFFF!important;
+  }
+  html body #app #sidebar,
+  html body #app .sidebar{
+    margin:0!important;
+    border:0!important;
+    border-radius:28px!important;
+    box-shadow:0 26px 60px rgba(31,33,51,.20)!important;
+  }
+  html body #app .content-area>div{
+    background:transparent!important;
+  }
+}
+/* Login preview refinement: match real shell, fix squeezed sidebar bottom */
+#login-screen .lp-dreco-preview{
+  border-radius:22px 22px 0 0!important;
+}
+#login-screen .lp-real-sidebar{
+  margin:8px 0 8px 8px!important;
+  padding:13px 10px 44px!important;
+  border-radius:22px!important;
+}
+#login-screen .lp-real-logo{
+  width:76px!important;
+  margin-bottom:14px!important;
+}
+#login-screen .lp-real-section{
+  margin:9px 0 6px 5px!important;
+}
+#login-screen .lp-real-nav{
+  height:23px!important;
+  margin-bottom:4px!important;
+  border-radius:999px!important;
+  font-size:8px!important;
+}
+#login-screen .lp-real-company{
+  bottom:12px!important;
+  left:14px!important;
+  right:14px!important;
+}
+#login-screen .lp-real-kpis>div,
+#login-screen .lp-real-card{
+  border-radius:16px!important;
+}
+#login-screen .lp-real-status-hero{
+  border-radius:16px!important;
+}
 .dreco-wordmark{
   display:block!important;
   height:auto!important;
