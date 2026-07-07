@@ -5,7 +5,7 @@ export let proDB         = [];
 export let lbDB          = [];
 export let allDocs       = {};
 export let allTimelines  = {};
-export let proStages     = ['SUBMITTED','INTERVIEW','OFFER LETTER','MEDICAL & ATTESTATION','MOL','VISA','PENDING TRAVEL','TRAVELLED'];
+export let proStages     = ['INTERVIEW','OFFER LETTER','MEDICAL & ATTESTATION','WORK PERMIT','VISA','TICKET BOOKED','TRAVELLED'];
 export let lbStages      = ['DOCS SUBMITTED','PROFILE SENT','SELECTED','PASSPORT APPLIED','VISA PROCESSING','TRAVELLED','REFUND PENDING','REFUND COMPLETE'];
 
 // Setter functions — callers can't reassign live bindings directly

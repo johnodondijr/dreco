@@ -331,20 +331,20 @@ function safeLocalRemove(key) {
 // STATE
 // *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
 let currentCompany = { ...DEFAULT_COMPANY };
-const PRO_PIPELINE_STAGES = ['PENDING OFFER LETTER','OFFER LETTER','MOL','VISA','PENDING TRAVEL','TRAVELLED'];
+const PRO_PIPELINE_STAGES = ['INTERVIEW','OFFER LETTER','MEDICAL & ATTESTATION','WORK PERMIT','VISA','TICKET BOOKED','TRAVELLED'];
 const LB_PIPELINE_STAGES = ['SUBMITTED','PROFILE SENT','SELECTED','PASSPORT APPLIED','VISA PROCESSING','TRAVELLED','REFUND PENDING','REFUND COMPLETE'];
 const PRO_WORKFLOW_TEMPLATES = [
   {
     key: 'professional-standard',
     name: 'Professional standard',
-    description: 'Profile submission through offer letter, MOL, visa, ticket, and travel.',
-    stages: ['PENDING OFFER LETTER','OFFER LETTER','MOL','VISA','PENDING TRAVEL','TRAVELLED'],
+    description: 'Interview through offer letter, medical and attestation, work permit, visa, ticket, and travel.',
+    stages: ['INTERVIEW','OFFER LETTER','MEDICAL & ATTESTATION','WORK PERMIT','VISA','TICKET BOOKED','TRAVELLED'],
   },
   {
     key: 'professional-full',
     name: 'Professional full recruitment',
     description: 'Adds submitted, profile sent, interview, and selected before processing starts.',
-    stages: ['SUBMITTED','PROFILE SENT','INTERVIEW','SELECTED','PENDING OFFER LETTER','OFFER LETTER','MOL','VISA','PENDING TRAVEL','TRAVELLED'],
+    stages: ['SUBMITTED','PROFILE SENT','INTERVIEW','SELECTED','OFFER LETTER','MEDICAL & ATTESTATION','WORK PERMIT','VISA','TICKET BOOKED','TRAVELLED'],
   },
 ];
 const LB_WORKFLOW_TEMPLATES = [
@@ -578,22 +578,32 @@ function canonicalProStage(stage) {
     'PENDING OL': 'PENDING OFFER LETTER',
     'OFFER': 'OFFER LETTER',
     'OL': 'OFFER LETTER',
-    'MEDICAL': 'MOL',
-    'MEDICAL & ATTESTATION': 'MOL',
-    'PENDING MOL': 'MOL',
-    'WORK PERMIT': 'MOL',
+    'MEDICAL': 'MEDICAL & ATTESTATION',
+    'MEDICAL ATTESTATION': 'MEDICAL & ATTESTATION',
+    'PENDING MOL': 'WORK PERMIT',
+    'MOL': 'WORK PERMIT',
+    'WORK PERMIT': 'WORK PERMIT',
     'PENDING VISA': 'VISA',
-    'TICKET BOOKED': 'PENDING TRAVEL',
-    'READY TO TRAVEL': 'PENDING TRAVEL',
-    'TRAVEL': 'PENDING TRAVEL',
+    'PENDING TRAVEL': 'TICKET BOOKED',
+    'TICKET BOOKED': 'TICKET BOOKED',
+    'READY TO TRAVEL': 'TICKET BOOKED',
+    'TRAVEL': 'TICKET BOOKED',
     'TRAVELING': 'TRAVELLED',
     'TRAVELLING': 'TRAVELLED',
     'TRAVELED': 'TRAVELLED',
   };
   return legacyMap[value] || value;
 }
+function normalizeProStageList(stages) {
+  const cleaned = (Array.isArray(stages) && stages.length ? stages : PRO_PIPELINE_STAGES)
+    .map(canonicalProStage)
+    .filter(Boolean);
+  const preferred = PRO_PIPELINE_STAGES.filter(stage => cleaned.includes(stage));
+  const custom = cleaned.filter(stage => !PRO_PIPELINE_STAGES.includes(stage));
+  return [...new Set([...preferred, ...custom])];
+}
 function proStageValue(row = {}) {
-  return canonicalProStage(row.stage || proStages[0] || 'SUBMITTED');
+  return canonicalProStage(row.stage || proStages[0] || 'INTERVIEW');
 }
 function lbStageValue(row = {}) {
   return cleanStage(row.stage || row.travelStatus || row.travel_status, lbStages[0] || 'DOCS SUBMITTED');
@@ -601,22 +611,25 @@ function lbStageValue(row = {}) {
 function proPipelineStageValue(row = {}) {
   const raw = row.raw || row;
   const stage = canonicalProStage(raw.stage || row.stage);
-  const configured = Array.isArray(proStages) && proStages.length ? proStages.map(canonicalProStage) : PRO_PIPELINE_STAGES;
+  const configured = normalizeProStageList(proStages);
   const ORDER = Object.fromEntries(configured.map((s,i)=>[s,i]));
-  const pick = (candidates, fallback = configured[0] || 'PENDING OFFER LETTER') =>
+  const pick = (candidates, fallback = configured[0] || 'INTERVIEW') =>
     candidates.find(s => configured.includes(s)) || fallback;
 
   // Stage derived from the DB stage field
-  let dbStage = configured[0] || 'PENDING OFFER LETTER';
+  let dbStage = configured[0] || 'INTERVIEW';
   if (configured.includes(stage)) dbStage = stage;
   else if (stage === 'TRAVELLED' && configured.includes('TRAVELLED')) dbStage = 'TRAVELLED';
 
   // Minimum stage inferred from milestone date fields
-  let dateStage = configured[0] || 'PENDING OFFER LETTER';
-  if (toInput(raw.ol || row.ol)) dateStage = pick(['OFFER LETTER','PENDING OFFER LETTER'], dateStage);
-  if (toInput(raw.mol || row.mol)) dateStage = pick(['MOL','WORK PERMIT'], dateStage);
+  let dateStage = configured[0] || 'INTERVIEW';
+  if (toInput(raw.interview || row.interview)) dateStage = pick(['INTERVIEW'], dateStage);
+  if (toInput(raw.ol || row.ol)) dateStage = pick(['OFFER LETTER'], dateStage);
+  if (toInput(raw.medical || row.medical)) dateStage = pick(['MEDICAL & ATTESTATION'], dateStage);
+  if (toInput(raw.mol || row.mol)) dateStage = pick(['WORK PERMIT'], dateStage);
   if (toInput(raw.visa || row.visa)) dateStage = pick(['VISA'], dateStage);
-  if (toInput(raw.travel || row.travel)) dateStage = stage === 'TRAVELLED' ? pick(['TRAVELLED'], dateStage) : pick(['PENDING TRAVEL','TICKET BOOKED'], dateStage);
+  if (stage === 'TICKET BOOKED') dateStage = pick(['TICKET BOOKED'], dateStage);
+  if (toInput(raw.travel || row.travel)) dateStage = pick(['TRAVELLED'], dateStage);
 
   // Return whichever is further along the pipeline
   return (ORDER[dbStage] ?? 0) >= (ORDER[dateStage] ?? 0) ? dbStage : dateStage;
@@ -639,7 +652,7 @@ function stageListWithData(configured = [], rows = [], getter = row => row.stage
     .filter(stage => stage && !seen.has(stage) && seen.add(stage));
 }
 function proStageMatches(row, stages) {
-  const stage = proStageValue(row);
+  const stage = proPipelineStageValue(row);
   return [].concat(stages).map(canonicalProStage).includes(stage);
 }
 function proPaidAmount(row = {}) {
@@ -650,7 +663,7 @@ function proPaidAmount(row = {}) {
   return Math.max(splitPaid, directPaid);
 }
 function proStageIndex(stage){
-  const configured = Array.isArray(proStages) && proStages.length ? proStages.map(canonicalProStage) : PRO_PIPELINE_STAGES;
+  const configured = normalizeProStageList(proStages);
   const idx = configured.indexOf(canonicalProStage(stage));
   return idx >= 0 ? idx : 0;
 }
@@ -701,7 +714,7 @@ function normalizeProRecord(r={}) {
     position:(r.position||'').toString().toUpperCase(),
     company:(r.company||'').toString().toUpperCase(),
     country:r.country||'',
-    stage:proStageValue(r),
+    stage:proPipelineStageValue(r),
     submitted:normalizeDateField(r.submitted),
     interview:normalizeDateField(r.interview),
     ol:normalizeDateField(r.ol),
@@ -1251,7 +1264,7 @@ async function loadAllData() {
     setLbDB(local.lb);
     setAllDocs(local.docs);
     setAllTimelines(local.timelines);
-    setProStages(local.proStages);
+    setProStages(normalizeProStageList(local.proStages));
     setLbStages(local.lbStages);
     setPaymentRules(local.paymentRules);
     rebuildStageSelects();
@@ -1296,7 +1309,7 @@ async function loadAllData() {
       const ps=stagesRes.data.find(r=>r.key===getCompanyScopedKey('pro_stages')) || stagesRes.data.find(r=>r.key==='pro_stages'&&companyId===DEFAULT_COMPANY.id);
       const ls=stagesRes.data.find(r=>r.key===getCompanyScopedKey('lb_stages')) || stagesRes.data.find(r=>r.key==='lb_stages'&&companyId===DEFAULT_COMPANY.id);
       const pr=stagesRes.data.find(r=>r.key===getCompanyScopedKey('payment_rules')) || stagesRes.data.find(r=>r.key==='payment_rules'&&companyId===DEFAULT_COMPANY.id);
-      if (ps) setProStages(ps.value);
+      if (ps) setProStages(normalizeProStageList(ps.value));
       if (ls) setLbStages(ls.value);
       if (pr) setPaymentRules(pr.value); else setPaymentRules(getDefaultPaymentRules());
     }
@@ -1309,7 +1322,7 @@ async function loadAllData() {
     setLbDB(local.lb);
     setAllDocs(local.docs);
     setAllTimelines(local.timelines);
-    setProStages(local.proStages);
+    setProStages(normalizeProStageList(local.proStages));
     setLbStages(local.lbStages);
     setPaymentRules(local.paymentRules);
     showToast('Cloud sync unavailable. Using local mode.','error');
@@ -1664,16 +1677,17 @@ function getRefundStatus(r){
   const paid=(Number(r.r1Amt||r.r1_amt)||0)+(Number(r.r2Amt||r.r2_amt)||0);
   return paid>=toRef?'complete':'incomplete';
 }
-function isInProcessPro(r){ return ['SUBMITTED','INTERVIEW','OFFER LETTER','MEDICAL & ATTESTATION','MOL','VISA','PENDING TRAVEL',
+function isInProcessPro(r){ return ['SUBMITTED','INTERVIEW','OFFER LETTER','MEDICAL & ATTESTATION','WORK PERMIT','VISA','TICKET BOOKED',
   // legacy stage names for backward compat
-  'PENDING OFFER LETTER','PENDING MOL','PENDING VISA'].includes(r.stage); }
+  'PENDING OFFER LETTER','PENDING MOL','MOL','PENDING VISA','PENDING TRAVEL'].includes(proPipelineStageValue(r)); }
 function isInProcessLB(r){
   const ts=lbStageValue(r);
   return !['TRAVELLED','REFUND PENDING','REFUND COMPLETE','NOT TRAVELLED'].includes(ts)&&!lbOwnPassport(r);
 }
 function stageBadge(s){
-  const map={'PENDING OFFER LETTER':'b-pol','PENDING MOL':'b-mol','PENDING VISA':'b-visa','PENDING TRAVEL':'b-travel','TRAVELLED':'b-travelled'};
-  return `<span class="badge ${map[s]||'b-na'}">${escHTML(s)}</span>`;
+  const normalized=canonicalProStage(s);
+  const map={'INTERVIEW':'b-pol','OFFER LETTER':'b-pol','MEDICAL & ATTESTATION':'b-mol','WORK PERMIT':'b-mol','PENDING OFFER LETTER':'b-pol','PENDING MOL':'b-mol','PENDING VISA':'b-visa','VISA':'b-visa','PENDING TRAVEL':'b-travel','TICKET BOOKED':'b-travel','TRAVELLED':'b-travelled'};
+  return `<span class="badge ${map[normalized]||'b-na'}">${escHTML(normalized||s)}</span>`;
 }
 function travelBadge(s){
   const map={'TRAVELLED':'b-travelled','NOT YET':'b-notyet','NOT TRAVELLED':'b-nottravelled'};
@@ -1791,7 +1805,7 @@ function collectCalendarEvents(){
   const events=[];
   if(calSource==='pro'){
     proDB.forEach(r=>{
-      [['interview','Interview','cal-ev-interview'],['ol','Offer letter','cal-ev-ol'],['mol','MOL','cal-ev-mol'],['visa','Visa','cal-ev-visa'],['travel','Travel','cal-ev-travel']].forEach(([field,label,cls])=>{
+      [['interview','Interview','cal-ev-interview'],['ol','Offer letter','cal-ev-ol'],['mol','Work permit','cal-ev-mol'],['visa','Visa','cal-ev-visa'],['travel','Travel','cal-ev-travel']].forEach(([field,label,cls])=>{
         const date=toInput(r[field]);
         if(date) events.push({date,label:`${label}: ${r.name}`,cls,open:`editPro(${r.id})`});
       });
@@ -1827,14 +1841,14 @@ function renderCalendar(){
 }
 function renderReports(){
   const wrap=document.getElementById('reports-content'); if(!wrap) return;
-  const proTravelled=proDB.filter(r=>r.stage==='TRAVELLED').length;
+  const proTravelled=proDB.filter(r=>proPipelineStageValue(r)==='TRAVELLED').length;
   const lbTravelled=lbDB.filter(r=>(r.travelStatus||r.travel_status)==='TRAVELLED').length;
   const totalComm=proDB.reduce((sum,r)=>sum+(Number(r.commission)||0),0);
   const totalPaid=proDB.reduce((sum,r)=>sum+(Number(r.paid)||0),0);
   const refundOpen=lbDB.filter(r=>getRefundStatus(r)==='incomplete').length;
   const proActionCount=proDB.filter(proNeedsAction).length;
   const lbActionCount=lbDB.filter(lbNeedsAction).length;
-  const stalledStages=proStages.map(stage=>({stage,count:proDB.filter(r=>r.stage===stage).length})).sort((a,b)=>b.count-a.count)[0];
+  const stalledStages=proStages.map(stage=>({stage,count:proDB.filter(r=>proPipelineStageValue(r)===stage).length})).sort((a,b)=>b.count-a.count)[0];
   const money=n=>'KES '+Number(n||0).toLocaleString();
   const short=s=>{
     const v=String(s||'-').replace(/^PENDING\s+/,'').trim();
@@ -1855,7 +1869,7 @@ function renderReports(){
   const stageData=proStages.map((stage,i)=>({
     label:stage,
     short:stage.replace('PENDING ',''),
-    value:proDB.filter(r=>r.stage===stage).length,
+    value:proDB.filter(r=>proPipelineStageValue(r)===stage).length,
     color:palette[i%palette.length]
   })).filter(x=>x.value>0);
   const maxStage=Math.max(1,...stageData.map(x=>x.value));
@@ -1865,7 +1879,7 @@ function renderReports(){
     const key=(r.position||'Unassigned').trim()||'Unassigned';
     if(!positionMap[key]) positionMap[key]={position:key,total:0,travelled:0,inProcess:0,billed:0,paid:0};
     positionMap[key].total++;
-    if(r.stage==='TRAVELLED') positionMap[key].travelled++;
+    if(proPipelineStageValue(r)==='TRAVELLED') positionMap[key].travelled++;
     else positionMap[key].inProcess++;
     positionMap[key].billed+=Number(r.commission)||0;
     positionMap[key].paid+=Number(r.paid)||0;
@@ -2139,7 +2153,7 @@ function restoreBackupFromFile(file){
       setLbDB((data.lb||[]).map(normalizeLBRecord));
       setAllDocs(data.docs||{});
       setAllTimelines(data.timelines||{});
-      setProStages(Array.isArray(data.proStages)&&data.proStages.length?data.proStages:[...proStages]);
+      setProStages(normalizeProStageList(Array.isArray(data.proStages)&&data.proStages.length?data.proStages:[...proStages]));
       setLbStages(Array.isArray(data.lbStages)&&data.lbStages.length?data.lbStages:[...lbStages]);
       if(data.staffAccounts&&typeof data.staffAccounts==='object'){
         // Validate each restored account before merging – a crafted backup file
@@ -2222,8 +2236,7 @@ function validateProRecord(rec) {
   if(rec.paid!==null && rec.paid<0) return 'Amount paid cannot be negative.';
   const totalPaid = proPaidAmount(rec);
   if(rec.commission!==null && totalPaid > (Number(rec.commission)||0)) return 'Amount paid cannot exceed commission billed.';
-  const TRAVEL_STAGES = ['PENDING TRAVEL','TRAVELLED'];
-  if(TRAVEL_STAGES.includes(String(rec.stage||'').toUpperCase()) && !rec.travel) return 'Travel date is required when stage is Pending Travel or Travelled.';
+  if(String(rec.stage||'').toUpperCase()==='TRAVELLED' && !rec.travel) return 'Travel date is required when marking a candidate as Travelled.';
   return '';
 }
 function validateLBRecord(rec) {
@@ -2406,7 +2419,7 @@ function onGlobalSearch(){
 // DASHBOARD
 // *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
 function renderDash(){
-  const proTravelled=proDB.filter(r=>r.stage==='TRAVELLED').length;
+  const proTravelled=proDB.filter(r=>proPipelineStageValue(r)==='TRAVELLED').length;
   const proInProcess=proDB.filter(isInProcessPro).length;
   let totalComm=0,totalPaid=0;
   proDB.forEach(r=>{
@@ -2441,10 +2454,12 @@ function renderDash(){
 
   const stageColors=['#DDF56C','#F8B9B8','#D9D7F1','#FFE2B8','#1E1D2E','#F6EFE6'];
   const stageData=[
+    {label:'Interview', value:proDB.filter(r=>proStageMatches(r,['INTERVIEW'])).length, icon:'ti-users', color:stageColors[5]},
     {label:'Offer', value:proDB.filter(r=>proStageMatches(r,['PENDING OFFER LETTER','OFFER LETTER'])).length, icon:'ti-file-description', color:stageColors[0]},
-    {label:'MOL', value:proDB.filter(r=>proStageMatches(r,['PENDING MOL','MOL'])).length, icon:'ti-building-bank', color:stageColors[1]},
+    {label:'Medical', value:proDB.filter(r=>proStageMatches(r,['MEDICAL & ATTESTATION'])).length, icon:'ti-stethoscope', color:stageColors[1]},
+    {label:'Permit', value:proDB.filter(r=>proStageMatches(r,['WORK PERMIT','PENDING MOL','MOL'])).length, icon:'ti-building-bank', color:stageColors[1]},
     {label:'Visa', value:proDB.filter(r=>proStageMatches(r,['PENDING VISA','VISA'])).length, icon:'ti-id-badge-2', color:stageColors[2]},
-    {label:'Travel', value:proDB.filter(r=>proStageMatches(r,['PENDING TRAVEL','TICKET BOOKED'])).length, icon:'ti-plane', color:stageColors[3]},
+    {label:'Ticket', value:proDB.filter(r=>proStageMatches(r,['PENDING TRAVEL','TICKET BOOKED'])).length, icon:'ti-ticket', color:stageColors[3]},
     {label:'Travelled', value:proTravelled, icon:'ti-plane-departure', color:stageColors[4]}
   ];
   const LB_SEL_STAGES = new Set(['SELECTED','PASSPORT APPLIED','VISA PROCESSING']);
@@ -2458,9 +2473,9 @@ function renderDash(){
   const stageTotal=Math.max(stageData.reduce((sum,item)=>sum+item.value,0),1);
   const collectionRate=Math.min(100,Math.round(totalPaid/Math.max(totalComm,1)*100));
 
-  const pendingTravel=proDB.filter(r=>r.stage==='PENDING TRAVEL');
+  const pendingTravel=proDB.filter(r=>proPipelineStageValue(r)==='TICKET BOOKED');
   const travelReadiness=Math.min(100,Math.round((pendingTravel.length+proTravelled)/Math.max(proDB.length,1)*100));
-  const upcoming=(pendingTravel.length?pendingTravel:proDB.filter(r=>r.stage!=='TRAVELLED')).slice(0,3);
+  const upcoming=(pendingTravel.length?pendingTravel:proDB.filter(r=>proPipelineStageValue(r)!=='TRAVELLED')).slice(0,3);
   const upcomingHTML=upcoming.length?upcoming.map((r,i)=>`<div class="ref-travel-item">
     <div class="ref-travel-icon"><i class="ti ti-plane"></i></div>
     <div><div class="ref-travel-name">${escHTML(r.name)}</div><div class="ref-travel-meta">${escHTML(r.company||'-')} | ${escHTML(r.position||'-')}</div></div>
@@ -2600,11 +2615,11 @@ function openTravelledView(){
   if (typeof showToast === 'function') showToast('Showing travelled candidates','success');
 }
 function openPendingTravelView(){
-  window.proStagePillFilter='PENDING TRAVEL';
+  window.proStagePillFilter='TICKET BOOKED';
   switchTab('pro');
   if (typeof rebuildProPills === 'function') rebuildProPills();
   if (typeof renderPro === 'function') renderPro();
-  if (typeof showToast === 'function') showToast('Showing candidates pending travel','success');
+  if (typeof showToast === 'function') showToast('Showing candidates with tickets booked','success');
 }
 function openFirstDocumentUpload(){
   const pro=proDB.find(Boolean);
@@ -2625,7 +2640,7 @@ function updateTrendTooltip(event){
   const pct=Math.max(0,Math.min(1,(event.clientX-rect.left)/rect.width));
   const day=12+Math.round(pct*6);
   const inProcess=Math.max(1,Math.round((proDB.length+lbDB.length)*(0.35+pct*.3)));
-  const travelled=Math.max(0,Math.round((proDB.filter(r=>r.stage==='TRAVELLED').length+lbDB.filter(r=>(r.travelStatus||r.travel_status)==='TRAVELLED').length)*(0.7+pct*.45)));
+  const travelled=Math.max(0,Math.round((proDB.filter(r=>proPipelineStageValue(r)==='TRAVELLED').length+lbDB.filter(r=>(r.travelStatus||r.travel_status)==='TRAVELLED').length)*(0.7+pct*.45)));
   document.getElementById('trend-tip-date').textContent=`May ${day}, 2025`;
   document.getElementById('trend-tip-process').textContent=inProcess;
   document.getElementById('trend-tip-travelled').textContent=travelled;
@@ -2669,15 +2684,15 @@ function restoreUserFilters(){
 }
 function getSmartAlerts(){
   const now=Date.now(), day=86400000;
-  const oldMol=proDB.filter(r=>r.stage==='PENDING MOL' && drecoDateValue(r.submitted) && now-drecoDateValue(r.submitted)>7*day);
-  const oldVisa=proDB.filter(r=>r.stage==='PENDING VISA' && Math.max(drecoDateValue(r.mol),drecoDateValue(r.submitted)) && now-Math.max(drecoDateValue(r.mol),drecoDateValue(r.submitted))>10*day);
+  const oldPermit=proDB.filter(r=>proPipelineStageValue(r)==='WORK PERMIT' && drecoDateValue(r.submitted) && now-drecoDateValue(r.submitted)>7*day);
+  const oldVisa=proDB.filter(r=>proPipelineStageValue(r)==='VISA' && Math.max(drecoDateValue(r.mol),drecoDateValue(r.submitted)) && now-Math.max(drecoDateValue(r.mol),drecoDateValue(r.submitted))>10*day);
   const unpaid=proDB.filter(r=>proBalance(r)>0).sort((a,b)=>proBalance(b)-proBalance(a));
-  const travel=proDB.filter(r=>r.stage==='PENDING TRAVEL');
+  const travel=proDB.filter(r=>proPipelineStageValue(r)==='TICKET BOOKED');
   return [
-    {label:'MOL overdue',value:oldMol.length,icon:'ti-clock-exclamation',tone:'warn',target:"switchTab('pro')"},
+    {label:'Work permit overdue',value:oldPermit.length,icon:'ti-clock-exclamation',tone:'warn',target:"switchTab('pro')"},
     {label:'Visa pending too long',value:oldVisa.length,icon:'ti-id-badge-2',tone:'coffee',target:"switchTab('pro')"},
     {label:'Unpaid commissions',value:unpaid.length,icon:'ti-cash-banknote',tone:'money',target:"switchTab('commissions')"},
-    {label:'Pending travel',value:travel.length,icon:'ti-plane',tone:'blue',target:'openPendingTravelView()'}
+    {label:'Tickets booked',value:travel.length,icon:'ti-ticket',tone:'blue',target:'openPendingTravelView()'}
   ].filter(a=>a.value>0);
 }
 function renderSmartAlertsHTML(){
@@ -2709,7 +2724,7 @@ function renderMetricCards(id,cards){
   el.innerHTML=cards.map(c=>`<div class="metric-card ${c.cls||'mc-default'}"><div class="metric-label">${escHTML(c.label)}</div><div class="metric-val ${c.small?'sm':''}">${c.value}</div></div>`).join('');
 }
 function getTravelRows(){
-  const pro=proDB.map(r=>({type:'pro',id:r.id,name:r.name,workflow:'Professional Jobs',company:r.company||r.country||'-',status:r.position||r.stage||'-',date:r.travel,travelled:r.stage==='TRAVELLED',airline:r.airline||'Not recorded',time:r.travelTime||'Not recorded',notes:r.travelNotes||getLatestTimelineText('pro',r.id)}));
+  const pro=proDB.map(r=>{ const stage=proPipelineStageValue(r); return {type:'pro',id:r.id,name:r.name,workflow:'Professional Jobs',company:r.company||r.country||'-',status:r.position||stage||'-',date:r.travel,travelled:stage==='TRAVELLED',airline:r.airline||'Not recorded',time:r.travelTime||'Not recorded',notes:r.travelNotes||getLatestTimelineText('pro',r.id)}; });
   const lb=lbDB.map(r=>({type:'lb',id:r.id,name:r.name,workflow:'General Jobs',company:r.country||getActiveGeneralCountry(),status:r.travelStatus||r.travel_status||'-',date:r.travelDate||r.travel_date,travelled:(r.travelStatus||r.travel_status)==='TRAVELLED',airline:r.airline||'Not recorded',time:r.travelTime||'Not recorded',notes:r.notes||getLatestTimelineText('lb',r.id)}));
   return [...pro,...lb];
 }
@@ -3149,7 +3164,7 @@ async function submitTravelEvent(){
   if(!r) return fail('Candidate not found.');
   const table=type==='pro'?'pro_candidates':'lb_candidates';
   const updates=type==='pro'
-    ?{travel:date,airline,travelTime:time,travelNotes:notes,stage:'PENDING TRAVEL'}
+    ?{travel:date,airline,travelTime:time,travelNotes:notes,stage:'TRAVELLED'}
     :{travelDate:date,airline,travelTime:time,notes:notes||r.notes};
   Object.assign(r,updates);
   try{ if(useCloud()) await dbUpdate(table,id,updates); else saveLocalStore(); addTimeline(type,id,`Travel recorded: ${airline||'No airline'} on ${date}`); auditAction('Travel','Travel details saved',`${r.name} - ${date}`); }
@@ -3208,7 +3223,7 @@ function getFilteredPro(){
         if(dateTo&&sub>dateTo) dateMatch=false;
       }
     }
-    return (!q||text.includes(q))&&(!stage||r.stage===stage)&&(!comp||r.company===comp)&&(!pos||r.position===pos)&&actionMatch&&dateMatch;
+    return (!q||text.includes(q))&&(!stage||proPipelineStageValue(r)===stage)&&(!comp||r.company===comp)&&(!pos||r.position===pos)&&actionMatch&&dateMatch;
   });
   return lastProFiltered;
 }
@@ -3224,7 +3239,7 @@ function renderPro(){
   if(metricsEl) metricsEl.innerHTML=`
     <div class="metric-card mc-default"><div class="mc-icon"><i class="ti ti-users"></i></div><div class="metric-label">Total</div><div class="metric-val">${proDB.length}</div></div>
     <div class="metric-card mc-amber"><div class="mc-icon"><i class="ti ti-clock"></i></div><div class="metric-label">In process</div><div class="metric-val amber">${proDB.filter(isInProcessPro).length}</div></div>
-    <div class="metric-card mc-green"><div class="mc-icon"><i class="ti ti-plane-departure"></i></div><div class="metric-label">Travelled</div><div class="metric-val green">${proDB.filter(r=>r.stage==='TRAVELLED').length}</div></div>
+    <div class="metric-card mc-green"><div class="mc-icon"><i class="ti ti-plane-departure"></i></div><div class="metric-label">Travelled</div><div class="metric-val green">${proDB.filter(r=>proPipelineStageValue(r)==='TRAVELLED').length}</div></div>
     <div class="metric-card mc-ink"><div class="mc-icon"><i class="ti ti-coin"></i></div><div class="metric-label">Commission billed</div><div class="metric-val sm">KES ${totalComm.toLocaleString()}</div></div>
     <div class="metric-card mc-sage"><div class="mc-icon"><i class="ti ti-alert-circle"></i></div><div class="metric-label">Outstanding</div><div class="metric-val sm amber">KES ${(totalComm-totalPaid).toLocaleString()}</div></div>`;
 
@@ -3662,7 +3677,7 @@ async function batchSendProfiles(){
 function exportCSV(type){
   let headers,rows,filename,isFiltered=false;
   if(type==='pro'){
-    headers=['#','Name','Passport','Phone','Position','Company','Country','Stage','Commission (KES)','Paid (KES)','Balance (KES)','Submitted','Interview','Offer Letter','MOL','Visa','Travel Date'];
+    headers=['#','Name','Passport','Phone','Position','Company','Country','Stage','Commission (KES)','Paid (KES)','Balance (KES)','Submitted','Interview','Offer Letter','Work Permit','Visa','Travel Date'];
     const src=lastProFiltered.length?lastProFiltered:proDB;
     isFiltered=src.length<proDB.length;
     rows=src.map((r,i)=>[i+1,r.name,r.pp||'',r.phone||'',r.position||'',r.company||'',r.country||'',r.stage,

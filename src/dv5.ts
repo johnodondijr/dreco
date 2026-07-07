@@ -5,14 +5,51 @@ import {
 } from './state';
 
 // Constants mirrored from main.ts (never change at runtime)
-const PRO_PIPELINE_STAGES = ['PENDING OFFER LETTER','OFFER LETTER','MOL','VISA','PENDING TRAVEL','TRAVELLED'];
+const PRO_PIPELINE_STAGES = ['INTERVIEW','OFFER LETTER','MEDICAL & ATTESTATION','WORK PERMIT','VISA','TICKET BOOKED','TRAVELLED'];
 const LB_PIPELINE_STAGES  = ['UNSELECTED','SELECTED','TRAVELLED'];
 // Fallback only — overridden by injectDepsToD5 in practice
 let DEFAULT_COMPANY = { name: 'Dreco', id: 'dreco-default', generalJobsCountries: ['UAE'] };
 function activeWorkflowStages(type) {
   const stages = type === 'pro' ? proStages : lbStages;
   const fallback = type === 'pro' ? PRO_PIPELINE_STAGES : LB_PIPELINE_STAGES;
-  return Array.isArray(stages) && stages.length ? stages : fallback;
+  const source = Array.isArray(stages) && stages.length ? stages : fallback;
+  const canon = type === 'pro' ? canonicalProProcessStage : cleanStageLocal;
+  return [...new Set(source.map(canon).filter(Boolean))];
+}
+const PRO_PROFILE_PROCESS = ['INTERVIEW','OFFER LETTER','MEDICAL & ATTESTATION','WORK PERMIT','VISA','TICKET BOOKED','TRAVELLED'];
+const PRO_PROFILE_LABELS = {
+  'INTERVIEW': 'Interview',
+  'OFFER LETTER': 'Offer Letter',
+  'MEDICAL & ATTESTATION': 'Medical & Attestation',
+  'WORK PERMIT': 'Work Permit',
+  'VISA': 'Visa',
+  'TICKET BOOKED': 'Ticket Booked',
+  'TRAVELLED': 'Travelled',
+};
+function cleanStageLocal(value) {
+  return String(value || '').trim().toUpperCase();
+}
+function canonicalProProcessStage(stage) {
+  const value = cleanStageLocal(stage);
+  const map = {
+    'PENDING OFFER': 'INTERVIEW',
+    'PENDING OFFER LETTER': 'INTERVIEW',
+    'PENDING OL': 'INTERVIEW',
+    'OFFER': 'OFFER LETTER',
+    'OL': 'OFFER LETTER',
+    'MEDICAL': 'MEDICAL & ATTESTATION',
+    'MEDICAL ATTESTATION': 'MEDICAL & ATTESTATION',
+    'PENDING MOL': 'WORK PERMIT',
+    'MOL': 'WORK PERMIT',
+    'PENDING VISA': 'VISA',
+    'PENDING TRAVEL': 'TICKET BOOKED',
+    'READY TO TRAVEL': 'TICKET BOOKED',
+    'TRAVEL': 'TICKET BOOKED',
+    'TRAVELING': 'TRAVELLED',
+    'TRAVELLING': 'TRAVELLED',
+    'TRAVELED': 'TRAVELLED',
+  };
+  return map[value] || value;
 }
 
 // Functions injected by main.ts after all declarations are hoisted
@@ -169,16 +206,17 @@ export function injectDepsToD5(deps) {
     if (s==='UNSELECTED') return 'gray';
     if (s==='SELECTED') return 'blue';
     // Pro pipeline stages
-    if (s==='PENDING OFFER LETTER') return 'gray';
+    if (s==='INTERVIEW' || s==='PENDING OFFER LETTER') return 'gray';
     if (s==='OFFER LETTER') return 'amber';
-    if (s==='MOL') return 'teal';
+    if (s==='MEDICAL & ATTESTATION') return 'blue';
+    if (s==='WORK PERMIT' || s==='MOL') return 'teal';
     if (s==='VISA') return 'blue';
-    if (s==='PENDING TRAVEL') return 'orange';
+    if (s==='TICKET BOOKED' || s==='PENDING TRAVEL') return 'orange';
     // Terminal
     if (s==='TRAVELLED'||s==='REFUND COMPLETE') return 'green';
     // Legacy internal stages (fallback)
     if (s.includes('VISA')) return 'blue';
-    if (s.includes('MOL')) return 'teal';
+    if (s.includes('MOL') || s.includes('WORK PERMIT')) return 'teal';
     if (s.includes('OFFER')) return 'amber';
     if (s.includes('TRAVEL')||s==='PASSPORT APPLIED') return 'orange';
     if (s==='PROFILE SENT') return 'amber';
@@ -208,7 +246,7 @@ export function injectDepsToD5(deps) {
       return {
         type:'pro', id:r.id, name:r.name||'—', pp:r.pp||'', phone:r.phone||'',
         position:r.position||'—', company:r.company||'—', country:r.country||'—',
-        stage:proStageValue(r), pipelineStage:proPipelineStageValue(r), submitted:r.submitted, interview:r.interview,
+        stage:proPipelineStageValue(r), pipelineStage:proPipelineStageValue(r), submitted:r.submitted, interview:r.interview,
         ol:r.ol, medical:r.medical||null, mol:r.mol, visa:r.visa, travel:r.travel,
         owner:r.owner||currentUser?.display||'Team',
         commission:Number(r.commission)||0,
@@ -293,9 +331,9 @@ export function injectDepsToD5(deps) {
       const meta = `${r.company||r.country||'—'}`;
       auto.push(...[
         r.balance>0                   && {key:`bal_${r.type}_${r.id}`,    priority:'High',   label:'High', title:r.type==='pro'?`Collect commission — ${r.name}`:`Process refund — ${r.name}`, meta:`Balance ${balStr}`, action:edit, icon:'ti-coin'},
-        r.type==='pro'&&String(r.stage).toUpperCase()==='MOL'             && {key:`mol_${r.id}`,  priority:'Medium', label:'Med', title:`MOL submission — ${r.name}`, meta, action:edit, icon:'ti-file-check'},
+        r.type==='pro'&&['WORK PERMIT','MOL'].includes(String(r.stage).toUpperCase()) && {key:`wp_${r.id}`,  priority:'Medium', label:'Med', title:`Work permit follow-up — ${r.name}`, meta, action:edit, icon:'ti-file-check'},
         r.type==='pro'&&String(r.stage).toUpperCase()==='VISA'            && {key:`visa_${r.id}`, priority:'Medium', label:'Med', title:`Visa follow-up — ${r.name}`, meta, action:edit, icon:'ti-id-badge-2'},
-        r.type==='pro'&&String(r.stage).toUpperCase()==='PENDING TRAVEL'  && {key:`tkt_${r.id}`,  priority:'High',   label:'High', title:`Book ticket — ${r.name}`, meta, action:edit, icon:'ti-plane-departure'},
+        r.type==='pro'&&['TICKET BOOKED','PENDING TRAVEL'].includes(String(r.stage).toUpperCase()) && {key:`tkt_${r.id}`,  priority:'High',   label:'High', title:`Confirm travel — ${r.name}`, meta, action:edit, icon:'ti-plane-departure'},
         r.type==='lb'&&r.stage==='SELECTED'                               && {key:`pp_${r.id}`,   priority:'High',   label:'High', title:`Apply passport — ${r.name}`, meta, action:edit, icon:'ti-passport'},
         r.type==='lb'&&r.stage==='REFUND PENDING'                         && {key:`ref_${r.id}`,  priority:'Medium', label:'Med', title:`Refund pending — ${r.name}`, meta:`${balStr} to refund`, action:edit, icon:'ti-credit-card'},
       ].filter(Boolean));
@@ -310,7 +348,7 @@ export function injectDepsToD5(deps) {
 
   // ── Next-action label per candidate ───────────────────────
   function nextAction(r) {
-    const s = String(r.stage||'').toUpperCase();
+    const s = String(r.pipelineStage || r.stage || '').toUpperCase();
     if (r.type === 'pro' && r.balance > 0) return 'Collect commission';
     if (r.type === 'lb' && r.balance > 0) return 'Process refund';
     if (r.followUp) {
@@ -319,11 +357,12 @@ export function injectDepsToD5(deps) {
       if (!isNaN(due) && due <= today) return 'Follow up today';
     }
     if (r.type === 'pro') {
-      if (s === 'PENDING OFFER LETTER') return 'Send offer letter';
-      if (s === 'OFFER LETTER') return 'Submit for MOL';
-      if (s === 'MOL') return 'Follow MOL approval';
+      if (s === 'INTERVIEW' || s === 'PENDING OFFER LETTER') return 'Run interview';
+      if (s === 'OFFER LETTER') return 'Schedule medical & attestation';
+      if (s === 'MEDICAL & ATTESTATION') return 'Apply for work permit';
+      if (s === 'WORK PERMIT' || s === 'MOL') return 'Follow work permit';
       if (s === 'VISA') return 'Book ticket';
-      if (s === 'PENDING TRAVEL') return 'Confirm travel';
+      if (s === 'TICKET BOOKED' || s === 'PENDING TRAVEL') return 'Confirm travel';
     } else {
       if (s === 'SUBMITTED') return 'Send profile';
       if (s === 'PROFILE SENT') return 'Await selection';
@@ -365,7 +404,7 @@ export function injectDepsToD5(deps) {
   }
 
   function buildChecklist(r) {
-    const s = String(r.stage||'').toUpperCase();
+    const s = String(r.pipelineStage || r.stage || '').toUpperCase();
     if (r.type === 'lb') {
       const id = r.id;
       const upl = (typeof window.drecoCandidateDocs === 'function') ? window.drecoCandidateDocs('lb', id) : {};
@@ -381,21 +420,20 @@ export function injectDepsToD5(deps) {
         {label:'Travelled',         done: ['TRAVELLED','REFUND PENDING','REFUND COMPLETE'].includes(s), action:'stage'},
       ];
     }
-    const proStageOrder = ['SUBMITTED','INTERVIEW','OFFER LETTER','MEDICAL & ATTESTATION','MOL','VISA','PENDING TRAVEL','TRAVELLED'];
-    const idx = proStageOrder.indexOf(s);
+    const processStage = canonicalProProcessStage(r.pipelineStage || r.stage);
+    const idx = PRO_PROFILE_PROCESS.indexOf(processStage);
     return [
-      {label:'Documents uploaded',   done: hasDoc(r),                                                          action:'docs'},
-      {label:'Interview done',       done: idx >= proStageOrder.indexOf('INTERVIEW'),                          action:'stage'},
-      {label:'Offer letter received',done: !!r.raw?.ol || idx >= proStageOrder.indexOf('OFFER LETTER'),       action:'stage'},
-      {label:'Medical cleared',      done: !!r.raw?.medical || idx >= proStageOrder.indexOf('MEDICAL & ATTESTATION'), action:'stage'},
-      {label:'MOL submitted',        done: !!r.raw?.mol || idx >= proStageOrder.indexOf('MOL'),               action:'stage'},
-      {label:'Visa stamped',         done: !!r.raw?.visa || idx >= proStageOrder.indexOf('VISA'),             action:'stage'},
-      {label:'Ticket booked',        done: !!r.travel || s==='TRAVELLED',                                     action:'stage'},
-      {label:'Commission collected', done: r.balance === 0 && r.commission > 0,                               action:'edit'},
+      {label:'Interview done',              done: !!r.raw?.interview || idx >= PRO_PROFILE_PROCESS.indexOf('INTERVIEW'), action:'stage'},
+      {label:'Offer letter received',       done: !!r.raw?.ol || idx >= PRO_PROFILE_PROCESS.indexOf('OFFER LETTER'), action:'stage'},
+      {label:'Medical & attestation done',  done: !!r.raw?.medical || idx >= PRO_PROFILE_PROCESS.indexOf('MEDICAL & ATTESTATION'), action:'stage'},
+      {label:'Work permit received',        done: !!r.raw?.mol || idx >= PRO_PROFILE_PROCESS.indexOf('WORK PERMIT'), action:'stage'},
+      {label:'Visa stamped',                done: !!r.raw?.visa || idx >= PRO_PROFILE_PROCESS.indexOf('VISA'), action:'stage'},
+      {label:'Ticket booked',               done: idx >= PRO_PROFILE_PROCESS.indexOf('TICKET BOOKED'), action:'stage'},
+      {label:'Candidate travelled',         done: !!r.travel || idx >= PRO_PROFILE_PROCESS.indexOf('TRAVELLED'), action:'stage'},
     ];
   }
   function checklistPct(r) {
-    const s = String(r.stage||'').toUpperCase();
+    const s = String(r.pipelineStage || r.stage || '').toUpperCase();
     const travelled = r.type === 'lb'
       ? ['TRAVELLED','REFUND PENDING','REFUND COMPLETE'].includes(s)
       : s === 'TRAVELLED';
@@ -518,13 +556,13 @@ export function injectDepsToD5(deps) {
 
   function buildStageDonut(normRows: any[]) {
     const stageCounts: Record<string,number> = {};
-    normRows.forEach(r => { const s=String(r.stage||'Unknown').toUpperCase(); stageCounts[s]=(stageCounts[s]||0)+1; });
+    normRows.forEach(r => { const s=String(r.pipelineStage||r.stage||'Unknown').toUpperCase(); stageCounts[s]=(stageCounts[s]||0)+1; });
     const entries = Object.entries(stageCounts).sort((a,b)=>b[1]-a[1]);
     const total = entries.reduce((s,[,n])=>s+n,0) || 1;
     const colorMap: Record<string,string> = {
       'TRAVELLED':'#C9F035','VISA':'#C5C7F0','PENDING VISA':'#EDEDFB',
-      'MOL':'#AE9CF0','PENDING MOL':'#EDE8FB','OFFER LETTER':'#F9B3AA',
-      'PENDING OFFER LETTER':'#FCECEA','PENDING TRAVEL':'#EDFAA8',
+      'WORK PERMIT':'#AE9CF0','MOL':'#AE9CF0','PENDING MOL':'#EDE8FB','OFFER LETTER':'#F9B3AA',
+      'INTERVIEW':'#FCECEA','PENDING OFFER LETTER':'#FCECEA','MEDICAL & ATTESTATION':'#D9D7F1','TICKET BOOKED':'#EDFAA8','PENDING TRAVEL':'#EDFAA8',
       'SELECTED':'#D9D7F1','UNSELECTED':'#F3F3F3',
       'REFUND PENDING':'#FFE2E2','REFUND COMPLETE':'#D1FAE5',
     };
@@ -822,9 +860,9 @@ export function injectDepsToD5(deps) {
     const normRows = isPro ? proNorm : lbNorm;
 
     // Pro-specific dash metrics
-    const awaitMol  = proNorm.filter(r=>proStageMatches(r, ['MOL','PENDING MOL'])).length;
+    const awaitPermit = proNorm.filter(r=>proStageMatches(r, ['WORK PERMIT','MOL','PENDING MOL'])).length;
     const visaReady = proNorm.filter(r=>proStageMatches(r, ['VISA','PENDING VISA'])).length;
-    const tickets   = proNorm.filter(r=>r.stage==='PENDING TRAVEL').length;
+    const tickets   = proNorm.filter(r=>['TICKET BOOKED','PENDING TRAVEL'].includes(r.stage)).length;
     const unpaidPro = proNorm.filter(r=>r.balance>0).length;
     // LB-specific
     const lbRefundPending = lbNorm.filter(r=>['REFUND PENDING','REFUND COMPLETE'].includes(r.stage)).length;
@@ -839,10 +877,12 @@ export function injectDepsToD5(deps) {
     const totalPaidLB  = lbNorm.reduce((s,r)=>s+r.paid,0);
 
     const proFlowSteps = [
-      ['Offer',      proNorm.filter(r=>proStageMatches(r, ['OFFER LETTER','PENDING OFFER LETTER'])).length],
-      ['MOL',        proNorm.filter(r=>proStageMatches(r, ['MOL','PENDING MOL'])).length],
+      ['Interview',  proNorm.filter(r=>proStageMatches(r, ['INTERVIEW','PENDING OFFER LETTER'])).length],
+      ['Offer',      proNorm.filter(r=>proStageMatches(r, ['OFFER LETTER'])).length],
+      ['Medical',    proNorm.filter(r=>proStageMatches(r, ['MEDICAL & ATTESTATION'])).length],
+      ['Permit',     proNorm.filter(r=>proStageMatches(r, ['WORK PERMIT','MOL','PENDING MOL'])).length],
       ['Visa',       proNorm.filter(r=>proStageMatches(r, ['VISA','PENDING VISA'])).length],
-      ['Travel',     proNorm.filter(r=>r.stage==='PENDING TRAVEL').length],
+      ['Ticket',     proNorm.filter(r=>['TICKET BOOKED','PENDING TRAVEL'].includes(r.stage)).length],
       ['Travelled',  proNorm.filter(r=>r.stage==='TRAVELLED').length],
     ];
     const LB_UNSELECTED_STAGES = ['DOCS SUBMITTED','DOCUMENTS SUBMITTED','SUBMITTED','PROFILE SENT','NOT YET'];
@@ -875,7 +915,7 @@ export function injectDepsToD5(deps) {
 
         <div class="dv5-priority-grid">
           ${isPro ? `
-            ${priority('ti-file-description', awaitMol,  'Awaiting MOL',       'Submit to ministry',   '#EDE8FB','#4825B8', "switchTab('pipeline')")}
+            ${priority('ti-file-description', awaitPermit, 'Work Permits',      'Follow permits',       '#EDE8FB','#4825B8', "switchTab('pipeline')")}
             ${priority('ti-id-badge-2',       visaReady, 'Visas Ready',        'Ready to travel',      '#EDEDFB','#252677', "switchTab('pipeline')")}
             ${priority('ti-coin',             unpaidPro, 'Unpaid Commissions', 'Requires follow up',   '#FCECEA','#8B2010', "switchTab('finance')")}
             ${priority('ti-plane-departure',  tickets,   'Tickets Pending',    'Awaiting issue',       '#EDFAA8','#5A7A10', "switchTab('pipeline')")}
@@ -1229,8 +1269,13 @@ export function injectDepsToD5(deps) {
   window.renderCandidates = renderCandidates;
 
   const PRO_PIPELINE_TO_DB = {
-    'PENDING OFFER LETTER':'SUBMITTED','OFFER LETTER':'OFFER LETTER',
-    'MOL':'MOL','VISA':'VISA','PENDING TRAVEL':'PENDING TRAVEL','TRAVELLED':'TRAVELLED',
+    'INTERVIEW':'INTERVIEW',
+    'OFFER LETTER':'OFFER LETTER',
+    'MEDICAL & ATTESTATION':'MEDICAL & ATTESTATION',
+    'WORK PERMIT':'WORK PERMIT',
+    'VISA':'VISA',
+    'TICKET BOOKED':'TICKET BOOKED',
+    'TRAVELLED':'TRAVELLED',
   };
 
   async function _applyStageChange(type, id, targetPipelineStage) {
@@ -1238,8 +1283,8 @@ export function injectDepsToD5(deps) {
     const rec = db.find(r => r.id == id);
     if (!rec) return;
     const targetDbStage = type === 'pro' ? (PRO_PIPELINE_TO_DB[targetPipelineStage] || targetPipelineStage) : targetPipelineStage;
-    if (type === 'pro' && ['PENDING TRAVEL','TRAVELLED'].includes(targetPipelineStage) && !rec.travel) {
-      showToast('Set a travel date before moving to this stage.','error'); return;
+    if (type === 'pro' && targetPipelineStage === 'TRAVELLED' && !rec.travel) {
+      showToast('Set a travel date before marking as Travelled.','error'); return;
     }
     if (type === 'lb' && targetPipelineStage === 'TRAVELLED' && !rec.travelDate) {
       showToast('Set a travel date before marking as Travelled.','error'); return;
@@ -1258,16 +1303,16 @@ export function injectDepsToD5(deps) {
   }
 
   window.advanceStage = async function(type, id) {
-    const stages = type === 'pro' ? activeWorkflowStages('pro') : activeWorkflowStages('lb');
+    const stages = type === 'pro' ? PRO_PROFILE_PROCESS : activeWorkflowStages('lb');
     const curRow  = allRows().find(r => r.type===type && String(r.id)===String(id));
-    const curStage = curRow?.pipelineStage || stages[0];
+    const curStage = type === 'pro' ? canonicalProProcessStage(curRow?.pipelineStage || curRow?.stage) : (curRow?.pipelineStage || stages[0]);
     const idx = stages.findIndex(s => s === curStage);
     if (idx === -1 || idx >= stages.length - 1) { showToast('Already at final stage','info'); return; }
     await _applyStageChange(type, id, stages[idx + 1]);
   };
 
   window.jumpToStage = async function(type, id, targetIdx) {
-    const stages = type === 'pro' ? activeWorkflowStages('pro') : activeWorkflowStages('lb');
+    const stages = type === 'pro' ? PRO_PROFILE_PROCESS : activeWorkflowStages('lb');
     const targetPipelineStage = stages[targetIdx];
     if (!targetPipelineStage) return;
     const curRow = allRows().find(r => r.type===type && String(r.id)===String(id));
@@ -1699,7 +1744,7 @@ export function injectDepsToD5(deps) {
     // Avg processing (Pro: intake→travel; LB: submit→travel)
     let avgProcessing = '—';
     if (isPro) {
-      const withDates = (proDB||[]).filter(r => r.stage==='TRAVELLED' && r.travel && (r.intake||r.created||r.createdAt));
+      const withDates = (proDB||[]).filter(r => proPipelineStageValue(r)==='TRAVELLED' && r.travel && (r.intake||r.created||r.createdAt));
       if (withDates.length) { const avg = Math.round(withDates.reduce((s,r)=>s+Math.max(0,(new Date(r.travel)-new Date(r.intake||r.created||r.createdAt))/86400000),0)/withDates.length); avgProcessing = avg>0?avg+' days':'—'; }
     } else {
       const withDates = lbBase.filter(r=>r.stage==='TRAVELLED'&&r.travelDate&&r.created_at);
@@ -1738,8 +1783,8 @@ export function injectDepsToD5(deps) {
         ['SUBMITTED→INTERVIEW',    r=>r.interview&&r.submitted,      r=>(new Date(r.interview)-new Date(r.submitted))/86400000],
         ['INTERVIEW→OFFER',        r=>r.ol&&r.interview,             r=>(new Date(r.ol)-new Date(r.interview))/86400000],
         ['OFFER→MEDICAL',          r=>r.medical&&r.ol,               r=>(new Date(r.medical)-new Date(r.ol))/86400000],
-        ['MEDICAL→MOL',            r=>r.mol&&r.medical,              r=>(new Date(r.mol)-new Date(r.medical))/86400000],
-        ['MOL→VISA',               r=>r.visa&&r.mol,                 r=>(new Date(r.visa)-new Date(r.mol))/86400000],
+        ['MEDICAL→PERMIT',         r=>r.mol&&r.medical,              r=>(new Date(r.mol)-new Date(r.medical))/86400000],
+        ['PERMIT→VISA',            r=>r.visa&&r.mol,                 r=>(new Date(r.visa)-new Date(r.mol))/86400000],
         ['VISA→TRAVEL',            r=>r.travel&&r.visa,              r=>(new Date(r.travel)-new Date(r.visa))/86400000],
       ];
       const stageTimes = stageFields.map(([label,filter,calc])=>{
@@ -2012,11 +2057,13 @@ export function injectDepsToD5(deps) {
     const cl    = buildChecklist(r);
     const pct   = checklistPct(r);
     const timeline = (allTimelines?.[`${type}_${id}`]||[]).slice(0,6).reverse();
+    const stageListRef = type==='pro' ? PRO_PROFILE_PROCESS : activeWorkflowStages('lb');
     const stageLabels  = type==='pro'
-      ? ['Pending OL','Offer Letter','MOL','Visa','Travel','Travelled']
+      ? stageListRef.map(s => PRO_PROFILE_LABELS[s] || s)
       : ['Unselected','Selected','Travelled'];
-    const stageListRef = type==='pro' ? activeWorkflowStages('pro') : activeWorkflowStages('lb');
-    const stageIdx     = stageListRef.findIndex(s => s === r.pipelineStage);
+    const normalizedStage = type === 'pro' ? canonicalProProcessStage(r.pipelineStage || r.stage) : r.pipelineStage;
+    const stageIdxRaw = stageListRef.findIndex(s => s === normalizedStage);
+    const stageIdx = Math.max(0, stageIdxRaw);
 
     // Docs — from Document Upload IIFE (exposed on window)
     const defs  = (window.drecoDocDefs?.(type)) || [];
@@ -2035,7 +2082,7 @@ export function injectDepsToD5(deps) {
         </button>
         <i class="ti ti-chevron-right" style="font-size:12px;color:#9ca3af"></i>
         <span style="color:#18191B;font-weight:375">${h(r.name)}</span>
-        <span style="margin-left:auto">${badge(r.stage)}</span>
+        <span style="margin-left:auto">${badge(r.pipelineStage)}</span>
       </div>
 
       <!-- Hero card -->
@@ -2143,19 +2190,27 @@ export function injectDepsToD5(deps) {
             <span class="dv5-card-sub">${h(r.company||r.country||'—')}</span>
           </div>
           ${(() => {
-            const milestones = [
-              { label: 'Submitted',    date: r.submitted || r.raw?.submitted_date || r.raw?.submitted },
-              { label: 'Offer Letter', date: r.raw?.ol || r.ol },
-              { label: 'Medical',      date: r.raw?.medical },
-              { label: 'MOL',          date: r.raw?.mol },
-              { label: 'Visa',         date: r.raw?.visa },
-              { label: 'Travel',       date: r.travel || r.raw?.travel },
-            ].filter(m => type==='pro' || m.label==='Submitted' || m.label==='Travel');
-            const lastDoneIdx = milestones.reduce((acc,m,i)=>m.date?i:acc, -1);
+            const milestones = type === 'pro'
+              ? [
+                  { key:'INTERVIEW', label:'Interview', date:r.raw?.interview || r.interview },
+                  { key:'OFFER LETTER', label:'Offer Letter', date:r.raw?.ol || r.ol },
+                  { key:'MEDICAL & ATTESTATION', label:'Medical & Attestation', date:r.raw?.medical || r.medical },
+                  { key:'WORK PERMIT', label:'Work Permit', date:r.raw?.mol || r.mol },
+                  { key:'VISA', label:'Visa', date:r.raw?.visa || r.visa },
+                  { key:'TICKET BOOKED', label:'Ticket Booked', date:null },
+                  { key:'TRAVELLED', label:'Candidate Travelled', date:r.travel || r.raw?.travel },
+                ]
+              : [
+                  { key:'SUBMITTED', label:'Submitted', date:r.submitted || r.raw?.submitted_date || r.raw?.submitted },
+                  { key:'TRAVELLED', label:'Travel', date:r.travel || r.raw?.travel },
+                ];
+            const currentIdx = type === 'pro'
+              ? Math.max(0, PRO_PROFILE_PROCESS.indexOf(canonicalProProcessStage(r.pipelineStage || r.stage)))
+              : milestones.reduce((acc,m,i)=>m.date?i:acc, -1);
             return `<div style="display:flex;flex-direction:column;gap:0;padding:4px 0">
               ${milestones.map((m,i) => {
-                const isDone = !!m.date;
-                const isActive = !isDone && i === lastDoneIdx+1;
+                const isDone = type === 'pro' ? i <= currentIdx : !!m.date;
+                const isActive = type === 'pro' ? i === currentIdx : (!isDone && i === currentIdx+1);
                 const dot = isDone
                   ? `<div style="width:28px;height:28px;border-radius:50%;background:#C9F035;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1"><i class="ti ti-check" style="font-size:14px;color:#1A1C2E"></i></div>`
                   : isActive
@@ -2169,7 +2224,7 @@ export function injectDepsToD5(deps) {
                     ${dot}
                     <div style="flex:1;min-width:0">
                       <div style="font-size:12px;font-weight:500;color:${isDone?'#1A1C2E':isActive?'#5A3EAD':'#9A96B0'}">${h(m.label)}</div>
-                      <div style="font-size:11px;color:${isDone?'#6A8018':isActive?'#7B65CC':'#B0AAC0'};margin-top:1px">${isDone?h(fmt(m.date)):isActive?'In Progress':'Pending'}</div>
+                      <div style="font-size:11px;color:${isDone?'#6A8018':isActive?'#7B65CC':'#B0AAC0'};margin-top:1px">${m.date?h(fmt(m.date)):(isDone?'Completed':isActive?'In Progress':'Pending')}</div>
                     </div>
                   </div>
                   ${connector}
@@ -2230,12 +2285,13 @@ export function injectDepsToD5(deps) {
 
   // Map checklist label → {field to set today, stage to advance to}
   const PRO_CHECKLIST_MAP = {
-    'Interview done':       { field:'interview', stage:'INTERVIEW' },
-    'Offer letter received':{ field:'ol',        stage:'OFFER LETTER' },
-    'Medical cleared':      { field:'medical',   stage:'MEDICAL & ATTESTATION' },
-    'MOL submitted':        { field:'mol',       stage:'MOL' },
-    'Visa stamped':         { field:'visa',      stage:'VISA' },
-    'Ticket booked':        { field:'travel',    stage:'PENDING TRAVEL' },
+    'Interview done':             { field:'interview', stage:'INTERVIEW' },
+    'Offer letter received':      { field:'ol',        stage:'OFFER LETTER' },
+    'Medical & attestation done': { field:'medical',   stage:'MEDICAL & ATTESTATION' },
+    'Work permit received':       { field:'mol',       stage:'WORK PERMIT' },
+    'Visa stamped':               { field:'visa',      stage:'VISA' },
+    'Ticket booked':              { field:null,        stage:'TICKET BOOKED' },
+    'Candidate travelled':        { field:'travel',    stage:'TRAVELLED' },
   };
   const LB_CHECKLIST_STAGE_MAP = {
     'Profile Sent':    'PROFILE SENT',
@@ -2256,9 +2312,9 @@ export function injectDepsToD5(deps) {
     if (type === 'pro') {
       const map = PRO_CHECKLIST_MAP[label];
       if (!map) return;
-      updates[map.field] = today;
+      if (map.field) updates[map.field] = today;
       updates.stage = map.stage;
-      rec[map.field] = today;
+      if (map.field) rec[map.field] = today;
       rec.stage = map.stage;
     } else {
       const newStage = LB_CHECKLIST_STAGE_MAP[label];
@@ -2310,15 +2366,15 @@ export function injectDepsToD5(deps) {
     if (type === 'pro') {
       const map = PRO_CHECKLIST_MAP[label];
       if (!map) return;
-      const proStageList = (proStages && proStages.length ? proStages : ['SUBMITTED','INTERVIEW','OFFER LETTER','MEDICAL & ATTESTATION','MOL','VISA','PENDING TRAVEL','TRAVELLED']);
+      const proStageList = PRO_PROFILE_PROCESS;
       const idx = proStageList.indexOf(map.stage);
       const prevStage = idx > 0 ? proStageList[idx - 1] : proStageList[0];
-      rec[map.field] = null;
+      if (map.field) rec[map.field] = null;
       rec.stage = prevStage;
       showToast(`Reverted: ${label}`, 'info');
       openCandidateProfile(type, id);
       try {
-        await dbUpdate('pro_candidates', id, { [map.field]: null, stage: prevStage });
+        await dbUpdate('pro_candidates', id, map.field ? { [map.field]: null, stage: prevStage } : { stage: prevStage });
         addTimeline(type, id, `Reverted: ${label}`);
       } catch(e) { console.warn('checklistUntick error', e); }
     } else {
@@ -2644,7 +2700,7 @@ export function injectDepsToD5(deps) {
 .dv5-profile-meta span { display:inline-flex; gap:5px; align-items:center; font-size:12px; color:#6B7280; font-weight:406; }
 .dv5-profile-stage { text-align:right; display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
 .dv5-profile-stage small { font-size:11px; color:#7B8496; font-weight:438; }
-.dv5-progress-steps { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin-bottom:12px; }
+.dv5-progress-steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(92px,1fr)); gap:8px; margin-bottom:12px; }
 .dv5-step { display:flex; flex-direction:column; align-items:center; gap:4px; color:#9CA3AF; font-size:10px; font-weight:500; }
 .dv5-step span { width:26px; height:26px; border-radius:999px; border:2px solid #DBE1EB; background:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:500; }
 .dv5-step.done span { background:#22A06B; color:#fff; border-color:#22A06B; }
@@ -3221,7 +3277,7 @@ export function injectDepsToD5(deps) {
       ['cv','CV'],
       ['photo','Photo'],
       ['offer_letter','Offer Letter'],
-      ['mol','MOL'],
+      ['mol','Work Permit'],
       ['medical','Medical / GAMCA'],
       ['visa','Visa'],
       ['ticket','Ticket'],
