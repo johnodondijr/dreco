@@ -76,7 +76,7 @@ let proBalance, proStageValue, lbStageValue, proStageMatches;
 let lbRefundPrincipal, lbRefundPaidAmount, lbOwnPassport, lbRefundReturned, lbRefundOutstanding;
 let showToast, bindAccountMenuTriggers, fmtDate, getCompanyName;
 let proPaidAmount, proPaymentStatus, proPipelineStageValue, lbPipelineStageValue;
-let addTimeline, saveTimeline, auditAction, saveLocalStore, getStorageLabel, getCompanyId, dbUpdate;
+let addTimeline, saveTimeline, auditAction, saveLocalStore, getStorageLabel, getCompanyId, dbUpdate, dbDelete, deleteCandidateArtifacts, useCloud;
 // Supabase client — named _supabaseDb to avoid shadowing local 'db' variables inside IIFE
 let _supabaseDb = null;
 
@@ -105,7 +105,7 @@ export function injectDepsToD5(deps) {
     lbRefundPrincipal, lbRefundPaidAmount, lbOwnPassport, lbRefundReturned, lbRefundOutstanding,
     showToast, bindAccountMenuTriggers, fmtDate, getCompanyName,
     proPaidAmount, proPaymentStatus, proPipelineStageValue, lbPipelineStageValue,
-    addTimeline, saveTimeline, auditAction, saveLocalStore, getStorageLabel, getCompanyId, dbUpdate,
+    addTimeline, saveTimeline, auditAction, saveLocalStore, getStorageLabel, getCompanyId, dbUpdate, dbDelete, deleteCandidateArtifacts, useCloud,
   } = deps);
   if (deps.DEFAULT_COMPANY) DEFAULT_COMPANY = deps.DEFAULT_COMPANY;
   if (deps.db) _supabaseDb = deps.db;
@@ -1038,7 +1038,20 @@ export function injectDepsToD5(deps) {
 
   // ── 2. PIPELINE ───────────────────────────────────────────
   let pipelineSearch = '';
-  window.setPipelineSearch = v => { pipelineSearch = v; renderPipeline(); };
+  function restoreInputFocus(id, cursor) {
+    requestAnimationFrame(() => {
+      const input = document.getElementById(id);
+      if (!input) return;
+      input.focus({ preventScroll: true });
+      if (typeof input.setSelectionRange === 'function') input.setSelectionRange(cursor, cursor);
+    });
+  }
+  window.setPipelineSearch = v => {
+    const cursor = document.activeElement?.selectionStart ?? v.length;
+    pipelineSearch = v;
+    renderPipeline();
+    restoreInputFocus('pipeline-search', cursor);
+  };
 
   function renderPipeline() {
     const el = document.getElementById('pipeline-section'); if (!el) return;
@@ -1061,7 +1074,7 @@ export function injectDepsToD5(deps) {
           <div class="dv5-head-actions">
             <div style="position:relative">
               <i class="ti ti-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:14px;pointer-events:none"></i>
-              <input type="search" placeholder="Search candidates…" value="${h(pipelineSearch)}"
+              <input type="search" id="pipeline-search" placeholder="Search candidates…" value="${h(pipelineSearch)}"
                 oninput="setPipelineSearch(this.value)"
                 style="height:36px;border:1.5px solid var(--border);border-radius:8px;padding:0 10px 0 32px;font-size:13px;background:#fff;width:200px;outline:none">
             </div>
@@ -1111,7 +1124,12 @@ export function injectDepsToD5(deps) {
   let candidateViewFilter = 'all';
   let selectedCandidates = new Set(); // 'type_id' strings
 
-  function setCandidateSearch(v) { candidateSearch = v; renderCandidates(); }
+  function setCandidateSearch(v) {
+    const cursor = document.activeElement?.selectionStart ?? v.length;
+    candidateSearch = v;
+    renderCandidates();
+    restoreInputFocus('cand-search', cursor);
+  }
   window.setCandidateSearch = setCandidateSearch;
   window.setCandidateStageFilter = v => { candidateStageFilter = v; renderCandidates(); };
   window.setCandidateViewFilter  = v => { candidateViewFilter  = v; renderCandidates(); };
@@ -1179,6 +1197,29 @@ export function injectDepsToD5(deps) {
   }
   window.bulkExportSelected = bulkExportSelected;
 
+  async function bulkDeleteSelectedCandidates() {
+    const rows = filterCandidates().filter(r => selectedCandidates.has(r.type+'_'+r.id));
+    if (!rows.length) return;
+    const sample = rows.slice(0, 3).map(r => r.name).join(', ');
+    if (!confirm(`Delete ${rows.length} selected candidate${rows.length!==1?'s':''} and their documents/timeline records?\n\n${sample}${rows.length>3?'...':''}\n\nThis cannot be undone.`)) return;
+    const proIds = new Set(rows.filter(r=>r.type==='pro').map(r=>r.id));
+    const lbIds = new Set(rows.filter(r=>r.type==='lb').map(r=>r.id));
+    setProDB(proDB.filter(r => !proIds.has(r.id)));
+    setLbDB(lbDB.filter(r => !lbIds.has(r.id)));
+    for (const r of rows) {
+      if (typeof deleteCandidateArtifacts === 'function') await deleteCandidateArtifacts(r.type, r.id);
+      if (typeof useCloud === 'function' && useCloud() && typeof dbDelete === 'function') await dbDelete(r.type==='pro' ? 'pro_candidates' : 'lb_candidates', r.id);
+      if (typeof auditAction === 'function') auditAction(r.type==='pro' ? 'Professional Jobs' : 'General Jobs', 'Candidate deleted', r.name || '');
+    }
+    selectedCandidates.clear();
+    saveLocalStore?.();
+    renderCandidates();
+    window.renderPipelinePage?.();
+    window.renderDash?.();
+    showToast?.(`Deleted ${rows.length} candidate${rows.length!==1?'s':''}`, 'success');
+  }
+  window.bulkDeleteSelectedCandidates = bulkDeleteSelectedCandidates;
+
   function renderCandidates() {
     const el = document.getElementById('candidates-section'); if (!el) return;
     if (profileViewType && profileViewId) { renderCandidateProfilePage(el, profileViewType, profileViewId); return; }
@@ -1220,6 +1261,7 @@ export function injectDepsToD5(deps) {
             ${allStages.map(s=>`<option value="${h(s)}">${h(s)}</option>`).join('')}
           </select>
           <button class="dv5-btn" onclick="bulkExportSelected()"><i class="ti ti-download"></i>Export selected</button>
+          <button class="dv5-btn danger" onclick="bulkDeleteSelectedCandidates()"><i class="ti ti-trash"></i>Delete selected</button>
           <button class="dv5-btn" onclick="window.clearSelectedCandidates()"><i class="ti ti-x"></i>Clear</button>
         </div>
         <div class="dv5-toolbar">

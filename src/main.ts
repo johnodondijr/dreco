@@ -1216,15 +1216,15 @@ window.addEventListener('DOMContentLoaded', async () => {
     try {
       const parsed = JSON.parse(saved);
       if (parsed._exp && Date.now() > parsed._exp) throw new Error('Session expired');
-      const account = STAFF_ACCOUNTS[parsed.username];
-      if (!account) throw new Error('Unknown saved user');
+      const account = STAFF_ACCOUNTS[parsed.username] || parsed;
       enterApp({
         username: parsed.username,
-        role: account.role,
-        display: account.display,
-        companyId: account.companyId,
-        companyName: account.companyName,
-        generalJobsCountries: account.generalJobsCountries,
+        role: account.role || parsed.role || 'staff',
+        display: account.display || parsed.display || parsed.username,
+        companyId: account.companyId || parsed.companyId,
+        companyName: account.companyName || parsed.companyName,
+        generalJobsCountries: account.generalJobsCountries || parsed.generalJobsCountries,
+        authUserId: account.authUserId || parsed.authUserId,
       });
     } catch { safeLocalRemove('dr_user'); }
   }
@@ -1273,6 +1273,7 @@ async function loadAllData() {
     rebuildStageSelects();
     restoreUserFilters();
     hideLoading();
+    updateNotificationBadge();
     if (typeof window.dv5Init === 'function') window.dv5Init();
     switchTab(location.hash ? location.hash.slice(1) : 'dash', false);
     return;
@@ -1335,6 +1336,7 @@ async function loadAllData() {
   rebuildStageSelects();
   restoreUserFilters();
   hideLoading();
+  updateNotificationBadge();
   // Signal DV5 that data is ready - ensure sidebar and sections exist before render
   if (typeof window.dv5Init === 'function') window.dv5Init();
   switchTab(location.hash ? location.hash.slice(1) : 'dash', false);
@@ -1481,6 +1483,20 @@ async function dbDelete(table, id) {
   const {error}=await db.from(table).delete().eq('id',id).eq('company_id',getCompanyId());
   if(error) throw error;
 }
+async function deleteCandidateArtifacts(type, id) {
+  const key = `${type}_${id}`;
+  delete allDocs[key];
+  delete allTimelines[key];
+  if (useCloud()) {
+    const scoped = getCompanyScopedKey(key);
+    await Promise.allSettled([
+      db.from('documents').delete().in('key', [key, scoped]),
+      db.from('timelines').delete().in('key', [key, scoped]),
+    ]);
+  } else {
+    saveLocalStore();
+  }
+}
 function fallBackToLocal(err) {
   console.error(err);
   appStorageMode = 'local';
@@ -1559,16 +1575,18 @@ async function saveLBRecord(rec, isUpdate = false) {
 }
 async function deleteProRecord(id) {
   setSaveStatus('saving');
-  if (!useCloud()) { saveLocalStore(); setSaveStatus('saved'); return; }
   try {
+    await deleteCandidateArtifacts('pro', id);
+    if (!useCloud()) { saveLocalStore(); setSaveStatus('saved'); return; }
     await dbDelete('pro_candidates', id);
     setSaveStatus('saved');
   } catch (e) { fallBackToLocal(e); setSaveStatus('saved'); }
 }
 async function deleteLBRecord(id) {
   setSaveStatus('saving');
-  if (!useCloud()) { saveLocalStore(); setSaveStatus('saved'); return; }
   try {
+    await deleteCandidateArtifacts('lb', id);
+    if (!useCloud()) { saveLocalStore(); setSaveStatus('saved'); return; }
     await dbDelete('lb_candidates', id);
     setSaveStatus('saved');
   } catch (e) { fallBackToLocal(e); setSaveStatus('saved'); }
@@ -1804,7 +1822,7 @@ let _currentTab = 'dash';
 function switchTab(tab, _pushHistory = true){
   if (window.innerWidth <= 860) closeMobileSidebar();
   // DV5 unified tab router — handles both legacy and new tabs
-  const DV5_TABS = ['dash','pipeline','candidates','finance','documents','reports','clients','settings'];
+  const DV5_TABS = ['dash','pipeline','candidates','finance','documents','reports','clients','notifications','settings'];
   const DV5_ALIASES = {
     pro:'candidates', lb:'candidates',
     kanban:'pipeline', travel:'pipeline', tasks:'pipeline',
@@ -1815,7 +1833,7 @@ function switchTab(tab, _pushHistory = true){
   const DV5_TITLES = {
     dash:'Home', pipeline:'Pipeline', candidates:'Candidates',
     tasks:'Tasks', finance:'Finance', documents:'Documents', account:'Profile',
-    reports:'Reports', clients:'Clients', settings:'Settings'
+    reports:'Reports', clients:'Clients', notifications:'Notifications', settings:'Settings'
   };
 
   const t = DV5_ALIASES[tab] || tab || 'dash';
@@ -1856,6 +1874,7 @@ function switchTab(tab, _pushHistory = true){
     documents: ()=> window.renderDocumentsPage?.(),
     reports: ()=> window.renderReportsPage?.(),
     clients: ()=> window.renderClientsPage?.(),
+    notifications: ()=> (typeof renderNotificationsPage === 'function') && renderNotificationsPage(),
     settings: ()=> (typeof renderSettingsPage === 'function') && renderSettingsPage(),
     // Legacy fallbacks
     pro: ()=> { if(typeof rebuildProPills==='function') rebuildProPills(); if(typeof renderPro==='function') renderPro(); },
@@ -2112,9 +2131,15 @@ async function removeSettingsCountry(country) {
 }
 function getCompanyUsers() {
   const companyId = getCompanyId();
-  return Object.entries(STAFF_ACCOUNTS)
-    .filter(([, account]) => (account.companyId || DEFAULT_COMPANY.id) === companyId)
+  const seen = new Set();
+  const rows = Object.entries(STAFF_ACCOUNTS)
+    .filter(([, account]) => account?.companyId === companyId)
     .sort(([a], [b]) => a.localeCompare(b));
+  rows.forEach(([username]) => seen.add(username));
+  if (currentUser?.username && !seen.has(currentUser.username)) {
+    rows.unshift([currentUser.username, normalizeAccount(currentUser.username, currentUser)]);
+  }
+  return rows;
 }
 function renderCompanyUsers() {
   const card = document.getElementById('settings-users-card');
@@ -3124,10 +3149,39 @@ function renderDataIntegrityPanel(){
       ${report.total > 12 ? `<div class="mini-empty">${report.total - 12} more issue(s) hidden. Use Candidates and Finance filters to review the rest.</div>` : ''}
     </div>`;
 }
+function updateNotificationBadge(count = null){
+  const total = count == null ? buildDataIntegrityReport().total : count;
+  const btn = document.getElementById('topbar-notif-btn');
+  const nav = document.getElementById('nav-notifications');
+  [btn, nav].forEach(el => {
+    if (!el) return;
+    el.classList.toggle('has-alerts', total > 0);
+    el.setAttribute('data-count', String(total));
+  });
+}
+function renderNotificationsPage(){
+  const el=document.getElementById('notifications-page-content'); if(!el) return;
+  const report = buildDataIntegrityReport();
+  const auditRows = (Array.isArray(drecoAudit) ? drecoAudit : []).slice(0,8).map(a => `
+    <div class="integrity-row notice">
+      <div>
+        <strong>${escHTML(a.action || 'Activity')}</strong>
+        <span>${escHTML(a.area || 'Workspace')} - ${fmtDate(a.ts)}${a.detail ? ` - ${escHTML(a.detail)}` : ''}</span>
+      </div>
+    </div>`).join('');
+  el.innerHTML = `
+    ${renderDataIntegrityPanel()}
+    <div class="settings-page-card integrity-card">
+      <h3>Workspace notifications</h3>
+      <p>Recent updates and system activity for this workspace.</p>
+      ${auditRows || '<div class="mini-empty">No recent workspace notifications.</div>'}
+    </div>`;
+  updateNotificationBadge(report.total);
+}
 function renderSettingsPage(){
   const el=document.getElementById('settings-page-content'); if(!el) return;
   const syncCopy=appStorageMode==='cloud'?'Supabase cloud sync is active. Local fallback remains available if a write fails.':'Local mode is active. Configure Supabase to enable shared office sync.';
-  el.innerHTML=`${renderDataIntegrityPanel()}${renderWorkflowSettingsPanel()}${renderPaymentSettingsPanel()}<div class="settings-page-card"><h3>Workspace</h3><p>Manage company identity and data mode.</p><div class="setting-row"><span>Company</span><button onclick="openSettingsModal()">Edit</button></div><div class="setting-row"><span>Storage</span><span class="settings-pill">${appStorageMode==='cloud'?'Cloud':'Local'}</span></div></div><div class="settings-page-card"><h3>Pipeline</h3><p>Adjust stage lists from workflow templates, or add one-off custom stages from the candidate forms.</p><div class="setting-row"><span>Professional stages</span><span class="settings-pill">${proStages.length} stages</span></div><div class="setting-row"><span>General countries</span><button onclick="switchTab('lb')">Open</button></div></div><div class="settings-page-card"><h3>Team & permissions</h3><p>Add staff and review roles from the Team page.</p><div class="setting-row"><span>Team members</span><button onclick="switchTab('team')">Manage</button></div></div><div class="settings-page-card"><h3>Data</h3><p>Export backups or reset local filters.</p><div class="setting-row"><span>Backup</span><button onclick="downloadBackup()">Download</button></div><div class="setting-row"><span>Saved filters</span><button onclick="resetSavedFilters()">Reset</button></div></div><div class="settings-page-card"><h3>Sync health</h3><p>${syncCopy}</p><div class="setting-row"><span>Mode</span><span class="settings-pill">${appStorageMode==='cloud'?'Cloud first':'Local fallback'}</span></div><div class="setting-row"><span>Last sync issue</span><span>${escHTML(lastSyncError||'None')}</span></div></div><div class="settings-page-card"><h3>Audit log</h3><p>Recent system activity across candidates, finance, users, and documents.</p>${drecoAudit.slice(0,6).map(a=>`<div class="audit-row"><strong>${escHTML(a.action)}</strong><span>${escHTML(a.area)} - ${fmtDate(a.ts)}</span></div>`).join('')||'<div class="mini-empty">No audited actions yet</div>'}</div>`;
+  el.innerHTML=`${renderWorkflowSettingsPanel()}${renderPaymentSettingsPanel()}<div class="settings-page-card"><h3>Workspace</h3><p>Manage company identity and data mode.</p><div class="setting-row"><span>Company</span><button onclick="openSettingsModal()">Edit</button></div><div class="setting-row"><span>Storage</span><span class="settings-pill">${appStorageMode==='cloud'?'Cloud':'Local'}</span></div></div><div class="settings-page-card"><h3>Pipeline</h3><p>Adjust stage lists from workflow templates, or add one-off custom stages from the candidate forms.</p><div class="setting-row"><span>Professional stages</span><span class="settings-pill">${proStages.length} stages</span></div><div class="setting-row"><span>General countries</span><button onclick="switchTab('lb')">Open</button></div></div><div class="settings-page-card"><h3>Team & permissions</h3><p>Add staff and review roles from the Team page.</p><div class="setting-row"><span>Team members</span><button onclick="switchTab('team')">Manage</button></div></div><div class="settings-page-card"><h3>Data</h3><p>Export backups or reset local filters.</p><div class="setting-row"><span>Backup</span><button onclick="downloadBackup()">Download</button></div><div class="setting-row"><span>Saved filters</span><button onclick="resetSavedFilters()">Reset</button></div></div><div class="settings-page-card"><h3>Sync health</h3><p>${syncCopy}</p><div class="setting-row"><span>Mode</span><span class="settings-pill">${appStorageMode==='cloud'?'Cloud first':'Local fallback'}</span></div><div class="setting-row"><span>Last sync issue</span><span>${escHTML(lastSyncError||'None')}</span></div></div>`;
 }
 function openQuickAddCandidate(){
   const modal=document.getElementById('quick-add-modal');
@@ -4334,7 +4388,7 @@ injectDepsToD5({
   lbRefundPrincipal, lbRefundPaidAmount, lbOwnPassport, lbRefundReturned, lbRefundOutstanding,
   showToast, bindAccountMenuTriggers, fmtDate, getCompanyName, DEFAULT_COMPANY, db,
   proPaidAmount, proPaymentStatus, proPipelineStageValue, lbPipelineStageValue,
-  addTimeline, saveTimeline, auditAction, saveLocalStore, getStorageLabel, getCompanyId, dbUpdate,
+  addTimeline, saveTimeline, auditAction, saveLocalStore, getStorageLabel, getCompanyId, dbUpdate, dbDelete, deleteCandidateArtifacts, useCloud,
 });
 
 // ─── Expose module-scope functions on window ──────────────────────────────────

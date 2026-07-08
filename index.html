@@ -6351,7 +6351,9 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
 #app .topbar-icon-btn:hover,#app .topbar-refresh-btn:hover,#app .topbar-notif-btn:hover{background:#F3F4F6!important;box-shadow:none!important;}
 #app .topbar-refresh-btn.is-spinning i{animation:drecoTopbarSpin .7s linear infinite;}
 #app .topbar-notif-btn{position:relative!important;}
-#app .topbar-notif-btn::after{content:'';position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:999px;background:#EF233C;border:1.5px solid #fff;}
+#app .topbar-notif-btn::after{content:'';position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:999px;background:#EF233C;border:1.5px solid #fff;display:none;}
+#app .topbar-notif-btn.has-alerts::after{display:block;}
+#app #nav-notifications.has-alerts::after{content:attr(data-count);display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;margin-left:auto;padding:0 5px;border-radius:999px;background:#EF233C;color:#fff;font-size:9px;font-weight:600;}
 #app .topbar-user-card{flex-shrink:0!important;display:flex!important;align-items:center!important;gap:8px!important;height:34px!important;background:transparent!important;border:0!important;border-radius:10px!important;padding:0!important;cursor:pointer!important;box-shadow:none!important;}
 #app .topbar-user-card:hover{background:transparent!important;box-shadow:none!important;border-color:transparent!important;}
 #app .topbar-user-card .topbar-avatar{width:30px!important;height:30px!important;min-width:30px!important;border-radius:999px!important;font-size:10px!important;}
@@ -7316,6 +7318,14 @@ html body #app .integrity-row.medium{
   box-shadow:0 8px 22px rgba(72,37,184,.35)!important;
   transform:translateY(-1px)!important;
 }
+.dv5-btn.danger{
+  color:#B91C1C!important;
+  border-color:#FECACA!important;
+  background:#FEF2F2!important;
+}
+.dv5-btn.danger:hover{
+  background:#FEE2E2!important;
+}
 
 /* Mobile: keep avatar visible but stack */
 @media(max-width:640px){
@@ -7662,7 +7672,7 @@ html body #app .integrity-row.medium{
       <button class="topbar-icon-btn topbar-refresh-btn" id="topbar-refresh-btn" type="button" aria-label="Refresh data" title="Refresh data" onclick="refreshDrecoData()">
         <i class="ti ti-refresh"></i>
       </button>
-      <button class="topbar-icon-btn topbar-notif-btn" id="topbar-notif-btn" type="button" aria-label="Notifications" title="Notifications">
+      <button class="topbar-icon-btn topbar-notif-btn" id="topbar-notif-btn" type="button" aria-label="Notifications" title="Notifications" onclick="switchTab('notifications')">
         <i class="ti ti-bell"></i>
       </button>
       <div class="save-dot" id="save-dot" style="display:none"></div>
@@ -7768,6 +7778,9 @@ html body #app .integrity-row.medium{
       </button>
       <button type="button" class="nav-item" id="nav-candidates" data-title="Candidates" aria-label="Candidates" onclick="switchTab('candidates')">
         <i class="ti ti-users"></i><span class="nav-item-label">Candidates</span>
+      </button>
+      <button type="button" class="nav-item" id="nav-notifications" data-title="Notifications" aria-label="Notifications" onclick="switchTab('notifications')">
+        <i class="ti ti-bell"></i><span class="nav-item-label">Notifications</span>
       </button>
 
       <div class="nav-section-label">Operations</div>
@@ -7983,6 +7996,11 @@ html body #app .integrity-row.medium{
         <div id="team-section" style="display:none">
           <div class="section-page-head"><div><h2>Team</h2><p>Company users, roles, permissions, and account access.</p></div><button class="btn primary" onclick="createStaffAccount()"><i class="ti ti-user-plus"></i> Add user</button></div>
           <div class="team-grid" id="team-grid"></div>
+        </div>
+
+        <div id="notifications-section" style="display:none">
+          <div class="section-page-head"><div><h2>Notifications</h2><p>Data health, workflow alerts, and recent workspace activity.</p></div><button class="btn" onclick="refreshDrecoData()"><i class="ti ti-refresh"></i> Refresh</button></div>
+          <div class="settings-page-grid" id="notifications-page-content"></div>
         </div>
 
         <div id="settings-section" style="display:none">
