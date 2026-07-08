@@ -9,8 +9,11 @@ const PRO_PIPELINE_STAGES = ['INTERVIEW','OFFER LETTER','MEDICAL & ATTESTATION',
 const LB_PIPELINE_STAGES  = ['UNSELECTED','SELECTED','TRAVELLED'];
 // Fallback only — overridden by injectDepsToD5 in practice
 let DEFAULT_COMPANY = { name: 'Dreco', id: 'dreco-default', generalJobsCountries: ['UAE'] };
-function activeWorkflowStages(type) {
-  const stages = type === 'pro' ? proStages : lbStages;
+let getActiveGeneralCountry, getGeneralWorkflowStages, getLBWorkflowStagesForRecord;
+function activeWorkflowStages(type, country = '') {
+  const stages = type === 'pro'
+    ? proStages
+    : (typeof getGeneralWorkflowStages === 'function' ? getGeneralWorkflowStages(country || lbCountryFilter || getActiveGeneralCountry?.()) : lbStages);
   const fallback = type === 'pro' ? PRO_PIPELINE_STAGES : LB_PIPELINE_STAGES;
   const source = Array.isArray(stages) && stages.length ? stages : fallback;
   const canon = type === 'pro' ? canonicalProProcessStage : cleanStageLocal;
@@ -106,6 +109,7 @@ export function injectDepsToD5(deps) {
     showToast, bindAccountMenuTriggers, fmtDate, getCompanyName,
     proPaidAmount, proPaymentStatus, proPipelineStageValue, lbPipelineStageValue,
     addTimeline, saveTimeline, auditAction, saveLocalStore, getStorageLabel, getCompanyId, dbUpdate, dbDelete, deleteCandidateArtifacts, useCloud,
+    getActiveGeneralCountry, getGeneralWorkflowStages, getLBWorkflowStagesForRecord,
   } = deps);
   if (deps.DEFAULT_COMPANY) DEFAULT_COMPANY = deps.DEFAULT_COMPANY;
   if (deps.db) _supabaseDb = deps.db;
@@ -1385,8 +1389,8 @@ export function injectDepsToD5(deps) {
   }
 
   window.advanceStage = async function(type, id) {
-    const stages = activeWorkflowStages(type);
     const curRow  = allRows().find(r => r.type===type && String(r.id)===String(id));
+    const stages = activeWorkflowStages(type, curRow?.country);
     const curStage = type === 'pro' ? canonicalProProcessStage(curRow?.pipelineStage || curRow?.stage) : (curRow?.pipelineStage || stages[0]);
     const idx = stages.findIndex(s => s === curStage);
     if (idx === -1 || idx >= stages.length - 1) { showToast('Already at final stage','info'); return; }
@@ -1394,10 +1398,10 @@ export function injectDepsToD5(deps) {
   };
 
   window.jumpToStage = async function(type, id, targetIdx) {
-    const stages = activeWorkflowStages(type);
+    const curRow = allRows().find(r => r.type===type && String(r.id)===String(id));
+    const stages = activeWorkflowStages(type, curRow?.country);
     const targetPipelineStage = stages[targetIdx];
     if (!targetPipelineStage) return;
-    const curRow = allRows().find(r => r.type===type && String(r.id)===String(id));
     if (curRow?.pipelineStage === targetPipelineStage) { showToast('Already at this stage','info'); return; }
     await _applyStageChange(type, id, targetPipelineStage);
   };
@@ -2139,10 +2143,10 @@ export function injectDepsToD5(deps) {
     const cl    = buildChecklist(r);
     const pct   = checklistPct(r);
     const timeline = (allTimelines?.[`${type}_${id}`]||[]).slice(0,6).reverse();
-    const stageListRef = type==='pro' ? PRO_PROFILE_PROCESS : activeWorkflowStages('lb');
+    const stageListRef = type==='pro' ? PRO_PROFILE_PROCESS : activeWorkflowStages('lb', r.country);
     const stageLabels  = type==='pro'
       ? stageListRef.map(s => PRO_PROFILE_LABELS[s] || s)
-      : ['Unselected','Selected','Travelled'];
+      : stageListRef.map(s => s.replace(/^DOCS /,'').replace(/_/g,' '));
     const normalizedStage = type === 'pro' ? resolveProProcessStage(r) : r.pipelineStage;
     const stageIdxRaw = stageListRef.findIndex(s => s === normalizedStage);
     const stageIdx = Math.max(0, stageIdxRaw);
@@ -2462,7 +2466,7 @@ export function injectDepsToD5(deps) {
     } else {
       const targetStage = LB_CHECKLIST_STAGE_MAP[label];
       if (!targetStage) return;
-      const lbStageList = (lbStages && lbStages.length ? lbStages : ['DOCS SUBMITTED','PROFILE SENT','SELECTED','PASSPORT APPLIED','VISA PROCESSING','TRAVELLED','REFUND PENDING','REFUND COMPLETE']);
+      const lbStageList = activeWorkflowStages('lb', rec.country);
       const idx = lbStageList.indexOf(targetStage);
       const prevStage = idx > 0 ? lbStageList[idx - 1] : lbStageList[0];
       rec.stage = prevStage;

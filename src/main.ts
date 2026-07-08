@@ -367,6 +367,28 @@ const LB_WORKFLOW_TEMPLATES = [
     stages: ['SUBMITTED','PROFILE SENT','SELECTED','VISA PROCESSING','PENDING TRAVEL','TRAVELLED'],
   },
 ];
+const GENERAL_COUNTRY_WORKFLOW_PRESETS = {
+  DEFAULT: {
+    name: 'General default',
+    description: 'Uses the workspace General Jobs stages for countries without a dedicated process.',
+    stages: null,
+  },
+  SAUDI: {
+    name: 'Saudi domestic worker',
+    description: 'Documents, training, certificates, Musaned, contract, medical, biometrics, embassy, ticket, travel.',
+    stages: ['SUBMITTED','TRAINING','TRANSCRIPT','GOOD CONDUCT','MUSANED UPLOAD','CONTRACT ISSUED','MEDICAL','VFS BIOMETRICS','EMBASSY','TICKET BOOKED','TRAVELLED'],
+  },
+  LEBANON: {
+    name: 'Lebanon domestic worker',
+    description: 'Documents, profile sent, employer selection, visa processing, ticket booking, travel.',
+    stages: ['SUBMITTED','PROFILE SENT','SELECTED','VISA PROCESSING','TICKET BOOKED','TRAVELLED'],
+  },
+  OMAN: {
+    name: 'Oman general worker',
+    description: 'General Gulf processing with selection, medical/clearance, visa, ticket, and travel.',
+    stages: ['SUBMITTED','PROFILE SENT','SELECTED','MEDICAL','VISA PROCESSING','TICKET BOOKED','TRAVELLED'],
+  },
+};
 const PAYMENT_RULE_PRESETS = [
   {
     key: 'split-offer-visa',
@@ -447,6 +469,30 @@ function getActiveGeneralCountry() {
   }
   return window.generalCountryFilter;
 }
+function normalizeCountryKey(country) {
+  const value = String(country || '').trim().toUpperCase();
+  if (value.includes('SAUDI')) return 'SAUDI';
+  if (value.includes('LEBANON')) return 'LEBANON';
+  if (value.includes('OMAN')) return 'OMAN';
+  return 'DEFAULT';
+}
+function getGeneralWorkflowPreset(country = getActiveGeneralCountry()) {
+  return GENERAL_COUNTRY_WORKFLOW_PRESETS[normalizeCountryKey(country)] || GENERAL_COUNTRY_WORKFLOW_PRESETS.DEFAULT;
+}
+function getGeneralWorkflowStages(country = getActiveGeneralCountry()) {
+  const preset = getGeneralWorkflowPreset(country);
+  const usesPreset = Array.isArray(preset.stages) && preset.stages.length;
+  const source = usesPreset ? preset.stages : lbStages;
+  const cleaned = [...new Set((source || []).map(s => cleanStage(s)).filter(Boolean))];
+  if (usesPreset && Array.isArray(lbStages) && lbStages.length) {
+    const templateStages = new Set(LB_WORKFLOW_TEMPLATES.flatMap(t => t.stages).map(s => cleanStage(s)));
+    lbStages.map(s => cleanStage(s)).filter(s => s && !templateStages.has(s) && !cleaned.includes(s)).forEach(s => cleaned.push(s));
+  }
+  return cleaned.length ? cleaned : LB_PIPELINE_STAGES;
+}
+function getLBWorkflowStagesForRecord(row = {}) {
+  return getGeneralWorkflowStages(row.country || getActiveGeneralCountry());
+}
 function getCompanyScopedKey(key) {
   return `${getCompanyId()}:${key}`;
 }
@@ -502,6 +548,7 @@ function renderGeneralCountryTabs() {
 function setGeneralCountry(country) {
   window.generalCountryFilter = country;
   lbPage = 1;
+  rebuildStageSelects();
   renderGeneralCountryTabs();
   renderLB();
 }
@@ -606,7 +653,8 @@ function proStageValue(row = {}) {
   return canonicalProStage(row.stage || proStages[0] || 'INTERVIEW');
 }
 function lbStageValue(row = {}) {
-  return cleanStage(row.stage || row.travelStatus || row.travel_status, lbStages[0] || 'DOCS SUBMITTED');
+  const stages = getLBWorkflowStagesForRecord(row);
+  return cleanStage(row.stage || row.travelStatus || row.travel_status, stages[0] || 'SUBMITTED');
 }
 function proPipelineStageValue(row = {}) {
   const raw = row.raw || row;
@@ -637,12 +685,17 @@ function proPipelineStageValue(row = {}) {
 function lbPipelineStageValue(row = {}) {
   const raw = row.raw || row;
   const stage = cleanStage(raw.stage || raw.travelStatus || raw.travel_status || row.stage);
-  const configured = Array.isArray(lbStages) && lbStages.length ? lbStages.map(cleanStage) : LB_PIPELINE_STAGES;
+  const configured = getLBWorkflowStagesForRecord(raw);
   if (configured.includes(stage)) return stage;
-  const SELECTED_STAGES = new Set(['SELECTED','PASSPORT APPLIED','VISA PROCESSING']);
+  const SELECTED_STAGES = new Set(['SELECTED','PASSPORT APPLIED','TRAINING','TRANSCRIPT','GOOD CONDUCT','MUSANED UPLOAD','CONTRACT ISSUED','MEDICAL','VFS BIOMETRICS','EMBASSY','VISA PROCESSING']);
   const TRAVELLED_STAGES = new Set(['TRAVELLED','REFUND PENDING','REFUND COMPLETE']);
+  if (stage === 'TICKET BOOKED' && configured.includes('TICKET BOOKED')) return 'TICKET BOOKED';
   if (TRAVELLED_STAGES.has(stage)) return 'TRAVELLED';
-  if (SELECTED_STAGES.has(stage)) return 'SELECTED';
+  if (SELECTED_STAGES.has(stage)) {
+    if (configured.includes('SELECTED')) return 'SELECTED';
+    if (configured.includes('CONTRACT ISSUED')) return 'CONTRACT ISSUED';
+    if (configured.includes('VISA PROCESSING')) return 'VISA PROCESSING';
+  }
   return configured[0] || 'SUBMITTED';
 }
 function stageListWithData(configured = [], rows = [], getter = row => row.stage, normalizer = cleanStage) {
@@ -1691,6 +1744,18 @@ function workflowTemplateCards(type){
       <button onclick="applyWorkflowTemplate('${type}','${t.key}')">Apply</button>
     </div>`).join('');
 }
+function countryWorkflowCards(){
+  return getGeneralCountries().map(country => {
+    const preset = getGeneralWorkflowPreset(country);
+    const stages = getGeneralWorkflowStages(country);
+    return `
+      <div class="workflow-template-card">
+        <strong>${escHTML(country)} - ${escHTML(preset.name)}</strong>
+        <p>${escHTML(preset.description)}</p>
+        <div class="workflow-stage-preview">${stages.map(s=>`<span>${escHTML(s)}</span>`).join('')}</div>
+      </div>`;
+  }).join('');
+}
 function renderWorkflowSettingsPanel(){
   return `
     <div class="settings-page-card workflow-settings-card">
@@ -1713,6 +1778,14 @@ function renderWorkflowSettingsPanel(){
           <div class="workflow-current-stages">${workflowStageChips('lb')}</div>
           <div class="workflow-template-grid">${workflowTemplateCards('lb')}</div>
         </section>
+      </div>
+      <div class="workflow-country-block">
+        <div class="workflow-settings-head">
+          <strong>Country-specific General Jobs workflows</strong>
+          <button onclick="switchTab('lb')">Open countries</button>
+        </div>
+        <p>Saudi, Lebanon, and Oman automatically use their own operational flow. Other destinations use the workspace General Jobs stages.</p>
+        <div class="workflow-template-grid">${countryWorkflowCards()}</div>
       </div>
     </div>`;
 }
@@ -2435,7 +2508,7 @@ function readLBFormSummary(){
     name:document.getElementById('lf-name')?.value||'New General Jobs candidate',
     phone:document.getElementById('lf-phone')?.value||'',
     ppStatus:document.getElementById('lf-pp')?.value||'APPLIED',
-    travelStatus:document.getElementById('lf-stage')?.value||document.getElementById('lf-travel')?.value||lbStages[0],
+    travelStatus:document.getElementById('lf-stage')?.value||document.getElementById('lf-travel')?.value||getGeneralWorkflowStages()[0],
     toRefund:Number(document.getElementById('lf-torefund')?.value)||0,
     r1Amt:Number(document.getElementById('lf-r1amt')?.value)||0,
     r2Amt:Number(document.getElementById('lf-r2amt')?.value)||0,
@@ -2456,10 +2529,11 @@ function bindModalSummaries(){
 function rebuildStageSelects(){
   const proSel=document.getElementById('pf-stage');
   if(proSel) proSel.innerHTML=proStages.map(s=>`<option value="${s}">${s}</option>`).join('')+`<option value="__add_new__">+ Add new stage...</option>`;
+  const activeLbStages = getGeneralWorkflowStages();
   const lbSel=document.getElementById('lf-stage');
-  if(lbSel)  lbSel.innerHTML=lbStages.map(s=>`<option value="${s}">${s}</option>`).join('')+`<option value="__add_new__">+ Add new stage...</option>`;
+  if(lbSel)  lbSel.innerHTML=activeLbStages.map(s=>`<option value="${s}">${s}</option>`).join('')+`<option value="__add_new__">+ Add new stage...</option>`;
   const lbSel2=document.getElementById('lf-travel');
-  if(lbSel2) lbSel2.innerHTML=lbStages.map(s=>`<option value="${s}">${s}</option>`).join('')+`<option value="__add_new__">+ Add new status...</option>`;
+  if(lbSel2) lbSel2.innerHTML=activeLbStages.map(s=>`<option value="${s}">${s}</option>`).join('')+`<option value="__add_new__">+ Add new status...</option>`;
 }
 function rebuildProPills(){
   const wrap=document.getElementById('pro-stage-pills'); if(!wrap) return;
@@ -3808,13 +3882,15 @@ function toggleLBOwnPassport(checked){
 function openLBForm(){
   editingLbId=null;
   document.getElementById('lb-modal-title').textContent=`Add General Jobs candidate - ${getActiveGeneralCountry()}`;
+  rebuildStageSelects();
+  const stages = getGeneralWorkflowStages();
   ['lf-name','lf-phone','lf-tdate','lf-torefund','lf-r1date','lf-r1amt','lf-r2date','lf-r2amt','lf-notes','lf-submitted-date','lf-selected-date','lf-passport-date','lf-visa-date']
     .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('lf-pp').value='APPLIED';
   const ownEl=document.getElementById('lf-own-passport'); if(ownEl) ownEl.checked=false;
   toggleLBOwnPassport(false);
-  const stEl=document.getElementById('lf-stage'); if(stEl){ stEl.value=lbStages[0]||'DOCS SUBMITTED'; stEl.dataset.prev=stEl.value; }
-  const tvEl=document.getElementById('lf-travel'); if(tvEl){ tvEl.value=lbStages[0]||'DOCS SUBMITTED'; tvEl.dataset.prev=tvEl.value; }
+  const stEl=document.getElementById('lf-stage'); if(stEl){ stEl.value=stages[0]||'SUBMITTED'; stEl.dataset.prev=stEl.value; }
+  const tvEl=document.getElementById('lf-travel'); if(tvEl){ tvEl.value=stages[0]||'SUBMITTED'; tvEl.dataset.prev=tvEl.value; }
   renderLBSummary(null);
   document.getElementById('lb-form-timeline').innerHTML='<div class="tl-empty">Save candidate first to see timeline.</div>';
   document.getElementById('lb-tab-details').style.display='';
@@ -3826,12 +3902,17 @@ function editLB(id){
   const r=lbDB.find(x=>x.id==id); if(!r) return;
   editingLbId=id;
   document.getElementById('lb-modal-title').textContent='Edit candidate';
+  const prevCountry = window.generalCountryFilter;
+  if (r.country) window.generalCountryFilter = r.country;
+  rebuildStageSelects();
+  window.generalCountryFilter = prevCountry;
+  const stages = getLBWorkflowStagesForRecord(r);
   document.getElementById('lf-name').value=r.name; document.getElementById('lf-phone').value=r.phone||'';
   document.getElementById('lf-pp').value=r.ppStatus||r.pp_status||'APPLIED';
   const ownPP=!!r.own_passport;
   const ownEl=document.getElementById('lf-own-passport'); if(ownEl) ownEl.checked=ownPP;
   toggleLBOwnPassport(ownPP);
-  const lbStageVal=r.stage||r.travelStatus||r.travel_status||lbStages[0]||'DOCS SUBMITTED';
+  const lbStageVal=r.stage||r.travelStatus||r.travel_status||stages[0]||'SUBMITTED';
   const stEl=document.getElementById('lf-stage'); if(stEl){ stEl.value=lbStageVal; stEl.dataset.prev=lbStageVal; }
   const tvEl=document.getElementById('lf-travel'); if(tvEl){ tvEl.value=lbStageVal; tvEl.dataset.prev=lbStageVal; }
   document.getElementById('lf-tdate').value=toInput(r.travelDate||r.travel_date);
@@ -3862,10 +3943,10 @@ async function saveLB(){
   const oldRec=editingLbId?{...(lbDB.find(x=>x.id==editingLbId)||{})}:null;
   const oldTravel=oldRec?oldRec.stage||oldRec.travelStatus:null;
   const newStageEl=document.getElementById('lf-stage');
-  const newTravel=newStageEl?.value||document.getElementById('lf-travel')?.value||lbStages[0];
+  const newTravel=newStageEl?.value||document.getElementById('lf-travel')?.value||getGeneralWorkflowStages()[0];
   const rec={
     company_id:getCompanyId(),
-    country:getActiveGeneralCountry(),
+    country:oldRec?.country || getActiveGeneralCountry(),
     name:name.toUpperCase(), phone:document.getElementById('lf-phone').value.trim(),
     ppStatus, stage:newTravel, travelStatus:newTravel,
     own_passport,
@@ -4389,6 +4470,7 @@ injectDepsToD5({
   showToast, bindAccountMenuTriggers, fmtDate, getCompanyName, DEFAULT_COMPANY, db,
   proPaidAmount, proPaymentStatus, proPipelineStageValue, lbPipelineStageValue,
   addTimeline, saveTimeline, auditAction, saveLocalStore, getStorageLabel, getCompanyId, dbUpdate, dbDelete, deleteCandidateArtifacts, useCloud,
+  getActiveGeneralCountry, getGeneralWorkflowStages, getLBWorkflowStagesForRecord,
 });
 
 // ─── Expose module-scope functions on window ──────────────────────────────────
