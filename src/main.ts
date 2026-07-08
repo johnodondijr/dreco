@@ -1460,7 +1460,6 @@ function toProDbPayload(rec) {
     ol: rec.ol||null, mol: rec.mol||null, visa: rec.visa||null, travel: rec.travel||null,
     commission: rec.commission, paid: rec.paid,
     paid1: rec.paid1??null, paid2: rec.paid2??null,
-    paid1_date: rec.paid1_date||null, paid2_date: rec.paid2_date||null,
     medical: rec.medical||null,
     airline: rec.airline||null,
     follow_up: rec.followUp||null,

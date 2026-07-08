@@ -283,6 +283,8 @@ export function injectDepsToD5(deps) {
         owner:r.owner||currentUser?.display||'Team',
         commission:Number(r.commission)||0,
         paid1, paid2, paid,
+        paid1_date:r.paid1_date||null,
+        paid2_date:r.paid2_date||null,
         balance:balPro(r),
         expected:payment.expected||0,
         dueNow:payment.dueNow||0,
@@ -1624,11 +1626,14 @@ export function injectDepsToD5(deps) {
                 const amtStr = '+' + (isUSD ? moneyUSD(amt) : money(amt));
                 const editFn = r.type==='pro' ? `editPro(${r.id})` : `editLB(${r.id})`;
                 const dateEditArea = slot
-                  ? `<div style="min-width:52px;font-size:11px;color:#9ca3af;flex-shrink:0;position:relative;cursor:pointer" onclick="event.stopPropagation()" title="Click to edit date">
-                      <span style="text-decoration:underline dotted;text-underline-offset:2px">${dateStr}</span>
-                      <input type="date" value="${dateVal}" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="event.stopPropagation();window.updateTxDate('${r.type}','${r.id}','${slot}',this.value)">
+                  ? `<div style="min-width:64px;font-size:11px;color:#9ca3af;flex-shrink:0;display:flex;align-items:center;gap:3px" onclick="event.stopPropagation()">
+                      <span>${dateStr}</span>
+                      <label title="Edit date" style="cursor:pointer;display:inline-flex;align-items:center;color:#c4b5fd;position:relative">
+                        <i class="ti ti-calendar-edit" style="font-size:12px;pointer-events:none"></i>
+                        <input type="date" value="${dateVal}" style="position:absolute;inset:0;opacity:0;cursor:pointer" onchange="event.stopPropagation();window.updateTxDate('${r.type}','${r.id}','${slot}',this.value)">
+                      </label>
                     </div>`
-                  : `<div style="min-width:52px;font-size:11px;color:#9ca3af;flex-shrink:0">${dateStr}</div>`;
+                  : `<div style="min-width:64px;font-size:11px;color:#9ca3af;flex-shrink:0">${dateStr}</div>`;
                 return `<div style="display:flex;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid var(--border,#F1F1F1);cursor:pointer;transition:background .1s" onclick="${editFn}" onmouseenter="this.style.background='#F9F9F9'" onmouseleave="this.style.background=''">
                   ${dateEditArea}
                   <div style="flex:1;min-width:0">
