@@ -777,6 +777,8 @@ function normalizeProRecord(r={}) {
     commission:toNumOrNull(r.commission),
     paid1,
     paid2,
+    paid1_date:normalizeDateField(r.paid1_date),
+    paid2_date:normalizeDateField(r.paid2_date),
     paid:toNumOrNull(r.paid),
     medical:normalizeDateField(r.medical),
     airline:r.airline||'',
@@ -1458,6 +1460,7 @@ function toProDbPayload(rec) {
     ol: rec.ol||null, mol: rec.mol||null, visa: rec.visa||null, travel: rec.travel||null,
     commission: rec.commission, paid: rec.paid,
     paid1: rec.paid1??null, paid2: rec.paid2??null,
+    paid1_date: rec.paid1_date||null, paid2_date: rec.paid2_date||null,
     medical: rec.medical||null,
     airline: rec.airline||null,
     follow_up: rec.followUp||null,
@@ -3760,7 +3763,7 @@ async function savePro(){
   }
   const proWasEditing = !!editingProId;
   editingProId = null;
-  closeModal('pro-modal'); renderPro(); window.renderPipelinePage?.(); window.renderDash?.(); await saveProRecord(rec, proWasEditing);
+  closeModal('pro-modal'); renderPro(); window.renderPipelinePage?.(); window.renderDash?.(); window.renderFinancePage?.(); await saveProRecord(rec, proWasEditing);
 }
 async function deletePro(id){
   const r=proDB.find(x=>x.id==id);
@@ -4047,6 +4050,26 @@ async function removeLBRefundPayment(idx) {
   openLBRefundPayment(id);
 }
 window.removeLBRefundPayment = removeLBRefundPayment;
+
+async function updateTxDate(type, id, slot, newDate) {
+  const db2 = type === 'pro' ? proDB : lbDB;
+  const rec = db2.find(r => String(r.id) === String(id));
+  if (!rec) return;
+  rec[slot] = newDate || null;
+  try {
+    if (useCloud()) {
+      const table = type === 'pro' ? 'pro_candidates' : 'lb_candidates';
+      await dbUpdate(table, id, { [slot]: newDate || null });
+    } else {
+      saveLocalStore();
+    }
+    window.renderFinancePage?.();
+  } catch(e) {
+    showToast('Failed to save date — run the latest migration SQL in Supabase if this persists', 'error');
+    console.warn('updateTxDate error:', e);
+  }
+}
+window.updateTxDate = updateTxDate;
 
 window.lbSelected = new Set();
 function toggleLBSelect(id,checked){

@@ -10,6 +10,9 @@ ALTER TABLE pro_candidates ADD COLUMN IF NOT EXISTS follow_up   TEXT;
 ALTER TABLE pro_candidates ADD COLUMN IF NOT EXISTS airline     TEXT;
 ALTER TABLE pro_candidates ADD COLUMN IF NOT EXISTS travel_time  TEXT;
 ALTER TABLE pro_candidates ADD COLUMN IF NOT EXISTS travel_notes TEXT;
+-- Payment date columns (v3) — store actual date payment was received
+ALTER TABLE pro_candidates ADD COLUMN IF NOT EXISTS paid1_date TEXT;
+ALTER TABLE pro_candidates ADD COLUMN IF NOT EXISTS paid2_date TEXT;
 
 -- ── General Jobs candidates ──────────────────────────────────────────────────
 ALTER TABLE lb_candidates ADD COLUMN IF NOT EXISTS own_passport   BOOLEAN DEFAULT false;

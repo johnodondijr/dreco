@@ -1545,14 +1545,14 @@ export function injectDepsToD5(deps) {
     const paymentEntries = [];
     dateRows.forEach(r => {
       if (r.type === 'pro') {
-        if (r.paid1 > 0) paymentEntries.push({ r, label: `${r.name} — 1st Commission`, amt: r.paid1, date: r.interview || r.submitted || r.created_at, isUSD: false });
-        if (r.paid2 > 0) paymentEntries.push({ r, label: `${r.name} — 2nd Commission`, amt: r.paid2, date: r.ol || r.submitted || r.created_at, isUSD: false });
-        if (!r.paid1 && !r.paid2 && r.paid > 0) paymentEntries.push({ r, label: `${r.name} — Commission`, amt: r.paid, date: r.submitted || r.created_at, isUSD: false });
+        if (r.paid1 > 0) paymentEntries.push({ r, label: `${r.name} — 1st Commission`, amt: r.paid1, date: r.paid1_date || r.interview || r.submitted || r.created_at, slot: 'paid1_date', isUSD: false });
+        if (r.paid2 > 0) paymentEntries.push({ r, label: `${r.name} — 2nd Commission`, amt: r.paid2, date: r.paid2_date || r.ol || r.submitted || r.created_at, slot: 'paid2_date', isUSD: false });
+        if (!r.paid1 && !r.paid2 && r.paid > 0) paymentEntries.push({ r, label: `${r.name} — Commission`, amt: r.paid, date: r.submitted || r.created_at, slot: null, isUSD: false });
       } else {
         const r1 = Number(r.r1Amt)||0, r2 = Number(r.r2Amt)||0;
-        if (r1 > 0) paymentEntries.push({ r, label: `${r.name} — 1st Refund`, amt: r1, date: r.r1Date || r.travelDate || r.submitted || r.created_at, isUSD: true });
-        if (r2 > 0) paymentEntries.push({ r, label: `${r.name} — 2nd Refund`, amt: r2, date: r.r2Date || r.travelDate || r.submitted || r.created_at, isUSD: true });
-        if (!r1 && !r2 && r.paid > 0) paymentEntries.push({ r, label: `${r.name} — Refund`, amt: r.paid, date: r.travelDate || r.submitted || r.created_at, isUSD: true });
+        if (r1 > 0) paymentEntries.push({ r, label: `${r.name} — 1st Refund`, amt: r1, date: r.r1Date || r.travelDate || r.submitted || r.created_at, slot: 'r1Date', isUSD: true });
+        if (r2 > 0) paymentEntries.push({ r, label: `${r.name} — 2nd Refund`, amt: r2, date: r.r2Date || r.travelDate || r.submitted || r.created_at, slot: 'r2Date', isUSD: true });
+        if (!r1 && !r2 && r.paid > 0) paymentEntries.push({ r, label: `${r.name} — Refund`, amt: r.paid, date: r.travelDate || r.submitted || r.created_at, slot: null, isUSD: true });
       }
     });
     paymentEntries.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
@@ -1617,13 +1617,20 @@ export function injectDepsToD5(deps) {
               <button style="width:32px;height:32px;border-radius:8px;background:#0D9488;border:0;color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0" onclick="openRecordPaymentPrompt('${isPro?'commission':'repayment'}')" title="Record payment"><i class="ti ti-plus"></i></button>
             </div>
             <div style="border-top:1px solid var(--border,#E8E8E8)">
-              ${(financeShowAllTx ? filteredPayments : filteredPayments.slice(0,TX_CAP)).map(({r, amt, date, isUSD}) => {
+              ${(financeShowAllTx ? filteredPayments : filteredPayments.slice(0,TX_CAP)).map(({r, amt, date, slot, isUSD}) => {
                 const d = new Date(date||'');
                 const dateStr = isNaN(d as any) ? '—' : d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+                const dateVal = date ? String(date).slice(0,10) : '';
                 const amtStr = '+' + (isUSD ? moneyUSD(amt) : money(amt));
                 const editFn = r.type==='pro' ? `editPro(${r.id})` : `editLB(${r.id})`;
+                const dateEditArea = slot
+                  ? `<div style="min-width:52px;font-size:11px;color:#9ca3af;flex-shrink:0;position:relative;cursor:pointer" onclick="event.stopPropagation()" title="Click to edit date">
+                      <span style="text-decoration:underline dotted;text-underline-offset:2px">${dateStr}</span>
+                      <input type="date" value="${dateVal}" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="event.stopPropagation();window.updateTxDate('${r.type}','${r.id}','${slot}',this.value)">
+                    </div>`
+                  : `<div style="min-width:52px;font-size:11px;color:#9ca3af;flex-shrink:0">${dateStr}</div>`;
                 return `<div style="display:flex;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid var(--border,#F1F1F1);cursor:pointer;transition:background .1s" onclick="${editFn}" onmouseenter="this.style.background='#F9F9F9'" onmouseleave="this.style.background=''">
-                  <div style="min-width:52px;font-size:11px;color:#9ca3af;flex-shrink:0">${dateStr}</div>
+                  ${dateEditArea}
                   <div style="flex:1;min-width:0">
                     <div style="font-size:12px;font-weight:500;color:#18191B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r.name||'—')}</div>
                     <div style="font-size:11px;color:#9ca3af;margin-top:1px">${h(r.company||r.position||'—')}</div>
