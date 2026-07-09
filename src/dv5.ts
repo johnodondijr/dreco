@@ -2920,7 +2920,7 @@ export function injectDepsToD5(deps) {
 .dv5-table tbody tr { border-bottom:1px solid var(--border,#E8E8E8); transition:background .12s; cursor:pointer; }
 .dv5-table tbody tr:last-child { border-bottom:0; }
 .dv5-table tbody tr:hover { background:#FAFAFA; }
-.dv5-table tbody td { padding:0 12px; height:44px; color:var(--text,#18191B); vertical-align:middle; }
+.dv5-table tbody td { padding:0 12px; height:44px; color:var(--text,#18191B); vertical-align:middle; white-space:nowrap; }
 
 /* Name cells */
 .dv5-name-cell { display:flex; align-items:center; gap:10px; }
@@ -2983,10 +2983,11 @@ export function injectDepsToD5(deps) {
 .dv5-pipe-foot { display:flex; justify-content:space-between; font-size:10px; color:var(--text-3,#999); font-weight:438; }
 
 /* Pipeline flow steps */
-.dv5-pipeline-flow { display:flex; align-items:center; gap:0; padding:0; width:100%; }
-.dv5-flow-step { text-align:center; padding:0 8px; }
+.dv5-pipeline-flow { display:flex; align-items:center; gap:0; padding:0; width:100%; overflow-x:auto; scrollbar-width:none; }
+.dv5-pipeline-flow::-webkit-scrollbar { display:none; }
+.dv5-flow-step { text-align:center; padding:0 8px; min-width:64px; }
 .dv5-flow-step strong { display:block; font-size:28px; font-weight:562; color:var(--text,#18191B); line-height:1; margin-bottom:4px; }
-.dv5-flow-step span { font-size:10px; color:var(--text-3,#999); font-weight:438; letter-spacing:.04em; text-transform:uppercase; }
+.dv5-flow-step span { font-size:10px; color:var(--text-3,#999); font-weight:438; letter-spacing:.04em; text-transform:uppercase; white-space:nowrap; }
 .dv5-flow-arrow { color:var(--text-3,#999); font-size:14px; flex-shrink:0; }
 
 /* Tasks */
@@ -3216,7 +3217,7 @@ export function injectDepsToD5(deps) {
 .dv5-line-card .dv5-card-title { font-size:18px!important; font-weight:625!important; letter-spacing:-.035em; }
 .dv5-line-chart { min-height:250px; display:flex; flex-direction:column; justify-content:space-between; }
 .dv5-line-legend { display:flex; justify-content:flex-end; gap:24px; color:#777783; font-size:12px; margin:-4px 4px 8px; }
-.dv5-line-legend span { display:inline-flex; align-items:center; gap:8px; }
+.dv5-line-legend span { display:inline-flex; align-items:center; gap:8px; white-space:nowrap; }
 .dv5-line-legend b { width:10px; height:10px; border-radius:50%; background:#AE9CF0; }
 .dv5-line-legend span:nth-child(2) b { background:#1A1C2E; }
 .dv5-line-chart svg { width:100%; height:176px; display:block; overflow:visible; }
