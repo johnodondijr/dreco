@@ -769,13 +769,13 @@ export function injectDepsToD5(deps) {
         <span style="font-size:11px;font-weight:500;color:#18191B;flex-shrink:0;padding-left:8px">${isPro?money(amt):moneyUSD(amt)}</span>
       </div>`;
     }).join('');
-    return `<div style="display:flex;align-items:center;gap:4px">
-      <svg width="260" height="260" viewBox="0 0 260 260" style="flex-shrink:0;display:block">
+    return `<div class="dv5-fin-donut">
+      <svg viewBox="0 0 260 260" class="dv5-fin-donut-svg">
         ${paths}
         <text x="${CX}" y="${CY-12}" text-anchor="middle" font-size="11" fill="#9ca3af" font-family="inherit" letter-spacing=".07em">COLLECTED</text>
         <text x="${CX}" y="${CY+14}" text-anchor="middle" font-size="21" font-weight="700" fill="#1A1C2E" font-family="inherit">${centerTotal}</text>
       </svg>
-      <div style="flex:1;min-width:0;padding-right:4px">${legend}</div>
+      <div class="dv5-fin-donut-legend">${legend}</div>
     </div>`;
   }
 
@@ -1772,7 +1772,7 @@ export function injectDepsToD5(deps) {
               </div>
             </div>
             <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 18px 6px">
-              <span style="font-size:12px;font-weight:500;color:#374151">${(presets.find(([v])=>v===financeDatePreset)||['','All Time'])[1]}</span>
+              <span style="font-size:12px;font-weight:500;color:#374151;white-space:nowrap;flex-shrink:0">${(presets.find(([v])=>v===financeDatePreset)||['','All Time'])[1]}</span>
               <select class="dv5-select" style="font-size:11px;height:28px;padding:0 8px;min-width:0;width:auto" onchange="window.setFinanceDatePreset(this.value)">
                 ${presets.map(([val,label])=>`<option value="${val}"${financeDatePreset===val?' selected':''}>${label}</option>`).join('')}
               </select>
@@ -2921,6 +2921,14 @@ export function injectDepsToD5(deps) {
 .dv5-table tbody tr:last-child { border-bottom:0; }
 .dv5-table tbody tr:hover { background:#FAFAFA; }
 .dv5-table tbody td { padding:0 12px; height:44px; color:var(--text,#18191B); vertical-align:middle; white-space:nowrap; }
+.dv5-fin-donut { display:flex; align-items:center; gap:14px; }
+.dv5-fin-donut-svg { width:220px; height:220px; flex-shrink:0; display:block; }
+.dv5-fin-donut-legend { flex:1; min-width:0; }
+@media(max-width:600px){
+  .dv5-fin-donut { flex-direction:column; align-items:stretch; gap:10px; }
+  .dv5-fin-donut-svg { width:190px; height:190px; margin:0 auto; }
+  .dv5-fin-donut-legend { width:100%; }
+}
 
 /* Name cells */
 .dv5-name-cell { display:flex; align-items:center; gap:10px; }
