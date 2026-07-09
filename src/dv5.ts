@@ -498,14 +498,19 @@ export function injectDepsToD5(deps) {
     }
     if (docs.total && docs.pct < 100) missing.push(`${docs.total - docs.done} document${docs.total - docs.done === 1 ? '' : 's'}`);
     const completedChecklist = checks.filter(x => x.done).length;
-    const profileParts = Math.max(1, missing.length + 5);
-    const profileScore = Math.max(0, Math.round((profileParts - missing.length) / profileParts * 100));
+    const required = r.type === 'pro'
+      ? ['name','pp','phone','position','company']
+      : ['name','pp','phone','country'];
+    let present = required.filter(k => r[k]).length;
+    const reqTotal = required.length + 1; // + commission / refund amount
+    if (Number(r.commission) > 0 || (r.type !== 'pro' && lbOwnPassport?.(r.raw || r))) present++;
+    const profileScore = Math.round(present / reqTotal * 100);
     const workflowScore = Math.round(completedChecklist / Math.max(checks.length, 1) * 100);
     const financeScore = Number(r.balance) > 0 ? 55 : 100;
     const docScore = docs.total ? docs.pct : 100;
     const score = Math.round((profileScore * .35) + (workflowScore * .3) + (docScore * .2) + (financeScore * .15));
     return {
-      score,
+      score, profileScore, docScore,
       missing: missing.slice(0, 5),
       docs,
       workflowScore,
@@ -638,8 +643,8 @@ export function injectDepsToD5(deps) {
       };
     }
     const health = list.map(r => candidateRecordHealth(r));
-    const profile = Math.round(health.reduce((s,x)=>s+(Number(x.score)||0),0) / Math.max(health.length, 1));
-    const docs = Math.round(health.reduce((s,x)=>s+(Number(x.docs?.pct)||0),0) / Math.max(health.length, 1));
+    const profile = Math.round(health.reduce((s,x)=>s+(Number(x.profileScore)||0),0) / Math.max(health.length, 1));
+    const docs = Math.round(health.reduce((s,x)=>s+(Number(x.docScore)||0),0) / Math.max(health.length, 1));
     const financeRows = list.filter(r => Number(r.commission) > 0);
     const billed = financeRows.reduce((s,r)=>s+(Number(r.commission)||0),0);
     const paid = financeRows.reduce((s,r)=>s+(Number(r.paid)||0),0);
@@ -665,7 +670,7 @@ export function injectDepsToD5(deps) {
 
   function readinessGauge(scoreData, action = "switchTab('notifications')") {
     const score = Math.max(0, Math.min(100, Number(scoreData?.score)||0));
-    const angle = -118 + (score / 100) * 236;
+    const angle = -180 + (score / 100) * 180;
     return `<div class="dv5-readiness-gauge">
       <div class="dv5-gauge-tabs"><span>Records</span><span>Finance</span><span>Workflow</span></div>
       <div class="dv5-gauge-arc">
@@ -2437,30 +2442,32 @@ export function injectDepsToD5(deps) {
       </div>
 
       <!-- Single source summary -->
-      <div class="dv5-card" style="margin-bottom:16px">
-        <div class="dv5-card-head" style="align-items:flex-start">
-          <div>
-            <span class="dv5-card-title">Record Health</span>
-            <div class="dv5-card-sub">Single source of truth for this candidate</div>
+      <div class="dv5-card dv5-health-card" style="margin-bottom:16px">
+        <div class="dv5-health-main">
+          <div class="dv5-card-head" style="align-items:flex-start">
+            <div>
+              <span class="dv5-card-title">Record Health</span>
+              <div class="dv5-card-sub">Single source of truth for this candidate</div>
+            </div>
+            <span class="dv5-badge ${health.level === 'ok' ? 'green' : health.level === 'watch' ? 'amber' : 'red'}">${health.status}</span>
           </div>
-          <span class="dv5-badge ${health.level === 'ok' ? 'green' : health.level === 'watch' ? 'amber' : 'red'}">${health.status}</span>
+          <div class="dv5-stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(138px,1fr));margin-top:12px">
+            ${statCard('ti-database', health.profileScore + '%', 'Profile Complete', health.missing.length ? `${health.missing.length} missing field${health.missing.length===1?'':'s'}` : 'All key fields present', '#F4F4EC','#372514','#fff')}
+            ${statCard('ti-clipboard-check', health.workflowScore + '%', 'Process Complete', h(nextAction(r)), '#EDEDFB','#252677','#fff')}
+            ${statCard('ti-paperclip', `${health.docs.done || 0}/${health.docs.total || defs.length}`, 'Documents', `${health.docs.pct || 0}% uploaded`, '#EDFAA8','#5A7A10','#fff')}
+            ${statCard('ti-wallet', financeStatusLabel, 'Finance Status', financeStatusHint, '#FCECEA','#8B2010','#fff')}
+            ${statCard('ti-history', lastActivity ? fmt(lastActivity) : 'None', 'Last Activity', r.owner || currentUser?.display || 'Dreco team', '#EDE8FB','#4825B8','#fff')}
+          </div>
+          ${health.missing.length ? `<div class="dv5-empty" style="margin-top:12px;text-align:left;background:#fff;border:1px solid var(--border)">Missing: ${health.missing.map(h).join(', ')}</div>` : ''}
         </div>
-        <div class="dv5-profile-gauge">
+        <div class="dv5-profile-gauge dv5-health-gauge">
           ${readinessGauge({
             score: health.score,
             label: health.status,
             note: health.missing.length ? 'Fix missing details' : 'Open documents',
-            detail: `${health.workflowScore}% workflow · ${health.docs.pct || 0}% docs · ${health.financeScore}% finance`,
+            detail: `${health.profileScore}% profile · ${health.docs.pct || 0}% docs · ${health.financeScore}% finance`,
           }, health.missing.length ? `${type==='pro'?`editPro(${r.id})`:`editLB(${r.id})`}` : `openDocs('${type}',${JSON.stringify(r.id)},'${js(r.name)}')`)}
         </div>
-        <div class="dv5-stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-top:12px">
-          ${statCard('ti-database', health.score + '%', 'Profile Complete', health.missing.length ? `${health.missing.length} missing field${health.missing.length===1?'':'s'}` : 'All key fields present', '#F4F4EC','#372514','#fff')}
-          ${statCard('ti-clipboard-check', health.workflowScore + '%', 'Process Complete', h(nextAction(r)), '#EDEDFB','#252677','#fff')}
-          ${statCard('ti-paperclip', `${health.docs.done || 0}/${health.docs.total || defs.length}`, 'Documents', `${health.docs.pct || 0}% uploaded`, '#EDFAA8','#5A7A10','#fff')}
-          ${statCard('ti-wallet', financeStatusLabel, 'Finance Status', financeStatusHint, '#FCECEA','#8B2010','#fff')}
-          ${statCard('ti-history', lastActivity ? fmt(lastActivity) : 'None', 'Last Activity', r.owner || currentUser?.display || 'Dreco team', '#EDE8FB','#4825B8','#fff')}
-        </div>
-        ${health.missing.length ? `<div class="dv5-empty" style="margin-top:12px;text-align:left;background:#fff;border:1px solid var(--border)">Missing: ${health.missing.map(h).join(', ')}</div>` : ''}
       </div>
 
       <!-- Pipeline progress -->
@@ -3227,7 +3234,7 @@ export function injectDepsToD5(deps) {
 .dv5-gauge-tabs span { font-size:9px; font-weight:500; color:#777783; background:#fff; border:1px solid #E6E4D8; border-radius:999px; padding:4px 10px; }
 .dv5-gauge-arc { position:relative; width:230px; height:142px; margin:0 auto; background:conic-gradient(from 226deg at 50% 84%,#F87171 0deg,#FB7185 50deg,#FDBA74 94deg,#DDF56C 154deg,#B6F35C 236deg,transparent 236deg 360deg); border-radius:230px 230px 36px 36px; }
 .dv5-gauge-arc::before { content:''; position:absolute; inset:18px 24px 0; background:linear-gradient(135deg,#FBFFF0,#F4F4EC); border-radius:190px 190px 32px 32px; }
-.dv5-gauge-needle { position:absolute; left:50%; bottom:20px; width:78px; height:3px; transform-origin:0 50%; background:#1A1C2E; border-radius:999px; z-index:3; box-shadow:0 0 0 4px rgba(26,28,46,.08); }
+.dv5-gauge-needle { position:absolute; left:50%; bottom:30px; width:60px; height:3px; transform-origin:0 50%; background:#1A1C2E; border-radius:999px; z-index:3; box-shadow:0 0 0 4px rgba(26,28,46,.08); }
 .dv5-gauge-score { position:absolute; inset:48px 0 auto; z-index:4; display:flex; flex-direction:column; align-items:center; text-align:center; pointer-events:none; }
 .dv5-gauge-score span { font-size:10px; color:#4A5E10; background:#DDF56C; border-radius:999px; padding:3px 10px; font-weight:600; }
 .dv5-gauge-score strong { color:#18191B; font-size:44px; line-height:1; letter-spacing:-.06em; margin-top:9px; font-weight:500; }
@@ -3240,6 +3247,10 @@ export function injectDepsToD5(deps) {
 .dv5-profile-gauge .dv5-gauge-score { inset:42px 0 auto; }
 .dv5-profile-gauge .dv5-gauge-score strong { font-size:36px; }
 .dv5-profile-gauge .dv5-gauge-btn { width:170px; height:31px; }
+.dv5-health-card { display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:20px; align-items:start; }
+.dv5-health-main { min-width:0; display:flex; flex-direction:column; }
+.dv5-health-gauge { margin:0!important; max-width:none!important; align-self:start; }
+@media(max-width:860px){ .dv5-health-card { grid-template-columns:1fr; } .dv5-health-gauge { max-width:360px!important; margin:0 auto!important; } }
 .dv5-ring-card { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
 .dv5-ring-stat { display:grid; grid-template-columns:auto 1fr; align-items:center; gap:12px; min-width:0; }
 .dv5-ring { position:relative; display:block; width:54px; height:54px; border-radius:50%; flex:0 0 auto; }
