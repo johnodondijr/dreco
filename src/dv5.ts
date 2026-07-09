@@ -765,7 +765,7 @@ export function injectDepsToD5(deps) {
       const color=colors[i%colors.length];
       return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #F3F3F3">
         <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></span>
-        <span style="font-size:11px;flex:1;color:#374151;min-width:0;line-height:1.3;word-break:break-word" title="${h(name)}">${h(name)}</span>
+        <span style="font-size:11px;flex:1;color:#374151;min-width:0;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${h(name)}">${h(name)}</span>
         <span style="font-size:11px;font-weight:500;color:#18191B;flex-shrink:0;padding-left:8px">${isPro?money(amt):moneyUSD(amt)}</span>
       </div>`;
     }).join('');
@@ -1734,7 +1734,7 @@ export function injectDepsToD5(deps) {
                   ${dateEditArea}
                   <div style="flex:1;min-width:0">
                     <div style="font-size:12px;font-weight:500;color:#18191B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r.name||'—')}</div>
-                    <div style="font-size:11px;color:#9ca3af;margin-top:1px">${h(r.company||r.position||'—')}</div>
+                    <div style="font-size:11px;color:#9ca3af;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r.company||r.position||'—')}</div>
                   </div>
                   <span class="dv5-badge ${r.type==='pro'?'teal':'blue'}" style="font-size:10px;padding:2px 7px;flex-shrink:0">${r.type==='pro'?'Commission':'Refund'}</span>
                   <div style="font-size:13px;font-weight:600;color:#16a34a;flex-shrink:0;white-space:nowrap;min-width:0">${amtStr}</div>
