@@ -1051,7 +1051,7 @@ function hideSignup() {
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
 
 function _saveSession(user) {
-  safeLocalSet('dr_user', JSON.stringify({ ...user, _exp: Date.now() + SESSION_TTL_MS }));
+  safeSessionSet('dr_user', JSON.stringify({ ...user, _exp: Date.now() + SESSION_TTL_MS }));
 }
 
 function enterApp(user) {
@@ -1261,7 +1261,7 @@ async function doLogin() {
 function doLogout() {
   closeProfileDropdown();
   if (db?.auth) db.auth.signOut().catch(err => console.warn('Supabase sign out failed:', err));
-  safeLocalRemove('dr_user'); setCurrentUser(null);
+  safeSessionRemove('dr_user'); setCurrentUser(null);
   history.replaceState(null, '', location.pathname);
   document.getElementById('app').style.display='none';
   document.getElementById('bottom-nav')?.classList.remove('visible');
@@ -1277,7 +1277,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   await loadRuntimeConfig();
   await loadStaffAccounts();
   initLoginInteractions();
-  const saved=safeLocalGet('dr_user');
+  safeLocalRemove('dr_user'); // migrate: clear any old localStorage session
+  const saved=safeSessionGet('dr_user');
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
@@ -1292,7 +1293,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         generalJobsCountries: account.generalJobsCountries || parsed.generalJobsCountries,
         authUserId: account.authUserId || parsed.authUserId,
       });
-    } catch { safeLocalRemove('dr_user'); }
+    } catch { safeSessionRemove('dr_user'); }
   }
   // Extend session on activity; check expiry when tab becomes visible again
   ['click','keydown','touchstart'].forEach(ev =>
@@ -1301,7 +1302,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   document.addEventListener('visibilitychange', () => {
     if (document.hidden || !currentUser) return;
     try {
-      const p = JSON.parse(safeLocalGet('dr_user') || '{}');
+      const p = JSON.parse(safeSessionGet('dr_user') || '{}');
       if (p._exp && Date.now() > p._exp) doLogout();
     } catch { doLogout(); }
   });
