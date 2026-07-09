@@ -675,11 +675,11 @@ export function injectDepsToD5(deps) {
       <div class="dv5-gauge-tabs"><span>Records</span><span>Finance</span><span>Workflow</span></div>
       <div class="dv5-gauge-arc">
         <div class="dv5-gauge-needle" style="transform:rotate(${angle}deg)"></div>
-        <div class="dv5-gauge-score">
-          <span>${h(scoreData?.label || 'Ready')}</span>
-          <strong>${score}</strong>
-          <small>${h(scoreData?.detail || '')}</small>
-        </div>
+      </div>
+      <div class="dv5-gauge-score">
+        <span>${h(scoreData?.label || 'Ready')}</span>
+        <strong>${score}</strong>
+        <small>${h(scoreData?.detail || '')}</small>
       </div>
       <button class="dv5-gauge-btn" onclick="${action}">${h(scoreData?.note || 'Review work items')}</button>
     </div>`;
@@ -3229,23 +3229,23 @@ export function injectDepsToD5(deps) {
 .dv5-status-summary small { display:block; margin-top:22px; color:#A9A8B5; font-size:12px; font-weight:406; }
 .dv5-status-summary strong { display:block; margin-top:6px; color:#13B9A8; font-size:38px; line-height:1; font-weight:700; letter-spacing:-.05em; }
 .dv5-status-summary svg { position:absolute; right:22px; bottom:24px; width:46%; height:72px; }
-.dv5-readiness-gauge { position:relative; min-height:214px; border-radius:22px; background:linear-gradient(135deg,#FBFFF0 0%,#F4F4EC 100%); border:1px solid #E7E5D6; padding:16px 18px 18px; margin-bottom:14px; overflow:hidden; }
+.dv5-readiness-gauge { position:relative; border-radius:22px; background:linear-gradient(135deg,#FBFFF0 0%,#F4F4EC 100%); border:1px solid #E7E5D6; padding:16px 18px 18px; margin-bottom:14px; overflow:hidden; }
 .dv5-gauge-tabs { display:flex; justify-content:center; gap:8px; margin-bottom:8px; }
 .dv5-gauge-tabs span { font-size:9px; font-weight:500; color:#777783; background:#fff; border:1px solid #E6E4D8; border-radius:999px; padding:4px 10px; }
 .dv5-gauge-arc { position:relative; width:230px; height:142px; margin:0 auto; background:conic-gradient(from 226deg at 50% 84%,#F87171 0deg,#FB7185 50deg,#FDBA74 94deg,#DDF56C 154deg,#B6F35C 236deg,transparent 236deg 360deg); border-radius:230px 230px 36px 36px; }
 .dv5-gauge-arc::before { content:''; position:absolute; inset:18px 24px 0; background:linear-gradient(135deg,#FBFFF0,#F4F4EC); border-radius:190px 190px 32px 32px; }
-.dv5-gauge-needle { position:absolute; left:50%; bottom:30px; width:60px; height:3px; transform-origin:0 50%; background:#1A1C2E; border-radius:999px; z-index:3; box-shadow:0 0 0 4px rgba(26,28,46,.08); }
-.dv5-gauge-score { position:absolute; inset:48px 0 auto; z-index:4; display:flex; flex-direction:column; align-items:center; text-align:center; pointer-events:none; }
+.dv5-gauge-needle { position:absolute; left:50%; bottom:30px; width:54px; height:3px; transform-origin:0 50%; background:#1A1C2E; border-radius:999px; z-index:3; box-shadow:0 0 0 4px rgba(26,28,46,.08); }
+.dv5-gauge-score { display:flex; flex-direction:column; align-items:center; text-align:center; margin-top:2px; }
 .dv5-gauge-score span { font-size:10px; color:#4A5E10; background:#DDF56C; border-radius:999px; padding:3px 10px; font-weight:600; }
-.dv5-gauge-score strong { color:#18191B; font-size:44px; line-height:1; letter-spacing:-.06em; margin-top:9px; font-weight:500; }
-.dv5-gauge-score small { color:#777783; font-size:9.5px; margin-top:7px; max-width:184px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.dv5-gauge-btn { display:flex; align-items:center; justify-content:center; width:190px; height:34px; margin:4px auto 0; border:0; border-radius:999px; background:#0D0E0C; color:#fff; font-size:11px; font-weight:500; cursor:pointer; box-shadow:0 12px 24px rgba(13,14,12,.16); }
+.dv5-gauge-score strong { color:#18191B; font-size:40px; line-height:1; letter-spacing:-.06em; margin-top:8px; font-weight:500; }
+.dv5-gauge-score small { color:#777783; font-size:10px; margin-top:6px; }
+.dv5-gauge-btn { display:flex; align-items:center; justify-content:center; width:190px; height:34px; margin:12px auto 0; border:0; border-radius:999px; background:#0D0E0C; color:#fff; font-size:11px; font-weight:500; cursor:pointer; box-shadow:0 12px 24px rgba(13,14,12,.16); }
 .dv5-gauge-btn:hover { background:#1A1C2E; }
 .dv5-profile-gauge { max-width:360px; margin:12px auto 14px; }
-.dv5-profile-gauge .dv5-readiness-gauge { min-height:192px; padding:12px 14px 14px; margin-bottom:0; }
-.dv5-profile-gauge .dv5-gauge-arc { width:206px; height:124px; }
-.dv5-profile-gauge .dv5-gauge-score { inset:42px 0 auto; }
-.dv5-profile-gauge .dv5-gauge-score strong { font-size:36px; }
+.dv5-profile-gauge .dv5-readiness-gauge { padding:14px; margin-bottom:0; }
+.dv5-profile-gauge .dv5-gauge-arc { width:196px; height:118px; }
+.dv5-profile-gauge .dv5-gauge-needle { width:44px; bottom:24px; }
+.dv5-profile-gauge .dv5-gauge-score strong { font-size:32px; }
 .dv5-profile-gauge .dv5-gauge-btn { width:170px; height:31px; }
 .dv5-health-card { display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:20px; align-items:start; }
 .dv5-health-main { min-width:0; display:flex; flex-direction:column; }
