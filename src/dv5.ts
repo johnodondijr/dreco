@@ -1722,23 +1722,23 @@ export function injectDepsToD5(deps) {
                 const amtStr = '+' + (isUSD ? moneyUSD(amt) : money(amt));
                 const editFn = r.type==='pro' ? `editPro(${r.id})` : `editLB(${r.id})`;
                 const dateEditArea = slot
-                  ? `<div style="min-width:64px;font-size:11px;color:#9ca3af;flex-shrink:0;display:flex;align-items:center;gap:3px" onclick="event.stopPropagation()">
+                  ? `<div class="dv5-fin-tx-date" onclick="event.stopPropagation()">
                       <span>${dateStr}</span>
                       <label title="Edit date" style="cursor:pointer;display:inline-flex;align-items:center;color:#c4b5fd;position:relative">
                         <i class="ti ti-calendar-edit" style="font-size:12px;pointer-events:none"></i>
                         <input type="date" value="${dateVal}" style="position:absolute;inset:0;opacity:0;cursor:pointer" onchange="event.stopPropagation();window.updateTxDate('${r.type}','${r.id}','${slot}',this.value)">
                       </label>
                     </div>`
-                  : `<div style="min-width:64px;font-size:11px;color:#9ca3af;flex-shrink:0">${dateStr}</div>`;
-                return `<div style="display:flex;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid var(--border,#F1F1F1);cursor:pointer;transition:background .1s" onclick="${editFn}" onmouseenter="this.style.background='#F9F9F9'" onmouseleave="this.style.background=''">
+                  : `<div class="dv5-fin-tx-date">${dateStr}</div>`;
+                return `<div class="dv5-fin-tx" onclick="${editFn}">
                   ${dateEditArea}
-                  <div style="flex:1;min-width:0">
-                    <div style="font-size:12px;font-weight:500;color:#18191B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r.name||'—')}</div>
-                    <div style="font-size:11px;color:#9ca3af;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(r.company||r.position||'—')}</div>
+                  <div class="dv5-fin-tx-info">
+                    <div class="dv5-fin-tx-name">${h(r.name||'—')}</div>
+                    <div class="dv5-fin-tx-sub">${h(r.company||r.position||'—')}</div>
                   </div>
-                  <span class="dv5-badge ${r.type==='pro'?'teal':'blue'}" style="font-size:10px;padding:2px 7px;flex-shrink:0">${r.type==='pro'?'Commission':'Refund'}</span>
-                  <div style="font-size:13px;font-weight:600;color:#16a34a;flex-shrink:0;white-space:nowrap;min-width:0">${amtStr}</div>
-                  <button style="width:26px;height:26px;border:1px solid var(--border,#E8E8E8);border-radius:7px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:#9ca3af" onclick="event.stopPropagation();${editFn}"><i class="ti ti-chevron-right" style="font-size:12px"></i></button>
+                  <span class="dv5-badge ${r.type==='pro'?'teal':'blue'} dv5-fin-tx-badge" style="font-size:10px;padding:2px 7px">${r.type==='pro'?'Commission':'Refund'}</span>
+                  <div class="dv5-fin-tx-amt">${amtStr}</div>
+                  <button class="dv5-fin-tx-chev" onclick="event.stopPropagation();${editFn}"><i class="ti ti-chevron-right" style="font-size:12px"></i></button>
                 </div>`;
               }).join('') || '<div class="dv5-empty" style="padding:32px">No payments recorded.</div>'}
             </div>
@@ -2921,6 +2921,24 @@ export function injectDepsToD5(deps) {
 .dv5-table tbody tr:last-child { border-bottom:0; }
 .dv5-table tbody tr:hover { background:#FAFAFA; }
 .dv5-table tbody td { padding:0 12px; height:44px; color:var(--text,#18191B); vertical-align:middle; white-space:nowrap; }
+.dv5-fin-tx { display:flex; align-items:center; gap:10px; padding:11px 18px; border-bottom:1px solid var(--border,#F1F1F1); cursor:pointer; transition:background .1s; }
+.dv5-fin-tx:hover { background:#F9F9F9; }
+.dv5-fin-tx-date { min-width:64px; font-size:11px; color:#9ca3af; flex-shrink:0; display:flex; align-items:center; gap:3px; }
+.dv5-fin-tx-info { flex:1; min-width:0; }
+.dv5-fin-tx-name { font-size:12px; font-weight:500; color:#18191B; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dv5-fin-tx-sub { font-size:11px; color:#9ca3af; margin-top:1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dv5-fin-tx-badge { flex-shrink:0; }
+.dv5-fin-tx-amt { font-size:13px; font-weight:600; color:#16a34a; flex-shrink:0; white-space:nowrap; }
+.dv5-fin-tx-chev { width:26px; height:26px; border:1px solid var(--border,#E8E8E8); border-radius:7px; background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; color:#9ca3af; }
+@media(max-width:560px){
+  .dv5-fin-tx { flex-wrap:wrap; row-gap:5px; column-gap:8px; }
+  .dv5-fin-tx-info { flex:1 1 100%; order:1; }
+  .dv5-fin-tx-name { white-space:normal; overflow-wrap:break-word; }
+  .dv5-fin-tx-date { order:2; }
+  .dv5-fin-tx-badge { order:3; }
+  .dv5-fin-tx-amt { order:4; margin-left:auto; }
+  .dv5-fin-tx-chev { order:5; }
+}
 .dv5-fin-donut { display:flex; align-items:center; gap:14px; }
 .dv5-fin-donut-svg { width:220px; height:220px; flex-shrink:0; display:block; }
 .dv5-fin-donut-legend { flex:1; min-width:0; }
