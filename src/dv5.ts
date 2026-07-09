@@ -2924,8 +2924,8 @@ export function injectDepsToD5(deps) {
 
 /* Name cells */
 .dv5-name-cell { display:flex; align-items:center; gap:10px; }
-.dv5-name { font-size:12px; font-weight:438; color:var(--text,#18191B); }
-.dv5-sub { font-size:11px; color:var(--text-3,#999); margin-top:1px; }
+.dv5-name { font-size:12px; font-weight:438; color:var(--text,#18191B); white-space:nowrap; }
+.dv5-sub { font-size:11px; color:var(--text-3,#999); margin-top:1px; white-space:nowrap; }
 .dv5-next-action { font-size:11px; font-weight:438; color:var(--dreco-ink,#1A1C2E); }
 
 /* Avatars */
@@ -3586,7 +3586,7 @@ export function injectDepsToD5(deps) {
   .dv5-pipeline-flow { overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px; }
   .dv5-flow-step { min-width:64px; flex-shrink:0; }
   .dv5-card-pipeline { padding:12px; }
-  .dv5-table { min-width:440px; }
+  .dv5-table { min-width:620px; }
   .dv5-modal-overlay { padding:10px 8px; }
 }
 
@@ -3594,7 +3594,7 @@ export function injectDepsToD5(deps) {
 @media (max-width:420px) {
   .dv5-page { padding:10px 10px 88px!important; }
   .dv5-kpi-grid,.dv5-priority-grid { gap:6px; }
-  .dv5-table { min-width:380px; }
+  .dv5-table { min-width:560px; }
 }
   `;
 
