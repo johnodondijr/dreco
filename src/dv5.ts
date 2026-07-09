@@ -477,6 +477,56 @@ export function injectDepsToD5(deps) {
     return Math.round(cl.filter(x=>x.done).length / cl.length * 100);
   }
 
+  function candidateRecordHealth(r) {
+    const docs = typeof window.drecoDocCompletion === 'function'
+      ? window.drecoDocCompletion(r.type, r.id)
+      : { done:0, total:0, pct:0 };
+    const checks = buildChecklist(r);
+    const missing = [];
+    if (!r.name) missing.push('Name');
+    if (!r.pp) missing.push('Passport number');
+    if (!r.phone) missing.push('Phone');
+    if (r.type === 'pro') {
+      if (!r.position) missing.push('Job title');
+      if (!r.company) missing.push('Client company');
+      if (!Number(r.commission)) missing.push('Commission');
+    } else {
+      if (!r.country) missing.push('Destination');
+      if (!Number(r.commission) && !lbOwnPassport?.(r.raw || r)) missing.push('Refund amount');
+    }
+    if (docs.total && docs.pct < 100) missing.push(`${docs.total - docs.done} document${docs.total - docs.done === 1 ? '' : 's'}`);
+    const completedChecklist = checks.filter(x => x.done).length;
+    const profileParts = Math.max(1, missing.length + 5);
+    const profileScore = Math.max(0, Math.round((profileParts - missing.length) / profileParts * 100));
+    const workflowScore = Math.round(completedChecklist / Math.max(checks.length, 1) * 100);
+    const financeScore = Number(r.balance) > 0 ? 55 : 100;
+    const docScore = docs.total ? docs.pct : 100;
+    const score = Math.round((profileScore * .35) + (workflowScore * .3) + (docScore * .2) + (financeScore * .15));
+    return {
+      score,
+      missing: missing.slice(0, 5),
+      docs,
+      workflowScore,
+      financeScore,
+      status: score >= 90 ? 'Ready' : score >= 70 ? 'Needs review' : 'Incomplete',
+      level: score >= 90 ? 'ok' : score >= 70 ? 'watch' : 'risk',
+    };
+  }
+
+  function agencyOperationsScore(rows) {
+    const total = rows.length;
+    if (!total) return { score:0, complete:0, docs:0, paid:0, activeClients:0, alerts:0 };
+    const health = rows.map(candidateRecordHealth);
+    const complete = Math.round(health.filter(x => x.score >= 90).length / total * 100);
+    const docs = Math.round(health.reduce((s,x)=>s+(x.docs?.total ? x.docs.pct : 100),0) / total);
+    const paidRows = rows.filter(r => Number(r.balance) <= 0).length;
+    const paid = Math.round(paidRows / total * 100);
+    const clientNames = new Set(rows.map(r => r.type === 'pro' ? (r.company || '') : (r.country || r.company || '')).filter(Boolean));
+    const alerts = health.filter(x => x.level !== 'ok').length;
+    const score = Math.round((complete * .35) + (docs * .25) + (paid * .25) + (Math.min(clientNames.size, 5) / 5 * 15));
+    return { score, complete, docs, paid, activeClients:clientNames.size, alerts };
+  }
+
   // ── Chart helpers ─────────────────────────────────────────
   function buildBarChart(rows) {
     const now = new Date();
@@ -1818,6 +1868,8 @@ export function injectDepsToD5(deps) {
     const fmt2 = v => isPro ? money(v) : moneyUSD(v);
     const total = rows.reduce((s,r)=>s+r.commission,0);
     const paid  = rows.reduce((s,r)=>s+r.paid,0);
+    const ops = agencyOperationsScore(rows);
+    const openTasks = buildTasks().length + manualTasks.length;
     const stageCounts = {};
     rows.forEach(r => stageCounts[r.stage] = (stageCounts[r.stage]||0)+1);
     const travelled = rows.filter(r=>String(r.stage).toUpperCase()==='TRAVELLED');
@@ -1919,6 +1971,74 @@ export function injectDepsToD5(deps) {
           ${statCard('ti-target',    rows.length?Math.round(travelled.length/rows.length*100)+'%':'0%','Success Rate','Travelled / total', '#F4F4EC','#372514','#fff')}
           ${statCard('ti-chart-line',total?Math.round(paid/total*100)+'%':'0%',isPro?'Collection Rate':'Refund Rate',isPro?'Finance health':'Refunds collected','#FFFBEB','#D97706','#fff')}
           ${statCard('ti-clock',     avgProcessing,     'Avg Processing',   'Submission → travel',                                        '#F0FDFA','#0D9488','#fff')}
+        </div>
+        <div class="dv5-card" style="margin-top:16px">
+          <div class="dv5-card-head" style="align-items:flex-start">
+            <div>
+              <span class="dv5-card-title">Agency Operations Scorecard</span>
+              <div class="dv5-card-sub">What Dreco still needs from the records before the agency can rely on reports</div>
+            </div>
+            <span class="dv5-badge ${ops.score>=85?'green':ops.score>=65?'amber':'red'}">${ops.score}% ready</span>
+          </div>
+          <div class="dv5-stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-top:12px">
+            ${statCard('ti-user-check', ops.complete + '%', 'Candidate Records', 'Profiles complete enough to run operations', '#fff','#fff','#fff', "switchTab('candidates')")}
+            ${statCard('ti-paperclip', ops.docs + '%', 'Document Control', 'Checklist upload completion', '#fff','#fff','#fff', "switchTab('documents')")}
+            ${statCard('ti-wallet', ops.paid + '%', 'Finance Control', 'Records with no open balance', '#fff','#fff','#fff', "switchTab('finance')")}
+            ${statCard('ti-building', ops.activeClients, isPro ? 'Active Clients' : 'Active Destinations', 'Employer/destination coverage', '#fff','#fff','#fff', "switchTab('clients')")}
+            ${statCard('ti-bell', openTasks, 'Open Work Items', 'Automatic and manual follow-ups', '#fff','#fff','#fff', "switchTab('notifications')")}
+          </div>
+          <div class="dv5-task-list" style="margin-top:12px">
+            <div class="dv5-task-item" onclick="switchTab('settings')" style="cursor:pointer">
+              <div class="dv5-task-icon med"><i class="ti ti-route"></i></div>
+              <div class="dv5-task-body"><div class="dv5-task-title">Workflow setup</div><div class="dv5-task-meta">Keep agency, country, and job-type stages aligned before moving candidates.</div></div>
+              <span class="dv5-pill">Item 1</span>
+            </div>
+            <div class="dv5-task-item" onclick="switchTab('candidates')" style="cursor:pointer">
+              <div class="dv5-task-icon med"><i class="ti ti-id"></i></div>
+              <div class="dv5-task-body"><div class="dv5-task-title">Candidate source of truth</div><div class="dv5-task-meta">${ops.alerts} candidate record${ops.alerts===1?'':'s'} need review before reports are clean.</div></div>
+              <span class="dv5-pill">Item 2</span>
+            </div>
+            <div class="dv5-task-item" onclick="switchTab('finance')" style="cursor:pointer">
+              <div class="dv5-task-icon med"><i class="ti ti-coin"></i></div>
+              <div class="dv5-task-body"><div class="dv5-task-title">Finance rules</div><div class="dv5-task-meta">Track commission/refund plans against each candidate's current stage.</div></div>
+              <span class="dv5-pill">Item 3</span>
+            </div>
+            <div class="dv5-task-item" onclick="switchTab('documents')" style="cursor:pointer">
+              <div class="dv5-task-icon med"><i class="ti ti-clipboard-text"></i></div>
+              <div class="dv5-task-body"><div class="dv5-task-title">Documents and compliance</div><div class="dv5-task-meta">Use workflow-specific checklists to keep passports, medicals, visas, and tickets controlled.</div></div>
+              <span class="dv5-pill">Item 4</span>
+            </div>
+            <div class="dv5-task-item" onclick="switchTab('pipeline')" style="cursor:pointer">
+              <div class="dv5-task-icon med"><i class="ti ti-arrows-right-left"></i></div>
+              <div class="dv5-task-body"><div class="dv5-task-title">Pipeline automation</div><div class="dv5-task-meta">Stage changes update profile progress, dashboard counts, reports, finance, and notifications.</div></div>
+              <span class="dv5-pill">Item 5</span>
+            </div>
+            <div class="dv5-task-item" onclick="switchTab('notifications')" style="cursor:pointer">
+              <div class="dv5-task-icon med"><i class="ti ti-bell-ringing"></i></div>
+              <div class="dv5-task-body"><div class="dv5-task-title">Tasks and reminders</div><div class="dv5-task-meta">${openTasks} open work item${openTasks===1?'':'s'} from balances, follow-ups, visas, permits, tickets, and refunds.</div></div>
+              <span class="dv5-pill">Item 6</span>
+            </div>
+            <div class="dv5-task-item" onclick="switchTab('clients')" style="cursor:pointer">
+              <div class="dv5-task-icon med"><i class="ti ti-building-skyscraper"></i></div>
+              <div class="dv5-task-body"><div class="dv5-task-title">Client and employer management</div><div class="dv5-task-meta">${ops.activeClients} active ${isPro?'client':'destination'} group${ops.activeClients===1?'':'s'} built from candidate records.</div></div>
+              <span class="dv5-pill">Item 7</span>
+            </div>
+            <div class="dv5-task-item" onclick="switchTab('reports')" style="cursor:pointer">
+              <div class="dv5-task-icon med"><i class="ti ti-chart-line"></i></div>
+              <div class="dv5-task-body"><div class="dv5-task-title">Reports</div><div class="dv5-task-meta">Use trusted candidate, document, client, and finance data to monitor agency performance.</div></div>
+              <span class="dv5-pill">Item 8</span>
+            </div>
+            <div class="dv5-task-item" onclick="switchTab('team')" style="cursor:pointer">
+              <div class="dv5-task-icon med"><i class="ti ti-users-group"></i></div>
+              <div class="dv5-task-body"><div class="dv5-task-title">Team roles and permissions</div><div class="dv5-task-meta">Keep staff in the right workspace with admin/staff access and audit visibility.</div></div>
+              <span class="dv5-pill">Item 9</span>
+            </div>
+            <div class="dv5-task-item" onclick="downloadBackup()" style="cursor:pointer">
+              <div class="dv5-task-icon med"><i class="ti ti-download"></i></div>
+              <div class="dv5-task-body"><div class="dv5-task-title">Export and backup</div><div class="dv5-task-meta">Download a full backup of candidates, timelines, documents, stages, and settings.</div></div>
+              <span class="dv5-pill">Item 10</span>
+            </div>
+          </div>
         </div>
         <div class="dv5-card" style="margin-top:16px">
           <div class="dv5-card-head"><span class="dv5-card-title">Monthly Placements (Last 12 Months)</span></div>
@@ -2172,6 +2292,11 @@ export function injectDepsToD5(deps) {
     const compl = (window.drecoDocCompletion?.(type, id)) || {done:0,total:defs.length,pct:0};
 
     const fmt2  = type==='pro' ? money : moneyUSD;
+    const health = candidateRecordHealth(r);
+    const payment = type === 'pro' && typeof proPaymentStatus === 'function'
+      ? proPaymentStatus(r.raw || r)
+      : { expectedPercent: r.balance > 0 ? 100 : 0, dueNow: r.balance || 0 };
+    const lastActivity = timeline[0]?.ts || timeline[0]?.at || r.submitted || r.created_at || '';
 
     el.innerHTML = `
     <div class="dv5-page" style="padding-bottom:40px">
@@ -2234,6 +2359,25 @@ export function injectDepsToD5(deps) {
           <div class="dv5-vital-value" style="color:${r.balance>0?'#6B180E':'#2D3C08'}">${fmt2(r.balance)}</div>
           <div class="dv5-vital-hint" style="color:${r.balance>0?'#B05250':'#6A8018'}">${r.balance>0?'Outstanding':'Fully settled'}</div>
         </div>
+      </div>
+
+      <!-- Single source summary -->
+      <div class="dv5-card" style="margin-bottom:16px">
+        <div class="dv5-card-head" style="align-items:flex-start">
+          <div>
+            <span class="dv5-card-title">Record Health</span>
+            <div class="dv5-card-sub">Single source of truth for this candidate</div>
+          </div>
+          <span class="dv5-badge ${health.level === 'ok' ? 'green' : health.level === 'watch' ? 'amber' : 'red'}">${health.status}</span>
+        </div>
+        <div class="dv5-stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-top:12px">
+          ${statCard('ti-database', health.score + '%', 'Profile Complete', health.missing.length ? `${health.missing.length} missing field${health.missing.length===1?'':'s'}` : 'All key fields present', '#F4F4EC','#372514','#fff')}
+          ${statCard('ti-clipboard-check', health.workflowScore + '%', 'Process Complete', h(nextAction(r)), '#EDEDFB','#252677','#fff')}
+          ${statCard('ti-paperclip', `${health.docs.done || 0}/${health.docs.total || defs.length}`, 'Documents', `${health.docs.pct || 0}% uploaded`, '#EDFAA8','#5A7A10','#fff')}
+          ${statCard('ti-wallet', type==='pro' ? `${payment.expectedPercent || 0}% due` : (r.balance > 0 ? 'Refund due' : 'Settled'), 'Finance Rule', r.balance > 0 ? `${fmt2(r.balance)} outstanding` : 'No balance', '#FCECEA','#8B2010','#fff')}
+          ${statCard('ti-history', lastActivity ? fmt(lastActivity) : 'None', 'Last Activity', r.owner || currentUser?.display || 'Dreco team', '#EDE8FB','#4825B8','#fff')}
+        </div>
+        ${health.missing.length ? `<div class="dv5-empty" style="margin-top:12px;text-align:left;background:#fff;border:1px solid var(--border)">Missing: ${health.missing.map(h).join(', ')}</div>` : ''}
       </div>
 
       <!-- Pipeline progress -->
