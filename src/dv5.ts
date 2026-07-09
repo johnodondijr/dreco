@@ -2293,9 +2293,13 @@ export function injectDepsToD5(deps) {
 
     const fmt2  = type==='pro' ? money : moneyUSD;
     const health = candidateRecordHealth(r);
-    const payment = type === 'pro' && typeof proPaymentStatus === 'function'
-      ? proPaymentStatus(r.raw || r)
-      : { expectedPercent: r.balance > 0 ? 100 : 0, dueNow: r.balance || 0 };
+    const financeRemainingPct = r.commission > 0 ? Math.round((Math.max(Number(r.balance)||0, 0) / Number(r.commission)) * 100) : 0;
+    const financeStatusLabel = r.balance > 0
+      ? (financeRemainingPct > 0 ? `${financeRemainingPct}% outstanding` : 'Balance due')
+      : 'Cleared';
+    const financeStatusHint = r.balance > 0
+      ? `${fmt2(r.balance)} outstanding of ${fmt2(r.commission || 0)}`
+      : `${fmt2(r.paid || 0)} paid`;
     const lastActivity = timeline[0]?.ts || timeline[0]?.at || r.submitted || r.created_at || '';
 
     el.innerHTML = `
@@ -2374,7 +2378,7 @@ export function injectDepsToD5(deps) {
           ${statCard('ti-database', health.score + '%', 'Profile Complete', health.missing.length ? `${health.missing.length} missing field${health.missing.length===1?'':'s'}` : 'All key fields present', '#F4F4EC','#372514','#fff')}
           ${statCard('ti-clipboard-check', health.workflowScore + '%', 'Process Complete', h(nextAction(r)), '#EDEDFB','#252677','#fff')}
           ${statCard('ti-paperclip', `${health.docs.done || 0}/${health.docs.total || defs.length}`, 'Documents', `${health.docs.pct || 0}% uploaded`, '#EDFAA8','#5A7A10','#fff')}
-          ${statCard('ti-wallet', type==='pro' ? `${payment.expectedPercent || 0}% due` : (r.balance > 0 ? 'Refund due' : 'Settled'), 'Finance Rule', r.balance > 0 ? `${fmt2(r.balance)} outstanding` : 'No balance', '#FCECEA','#8B2010','#fff')}
+          ${statCard('ti-wallet', financeStatusLabel, 'Finance Status', financeStatusHint, '#FCECEA','#8B2010','#fff')}
           ${statCard('ti-history', lastActivity ? fmt(lastActivity) : 'None', 'Last Activity', r.owner || currentUser?.display || 'Dreco team', '#EDE8FB','#4825B8','#fff')}
         </div>
         ${health.missing.length ? `<div class="dv5-empty" style="margin-top:12px;text-align:left;background:#fff;border:1px solid var(--border)">Missing: ${health.missing.map(h).join(', ')}</div>` : ''}
