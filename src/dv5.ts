@@ -120,7 +120,7 @@ export function injectDepsToD5(deps) {
   'use strict';
 
   // ── Constants ────────────────────────────────────────────
-  const TABS    = ['dash','pipeline','candidates','finance','documents','reports','clients','settings'];
+  const TABS    = ['dash','pipeline','candidates','finance','documents','reports','clients','jobs','settings'];
   const ALIASES = {
     pro:'candidates', lb:'candidates',
     kanban:'pipeline', travel:'pipeline', tasks:'pipeline',
@@ -896,7 +896,7 @@ export function injectDepsToD5(deps) {
       <div class="nav-section-label" style="font-size:10px;letter-spacing:.08em;font-weight:438;text-transform:uppercase;opacity:.5;margin:12px 0 2px 10px;padding:0">Workspace</div>
       ${['dash','pipeline','candidates'].map(navItem).join('')}
       <div class="nav-section-label" style="font-size:10px;letter-spacing:.08em;font-weight:438;text-transform:uppercase;opacity:.5;margin:12px 0 2px 10px;padding:0">Operations</div>
-      ${['finance','documents','reports','clients','settings'].map(navItem).join('')}
+      ${['finance','documents','reports','clients','jobs','settings'].map(navItem).join('')}
       <div class="nav-spacer"></div>
       <div class="sidebar-company-name" id="sidebar-company-name">${h(co())}</div>`;
     sidebarBuilt = true;
