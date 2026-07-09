@@ -2152,18 +2152,19 @@ let _currentTab = 'dash';
 function switchTab(tab, _pushHistory = true){
   if (window.innerWidth <= 860) closeMobileSidebar();
   // DV5 unified tab router — handles both legacy and new tabs
-  const DV5_TABS = ['dash','pipeline','candidates','finance','documents','reports','clients','jobs','notifications','settings'];
+  const DV5_TABS = ['dash','pipeline','candidates','finance','documents','reports','jobs','notifications','settings'];
   const DV5_ALIASES = {
     pro:'candidates', lb:'candidates',
     kanban:'pipeline', travel:'pipeline', tasks:'pipeline',
     calendar:'pipeline',
     commissions:'finance', repayments:'finance', expenses:'finance',
+    clients:'jobs', employers:'jobs',
     help:'settings'
   };
   const DV5_TITLES = {
     dash:'Home', pipeline:'Pipeline', candidates:'Candidates',
     tasks:'Tasks', finance:'Finance', documents:'Documents', account:'Profile',
-    reports:'Reports', clients:'Clients', jobs:'Jobs', notifications:'Notifications', settings:'Settings'
+    reports:'Reports', jobs:'Employers', notifications:'Notifications', settings:'Settings'
   };
 
   const t = DV5_ALIASES[tab] || tab || 'dash';
@@ -2203,7 +2204,6 @@ function switchTab(tab, _pushHistory = true){
     finance: ()=> window.renderFinancePage?.(),
     documents: ()=> window.renderDocumentsPage?.(),
     reports: ()=> window.renderReportsPage?.(),
-    clients: ()=> window.renderClientsPage?.(),
     jobs: ()=> window.renderJobsPage?.(),
     notifications: ()=> (typeof renderNotificationsPage === 'function') && renderNotificationsPage(),
     settings: ()=> (typeof renderSettingsPage === 'function') && renderSettingsPage(),

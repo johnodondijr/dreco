@@ -120,23 +120,24 @@ export function injectDepsToD5(deps) {
   'use strict';
 
   // ── Constants ────────────────────────────────────────────
-  const TABS    = ['dash','pipeline','candidates','finance','documents','reports','clients','jobs','settings'];
+  const TABS    = ['dash','pipeline','candidates','finance','documents','reports','jobs','settings'];
   const ALIASES = {
     pro:'candidates', lb:'candidates',
     kanban:'pipeline', travel:'pipeline', tasks:'pipeline',
     calendar:'pipeline',
     commissions:'finance', repayments:'finance', expenses:'finance',
+    clients:'jobs', employers:'jobs',
     team:'settings', help:'settings'
   };
   const TITLES = {
     dash:'Home', pipeline:'Pipeline', candidates:'Candidates',
     tasks:'Tasks', finance:'Finance', documents:'Documents',
-    reports:'Reports', clients:'Clients', jobs:'Jobs', settings:'Settings'
+    reports:'Reports', jobs:'Employers', settings:'Settings'
   };
   const ICONS = {
     dash:'ti-layout-dashboard', pipeline:'ti-briefcase', candidates:'ti-users',
     tasks:'ti-checkbox', finance:'ti-wallet', documents:'ti-clipboard-text',
-    reports:'ti-chart-line', clients:'ti-building-skyscraper', jobs:'ti-briefcase-2', settings:'ti-settings'
+    reports:'ti-chart-line', jobs:'ti-building-skyscraper', settings:'ti-settings'
   };
 
   // ── Global job-type tab (Pro / General) ──────────────────
@@ -149,7 +150,7 @@ export function injectDepsToD5(deps) {
       dash: window.renderDash, pipeline: window.renderPipelinePage,
       candidates: window.renderCandidatesPage, finance: window.renderFinancePage,
       documents: window.renderDocumentsPage, reports: window.renderReportsPage,
-      clients: window.renderClientsPage, jobs: window.renderJobsPage,
+      jobs: window.renderJobsPage,
     };
     for (const [id, fn] of Object.entries(renderers)) {
       const el = document.getElementById(id+'-section');
@@ -626,6 +627,59 @@ export function injectDepsToD5(deps) {
     </div>`;
   }
 
+  function operationsScore(rows: any[]) {
+    const list = Array.isArray(rows) ? rows : [];
+    if (!list.length) {
+      return {
+        score: 0,
+        label: 'No records',
+        note: 'Add candidates to start measuring readiness.',
+        detail: '0 records',
+      };
+    }
+    const health = list.map(r => candidateRecordHealth(r));
+    const profile = Math.round(health.reduce((s,x)=>s+(Number(x.score)||0),0) / Math.max(health.length, 1));
+    const docs = Math.round(health.reduce((s,x)=>s+(Number(x.docs?.pct)||0),0) / Math.max(health.length, 1));
+    const financeRows = list.filter(r => Number(r.commission) > 0);
+    const billed = financeRows.reduce((s,r)=>s+(Number(r.commission)||0),0);
+    const paid = financeRows.reduce((s,r)=>s+(Number(r.paid)||0),0);
+    const finance = billed ? Math.round(Math.min(100, paid / billed * 100)) : 100;
+    const active = list.filter(r=>String(r.stage||'').toUpperCase()!=='TRAVELLED');
+    const workflow = active.length
+      ? Math.round(active.reduce((s,r)=>s+checklistPct(r),0) / active.length)
+      : 100;
+    const score = Math.round((profile * .32) + (docs * .24) + (finance * .24) + (workflow * .20));
+    const weak = [
+      ['Profiles', profile],
+      ['Documents', docs],
+      ['Finance', finance],
+      ['Workflow', workflow],
+    ].sort((a,b)=>a[1]-b[1])[0];
+    return {
+      score,
+      label: score >= 85 ? 'Ready' : score >= 65 ? 'Needs cleanup' : 'At risk',
+      note: `${weak[0]} needs the most attention`,
+      detail: `${profile}% profiles · ${docs}% docs · ${finance}% finance · ${workflow}% workflow`,
+    };
+  }
+
+  function readinessGauge(scoreData, action = "switchTab('notifications')") {
+    const score = Math.max(0, Math.min(100, Number(scoreData?.score)||0));
+    const angle = -118 + (score / 100) * 236;
+    return `<div class="dv5-readiness-gauge">
+      <div class="dv5-gauge-tabs"><span>Records</span><span>Finance</span><span>Workflow</span></div>
+      <div class="dv5-gauge-arc">
+        <div class="dv5-gauge-needle" style="transform:rotate(${angle}deg)"></div>
+        <div class="dv5-gauge-score">
+          <span>${h(scoreData?.label || 'Ready')}</span>
+          <strong>${score}</strong>
+          <small>${h(scoreData?.detail || '')}</small>
+        </div>
+      </div>
+      <button class="dv5-gauge-btn" onclick="${action}">${h(scoreData?.note || 'Review work items')}</button>
+    </div>`;
+  }
+
   function buildStageDonut(normRows: any[]) {
     const stageCounts: Record<string,number> = {};
     normRows.forEach(r => { const s=String(r.type==='pro'?resolveProProcessStage(r):(r.pipelineStage||r.stage||'Unknown')).toUpperCase(); stageCounts[s]=(stageCounts[s]||0)+1; });
@@ -896,7 +950,7 @@ export function injectDepsToD5(deps) {
       <div class="nav-section-label" style="font-size:10px;letter-spacing:.08em;font-weight:438;text-transform:uppercase;opacity:.5;margin:12px 0 2px 10px;padding:0">Workspace</div>
       ${['dash','pipeline','candidates'].map(navItem).join('')}
       <div class="nav-section-label" style="font-size:10px;letter-spacing:.08em;font-weight:438;text-transform:uppercase;opacity:.5;margin:12px 0 2px 10px;padding:0">Operations</div>
-      ${['finance','documents','reports','clients','jobs','settings'].map(navItem).join('')}
+      ${['finance','documents','jobs','reports','settings'].map(navItem).join('')}
       <div class="nav-spacer"></div>
       <div class="sidebar-company-name" id="sidebar-company-name">${h(co())}</div>`;
     sidebarBuilt = true;
@@ -969,6 +1023,7 @@ export function injectDepsToD5(deps) {
     const totalExpected = Math.max(1, normRows.reduce((s,r)=>s+(Number(r.commission)||Number(r.toRefund)||r.balance+r.paid||0),0));
     const collectionRate = Math.min(100, Math.round((totalPaid / totalExpected) * 100));
     const travelReadiness = Math.min(100, Math.round(((tickets + travelled) / Math.max(normRows.length,1)) * 100));
+    const readiness = operationsScore(normRows);
     const actionRows = [];
 
     el.innerHTML = `
@@ -1038,15 +1093,11 @@ export function injectDepsToD5(deps) {
           <div class="dv5-card" style="margin-bottom:0">
             <div class="dv5-card-head">
               <div>
-                <span class="dv5-card-title">Status Summary</span>
-                <div class="dv5-card-sub">${isPro?'Professional':'General'} — at a glance</div>
+                <span class="dv5-card-title">Operations Readiness</span>
+                <div class="dv5-card-sub">${isPro?'Professional':'General'} records Dreco can trust</div>
               </div>
             </div>
-            <div class="dv5-status-summary">
-              <div><span>${isPro?'Active Processing':'In Pipeline'}</span><small>${isPro?'Professionals in progress':'General jobs active'}</small></div>
-              <strong>${h(String(normRows.length-travelled))}</strong>
-              <svg viewBox="0 0 220 72" preserveAspectRatio="none" aria-hidden="true"><path d="M6 46 C46 10 80 18 110 42 C145 72 178 68 214 9" fill="none" stroke="#DDF56C" stroke-width="4" stroke-linecap="round"/></svg>
-            </div>
+            ${readinessGauge(readiness)}
             <div class="dv5-ring-card">
               ${ringStat('Collection Rate', collectionRate, '#1A1C2E')}
               ${ringStat('Travel Readiness', travelReadiness, '#DDF56C')}
@@ -2133,30 +2184,44 @@ export function injectDepsToD5(deps) {
     const el = document.getElementById('jobs-section'); if (!el) return;
     const emps = employers || [];
     const jos  = jobOrders || [];
+    const proSource = proDB || [];
+    const registeredNames = new Set(emps.map(e=>(e.name||'').trim().toUpperCase()).filter(Boolean));
+    const candidateCompanies = [...new Set(proSource.map(r=>(r.company||'').trim()).filter(Boolean))].sort();
+    const inferredEmployers = candidateCompanies
+      .filter(name => !registeredNames.has(name.toUpperCase()))
+      .map((name, i) => ({
+        id: `auto_${i}`,
+        name,
+        country: proSource.find(r=>(r.company||'').trim().toUpperCase()===name.toUpperCase())?.country || '—',
+        contact: 'Not registered',
+        notes: 'Created from candidate records',
+        inferred: true,
+      }));
+    const employerRows = [...emps, ...inferredEmployers];
     function empJobs(eid) { return jos.filter(j=>j.employerId===eid); }
     function empCandidates(eid) {
-      const emp = emps.find(e=>e.id===eid);
+      const emp = employerRows.find(e=>e.id===eid);
       if (!emp) return [];
-      return (proDB||[]).filter(r=>(r.company||'').toUpperCase()===(emp.name||'').toUpperCase());
+      return proSource.filter(r=>(r.company||'').toUpperCase()===(emp.name||'').toUpperCase());
     }
     function totalCandidates(empList) {
       const names = new Set(empList.map(e=>(e.name||'').toUpperCase()));
-      return (proDB||[]).filter(r=>names.has((r.company||'').toUpperCase())).length;
+      return proSource.filter(r=>names.has((r.company||'').toUpperCase())).length;
     }
     const totalOpen = jos.filter(j=>j.status!=='filled').length;
     const totalPositions = jos.reduce((s,j)=>s+(Number(j.positions)||1),0);
     el.innerHTML = `
       <div class="dv5-page">
         <div class="dv5-page-head">
-          <div><h1>Jobs</h1><p>Employer companies and job orders for professional placements.</p></div>
+          <div><h1>Employers</h1><p>One place for clients, job orders, and candidates matched to each employer.</p></div>
           <div class="dv5-head-actions">
             <button class="dv5-btn primary" onclick="openEmployerForm()"><i class="ti ti-plus"></i>Add Employer</button>
           </div>
         </div>
         <div class="dv5-stat-grid" style="margin-top:12px">
-          ${statCard('ti-building', emps.length, 'Employers', 'Registered companies', '#EFF6FF','#2563EB','#fff')}
+          ${statCard('ti-building', employerRows.length, 'Employers', `${emps.length} registered · ${inferredEmployers.length} from records`, '#EFF6FF','#2563EB','#fff')}
           ${statCard('ti-list-details', jos.length, 'Job Orders', `${totalOpen} open`, '#F4F4EC','#372514','#fff')}
-          ${statCard('ti-users', totalCandidates(emps), 'Linked Candidates', 'Matched by company name', '#F0FDF4','#16A34A','#fff')}
+          ${statCard('ti-users', totalCandidates(employerRows), 'Linked Candidates', 'Matched by employer name', '#F0FDF4','#16A34A','#fff')}
           ${statCard('ti-target', totalPositions, 'Total Positions', 'Across all job orders', '#FEF9C3','#A16207','#fff')}
         </div>
         <div class="dv5-table-card" style="margin-top:16px">
@@ -2164,12 +2229,12 @@ export function injectDepsToD5(deps) {
             <table class="dv5-table">
               <thead><tr><th></th><th>Employer</th><th>Country</th><th>Contact</th><th>Job Orders</th><th>Candidates</th><th></th></tr></thead>
               <tbody>
-                ${emps.length ? emps.map(emp => {
+                ${employerRows.length ? employerRows.map(emp => {
                   const isOpen = expandedEmployer === emp.id;
                   const jobs = empJobs(emp.id);
                   const cands = empCandidates(emp.id);
                   return `
-                  <tr class="dv5-client-row${isOpen?' dv5-client-open':''}" onclick="window._toggleEmployer(${emp.id})" style="cursor:pointer">
+                  <tr class="dv5-client-row${isOpen?' dv5-client-open':''}" onclick="window._toggleEmployer(${JSON.stringify(emp.id)})" style="cursor:pointer">
                     <td style="width:28px"><i class="ti ${isOpen?'ti-chevron-down':'ti-chevron-right'}" style="font-size:12px;color:#9ca3af"></i></td>
                     <td><div class="dv5-name-cell">
                       <div class="dv5-avatar" style="background:#E4E1D6;color:#76746B"><i class="ti ti-building" style="font-size:13px"></i></div>
@@ -2177,12 +2242,14 @@ export function injectDepsToD5(deps) {
                     </div></td>
                     <td>${h(emp.country||'—')}</td>
                     <td>${h(emp.contact||'—')}</td>
-                    <td><span style="background:#eff6ff;color:#2563eb;padding:2px 8px;border-radius:20px;font-size:11px">${jobs.length} order${jobs.length!==1?'s':''}</span></td>
+                    <td><span style="background:${emp.inferred?'#FEF9C3':'#eff6ff'};color:${emp.inferred?'#A16207':'#2563eb'};padding:2px 8px;border-radius:20px;font-size:11px">${emp.inferred?'Needs setup':jobs.length+' order'+(jobs.length!==1?'s':'')}</span></td>
                     <td>${cands.length}</td>
                     <td onclick="event.stopPropagation()">
-                      <button class="dv5-action-btn" onclick="openEmployerForm(${emp.id})" style="margin-right:4px">Edit</button>
-                      <button class="dv5-action-btn" onclick="openJobOrderForm(${emp.id})" style="margin-right:4px">+ Job</button>
-                      <button class="dv5-action-btn" style="color:#b91c1c" onclick="if(confirm('Delete ${h(emp.name).replace(/'/g,"\\'")} and all its job orders?'))deleteEmployer(${emp.id})">Del</button>
+                      ${emp.inferred
+                        ? `<button class="dv5-action-btn" onclick="openEmployerForm()" style="margin-right:4px">Register</button>`
+                        : `<button class="dv5-action-btn" onclick="openEmployerForm(${emp.id})" style="margin-right:4px">Edit</button>
+                           <button class="dv5-action-btn" onclick="openJobOrderForm(${emp.id})" style="margin-right:4px">+ Job</button>
+                           <button class="dv5-action-btn" style="color:#b91c1c" onclick="if(confirm('Delete ${h(emp.name).replace(/'/g,"\\'")} and all its job orders?'))deleteEmployer(${emp.id})">Del</button>`}
                     </td>
                   </tr>
                   ${isOpen ? `<tr class="dv5-expand-row"><td colspan="7" style="padding:0 0 8px 40px;background:#f8fafc">
@@ -2197,7 +2264,7 @@ export function injectDepsToD5(deps) {
                             <button class="dv5-action-btn" style="color:#b91c1c;margin-left:4px" onclick="if(confirm('Delete job order?'))deleteJobOrder(${j.id})">Del</button>
                         </td>
                       </tr>`).join('')}</tbody>
-                    </table>` : '<div class="dv5-empty" style="padding:10px 0">No job orders yet. <button class="dv5-action-btn" onclick="openJobOrderForm('+emp.id+')">+ Add job order</button></div>'}
+                    </table>` : `<div class="dv5-empty" style="padding:10px 0">${emp.inferred ? 'Register this employer before adding job orders.' : 'No job orders yet. <button class="dv5-action-btn" onclick="openJobOrderForm('+emp.id+')">+ Add job order</button>'}</div>`}
                     ${cands.length ? `<div style="padding:8px 0 0;font-size:11px;color:var(--text-3)">${cands.length} candidate${cands.length!==1?'s':''} matched by company name: ${cands.slice(0,5).map(r=>h(r.name)).join(', ')}${cands.length>5?'…':''}</div>` : ''}
                   </td></tr>` : ''}`;
                 }).join('') : '<tr><td colspan="7"><div class="dv5-empty">No employers yet. Add your first employer to track job orders.</div></td></tr>'}
@@ -2377,6 +2444,14 @@ export function injectDepsToD5(deps) {
             <div class="dv5-card-sub">Single source of truth for this candidate</div>
           </div>
           <span class="dv5-badge ${health.level === 'ok' ? 'green' : health.level === 'watch' ? 'amber' : 'red'}">${health.status}</span>
+        </div>
+        <div class="dv5-profile-gauge">
+          ${readinessGauge({
+            score: health.score,
+            label: health.status,
+            note: health.missing.length ? 'Fix missing details' : 'Open documents',
+            detail: `${health.workflowScore}% workflow · ${health.docs.pct || 0}% docs · ${health.financeScore}% finance`,
+          }, health.missing.length ? `${type==='pro'?`editPro(${r.id})`:`editLB(${r.id})`}` : `openDocs('${type}',${JSON.stringify(r.id)},'${js(r.name)}')`)}
         </div>
         <div class="dv5-stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-top:12px">
           ${statCard('ti-database', health.score + '%', 'Profile Complete', health.missing.length ? `${health.missing.length} missing field${health.missing.length===1?'':'s'}` : 'All key fields present', '#F4F4EC','#372514','#fff')}
@@ -3147,6 +3222,24 @@ export function injectDepsToD5(deps) {
 .dv5-status-summary small { display:block; margin-top:22px; color:#A9A8B5; font-size:12px; font-weight:406; }
 .dv5-status-summary strong { display:block; margin-top:6px; color:#13B9A8; font-size:38px; line-height:1; font-weight:700; letter-spacing:-.05em; }
 .dv5-status-summary svg { position:absolute; right:22px; bottom:24px; width:46%; height:72px; }
+.dv5-readiness-gauge { position:relative; min-height:214px; border-radius:22px; background:linear-gradient(135deg,#FBFFF0 0%,#F4F4EC 100%); border:1px solid #E7E5D6; padding:16px 18px 18px; margin-bottom:14px; overflow:hidden; }
+.dv5-gauge-tabs { display:flex; justify-content:center; gap:8px; margin-bottom:8px; }
+.dv5-gauge-tabs span { font-size:9px; font-weight:500; color:#777783; background:#fff; border:1px solid #E6E4D8; border-radius:999px; padding:4px 10px; }
+.dv5-gauge-arc { position:relative; width:230px; height:142px; margin:0 auto; background:conic-gradient(from 226deg at 50% 84%,#F87171 0deg,#FB7185 50deg,#FDBA74 94deg,#DDF56C 154deg,#B6F35C 236deg,transparent 236deg 360deg); border-radius:230px 230px 36px 36px; }
+.dv5-gauge-arc::before { content:''; position:absolute; inset:18px 24px 0; background:linear-gradient(135deg,#FBFFF0,#F4F4EC); border-radius:190px 190px 32px 32px; }
+.dv5-gauge-needle { position:absolute; left:50%; bottom:20px; width:78px; height:3px; transform-origin:0 50%; background:#1A1C2E; border-radius:999px; z-index:3; box-shadow:0 0 0 4px rgba(26,28,46,.08); }
+.dv5-gauge-score { position:absolute; inset:48px 0 auto; z-index:4; display:flex; flex-direction:column; align-items:center; text-align:center; pointer-events:none; }
+.dv5-gauge-score span { font-size:10px; color:#4A5E10; background:#DDF56C; border-radius:999px; padding:3px 10px; font-weight:600; }
+.dv5-gauge-score strong { color:#18191B; font-size:44px; line-height:1; letter-spacing:-.06em; margin-top:9px; font-weight:500; }
+.dv5-gauge-score small { color:#777783; font-size:9.5px; margin-top:7px; max-width:184px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dv5-gauge-btn { display:flex; align-items:center; justify-content:center; width:190px; height:34px; margin:4px auto 0; border:0; border-radius:999px; background:#0D0E0C; color:#fff; font-size:11px; font-weight:500; cursor:pointer; box-shadow:0 12px 24px rgba(13,14,12,.16); }
+.dv5-gauge-btn:hover { background:#1A1C2E; }
+.dv5-profile-gauge { max-width:360px; margin:12px auto 14px; }
+.dv5-profile-gauge .dv5-readiness-gauge { min-height:192px; padding:12px 14px 14px; margin-bottom:0; }
+.dv5-profile-gauge .dv5-gauge-arc { width:206px; height:124px; }
+.dv5-profile-gauge .dv5-gauge-score { inset:42px 0 auto; }
+.dv5-profile-gauge .dv5-gauge-score strong { font-size:36px; }
+.dv5-profile-gauge .dv5-gauge-btn { width:170px; height:31px; }
 .dv5-ring-card { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
 .dv5-ring-stat { display:grid; grid-template-columns:auto 1fr; align-items:center; gap:12px; min-width:0; }
 .dv5-ring { position:relative; display:block; width:54px; height:54px; border-radius:50%; flex:0 0 auto; }
@@ -4201,7 +4294,7 @@ export function injectDepsToD5(deps) {
     { label:'Pipeline',    icon:'ti-briefcase',      tab:'pipeline' },
     { label:'Finance',     icon:'ti-wallet',         tab:'finance' },
     { label:'Documents',   icon:'ti-clipboard-text', tab:'documents' },
-    { label:'Clients',     icon:'ti-building',       tab:'clients' },
+    { label:'Employers',   icon:'ti-building',       tab:'jobs' },
     { label:'Reports',     icon:'ti-chart-line',     tab:'reports' },
   ];
   let cmdSelectedIdx = 0;
