@@ -1,6 +1,7 @@
 // @ts-nocheck
 import {
   proDB, lbDB, allDocs, allTimelines, currentUser, proStages, lbStages,
+  employers, jobOrders,
   setProDB, setLbDB, setAllDocs, setAllTimelines, setProStages, setLbStages,
 } from './state';
 
@@ -130,12 +131,12 @@ export function injectDepsToD5(deps) {
   const TITLES = {
     dash:'Home', pipeline:'Pipeline', candidates:'Candidates',
     tasks:'Tasks', finance:'Finance', documents:'Documents',
-    reports:'Reports', clients:'Clients', settings:'Settings'
+    reports:'Reports', clients:'Clients', jobs:'Jobs', settings:'Settings'
   };
   const ICONS = {
     dash:'ti-layout-dashboard', pipeline:'ti-briefcase', candidates:'ti-users',
     tasks:'ti-checkbox', finance:'ti-wallet', documents:'ti-clipboard-text',
-    reports:'ti-chart-line', clients:'ti-building-skyscraper', settings:'ti-settings'
+    reports:'ti-chart-line', clients:'ti-building-skyscraper', jobs:'ti-briefcase-2', settings:'ti-settings'
   };
 
   // ── Global job-type tab (Pro / General) ──────────────────
@@ -148,7 +149,7 @@ export function injectDepsToD5(deps) {
       dash: window.renderDash, pipeline: window.renderPipelinePage,
       candidates: window.renderCandidatesPage, finance: window.renderFinancePage,
       documents: window.renderDocumentsPage, reports: window.renderReportsPage,
-      clients: window.renderClientsPage,
+      clients: window.renderClientsPage, jobs: window.renderJobsPage,
     };
     for (const [id, fn] of Object.entries(renderers)) {
       const el = document.getElementById(id+'-section');
@@ -2125,7 +2126,94 @@ export function injectDepsToD5(deps) {
   };
   window.renderClientsPage = renderClients;
 
-  // ── 9. SETTINGS (pass-through to existing) ────────────────
+  // ── 9. JOBS / EMPLOYERS ───────────────────────────────────
+  let expandedEmployer = null;
+
+  function renderJobs() {
+    const el = document.getElementById('jobs-section'); if (!el) return;
+    const emps = employers || [];
+    const jos  = jobOrders || [];
+    function empJobs(eid) { return jos.filter(j=>j.employerId===eid); }
+    function empCandidates(eid) {
+      const emp = emps.find(e=>e.id===eid);
+      if (!emp) return [];
+      return (proDB||[]).filter(r=>(r.company||'').toUpperCase()===(emp.name||'').toUpperCase());
+    }
+    function totalCandidates(empList) {
+      const names = new Set(empList.map(e=>(e.name||'').toUpperCase()));
+      return (proDB||[]).filter(r=>names.has((r.company||'').toUpperCase())).length;
+    }
+    const totalOpen = jos.filter(j=>j.status!=='filled').length;
+    const totalPositions = jos.reduce((s,j)=>s+(Number(j.positions)||1),0);
+    el.innerHTML = `
+      <div class="dv5-page">
+        <div class="dv5-page-head">
+          <div><h1>Jobs</h1><p>Employer companies and job orders for professional placements.</p></div>
+          <div class="dv5-head-actions">
+            <button class="dv5-btn primary" onclick="openEmployerForm()"><i class="ti ti-plus"></i>Add Employer</button>
+          </div>
+        </div>
+        <div class="dv5-stat-grid" style="margin-top:12px">
+          ${statCard('ti-building', emps.length, 'Employers', 'Registered companies', '#EFF6FF','#2563EB','#fff')}
+          ${statCard('ti-list-details', jos.length, 'Job Orders', `${totalOpen} open`, '#F4F4EC','#372514','#fff')}
+          ${statCard('ti-users', totalCandidates(emps), 'Linked Candidates', 'Matched by company name', '#F0FDF4','#16A34A','#fff')}
+          ${statCard('ti-target', totalPositions, 'Total Positions', 'Across all job orders', '#FEF9C3','#A16207','#fff')}
+        </div>
+        <div class="dv5-table-card" style="margin-top:16px">
+          <div class="dv5-table-wrap">
+            <table class="dv5-table">
+              <thead><tr><th></th><th>Employer</th><th>Country</th><th>Contact</th><th>Job Orders</th><th>Candidates</th><th></th></tr></thead>
+              <tbody>
+                ${emps.length ? emps.map(emp => {
+                  const isOpen = expandedEmployer === emp.id;
+                  const jobs = empJobs(emp.id);
+                  const cands = empCandidates(emp.id);
+                  return `
+                  <tr class="dv5-client-row${isOpen?' dv5-client-open':''}" onclick="window._toggleEmployer(${emp.id})" style="cursor:pointer">
+                    <td style="width:28px"><i class="ti ${isOpen?'ti-chevron-down':'ti-chevron-right'}" style="font-size:12px;color:#9ca3af"></i></td>
+                    <td><div class="dv5-name-cell">
+                      <div class="dv5-avatar" style="background:#E4E1D6;color:#76746B"><i class="ti ti-building" style="font-size:13px"></i></div>
+                      <div><div class="dv5-name">${h(emp.name)}</div><div class="dv5-sub">${h(emp.notes||'—')}</div></div>
+                    </div></td>
+                    <td>${h(emp.country||'—')}</td>
+                    <td>${h(emp.contact||'—')}</td>
+                    <td><span style="background:#eff6ff;color:#2563eb;padding:2px 8px;border-radius:20px;font-size:11px">${jobs.length} order${jobs.length!==1?'s':''}</span></td>
+                    <td>${cands.length}</td>
+                    <td onclick="event.stopPropagation()">
+                      <button class="dv5-action-btn" onclick="openEmployerForm(${emp.id})" style="margin-right:4px">Edit</button>
+                      <button class="dv5-action-btn" onclick="openJobOrderForm(${emp.id})" style="margin-right:4px">+ Job</button>
+                      <button class="dv5-action-btn" style="color:#b91c1c" onclick="if(confirm('Delete ${h(emp.name).replace(/'/g,"\\'")} and all its job orders?'))deleteEmployer(${emp.id})">Del</button>
+                    </td>
+                  </tr>
+                  ${isOpen ? `<tr class="dv5-expand-row"><td colspan="7" style="padding:0 0 8px 40px;background:#f8fafc">
+                    ${jobs.length ? `<table class="dv5-table" style="min-width:0;border:0;box-shadow:none">
+                      <thead><tr><th>Job Title</th><th>Positions</th><th>Deadline</th><th>Notes</th><th></th></tr></thead>
+                      <tbody>${jobs.map(j=>`<tr>
+                        <td><strong>${h(j.title)}</strong></td>
+                        <td>${j.positions||1}</td>
+                        <td>${j.deadline?fmt(j.deadline):'—'}</td>
+                        <td>${h(j.notes||'—')}</td>
+                        <td><button class="dv5-action-btn" onclick="openJobOrderForm(${emp.id},${j.id})">Edit</button>
+                            <button class="dv5-action-btn" style="color:#b91c1c;margin-left:4px" onclick="if(confirm('Delete job order?'))deleteJobOrder(${j.id})">Del</button>
+                        </td>
+                      </tr>`).join('')}</tbody>
+                    </table>` : '<div class="dv5-empty" style="padding:10px 0">No job orders yet. <button class="dv5-action-btn" onclick="openJobOrderForm('+emp.id+')">+ Add job order</button></div>'}
+                    ${cands.length ? `<div style="padding:8px 0 0;font-size:11px;color:var(--text-3)">${cands.length} candidate${cands.length!==1?'s':''} matched by company name: ${cands.slice(0,5).map(r=>h(r.name)).join(', ')}${cands.length>5?'…':''}</div>` : ''}
+                  </td></tr>` : ''}`;
+                }).join('') : '<tr><td colspan="7"><div class="dv5-empty">No employers yet. Add your first employer to track job orders.</div></td></tr>'}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>`;
+  }
+  window._toggleEmployer = function(id) {
+    expandedEmployer = expandedEmployer === id ? null : id;
+    renderJobs();
+  };
+  window.renderJobsPage = renderJobs;
+
+  // ── 10. SETTINGS (pass-through to existing) ────────────────
   function renderSettings() {
     if (typeof renderSettingsPage === 'function') renderSettingsPage();
   }

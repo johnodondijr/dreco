@@ -355,6 +355,22 @@
     .tl-meta{font-size:10px;color:var(--text-3);margin-top:2px}
     .tl-empty{padding:14px;font-size:11px;color:var(--text-3);text-align:center}
 
+    /* Doc Checklist */
+    .doc-checklist{padding:4px 0}
+    .doc-checklist-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+    .doc-checklist-title{font-size:12px;font-weight:500;color:var(--text)}
+    .doc-checklist-progress{font-size:11px;font-weight:500;color:var(--text-3);background:var(--surface-3);border-radius:20px;padding:2px 8px}
+    .doc-check-all-done{background:#dcfce7;color:#16a34a}
+    .doc-check-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:background .1s;border:none}
+    .doc-check-item:hover{background:var(--surface-3)}
+    .doc-check-item input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:#5a6e2e;flex-shrink:0}
+    .doc-check-label{font-size:12.5px;color:var(--text)}
+    .doc-check-done{text-decoration:line-through;color:var(--text-3)}
+    /* Commission status card */
+    .commission-status-card{background:var(--surface-3);border-radius:12px;padding:14px 16px;margin-bottom:4px;border:1px solid var(--border)}
+    .cs-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12.5px;color:var(--text-2)}
+    .cs-row strong{font-weight:500;color:var(--text)}
+
     /* Modal */
     .modal-bg{display:none;position:fixed;inset:0;background:rgba(24,25,27,.45);backdrop-filter:blur(6px);z-index:200;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto}
     .modal-bg.open{display:flex}
@@ -7875,6 +7891,9 @@ html body #app .integrity-row.medium{
       <button type="button" class="nav-item" id="nav-clients" data-title="Clients" aria-label="Clients" onclick="switchTab('clients')">
         <i class="ti ti-building"></i><span class="nav-item-label">Clients</span>
       </button>
+      <button type="button" class="nav-item" id="nav-jobs" data-title="Jobs" aria-label="Jobs" onclick="switchTab('jobs')">
+        <i class="ti ti-briefcase-2"></i><span class="nav-item-label">Jobs</span>
+      </button>
 
       <button type="button" class="nav-item" id="nav-settings" data-title="Settings" aria-label="Settings" onclick="switchTab('settings')">
         <i class="ti ti-settings"></i><span class="nav-item-label">Settings</span>
@@ -8102,6 +8121,7 @@ html body #app .integrity-row.medium{
         <div id="finance-section" class="dv5-section" style="display:none"></div>
         <div id="documents-section" class="dv5-section" style="display:none"></div>
         <div id="clients-section" class="dv5-section" style="display:none"></div>
+        <div id="jobs-section" class="dv5-section" style="display:none"></div>
       </div><!-- /content-area -->
     </div><!-- /main-area -->
   </div><!-- /app-body -->
@@ -8321,6 +8341,7 @@ html body #app .integrity-row.medium{
       <button class="modal-tab" onclick="switchModalTab('pro','pipeline',this)">Pipeline</button>
       <button class="modal-tab" onclick="switchModalTab('pro','commission',this)">Commission</button>
       <button class="modal-tab" onclick="switchModalTab('pro','timeline',this)">Timeline</button>
+      <button class="modal-tab" onclick="switchModalTab('pro','docs',this)">Docs</button>
     </div>
     <div class="modal-body">
       <div id="pro-tab-details">
@@ -8347,15 +8368,20 @@ html body #app .integrity-row.medium{
         </div>
       </div>
       <div id="pro-tab-commission" style="display:none">
-        <div class="form-grid">
+        <div id="pro-commission-status"></div>
+        <div class="form-grid" style="margin-top:12px">
           <div class="field form-full"><label for="pf-comm">Total Commission (KES)</label><input type="number" id="pf-comm" placeholder="e.g. 130000"></div>
           <div class="field"><label for="pf-paid1">Paid at Offer Letter (KES)</label><input type="number" id="pf-paid1" placeholder="e.g. 65000"></div>
           <div class="field"><label for="pf-paid2">Paid at Visa (KES)</label><input type="number" id="pf-paid2" placeholder="e.g. 65000"></div>
           <input type="hidden" id="pf-paid">
         </div>
+        <div id="pro-pl-section"></div>
       </div>
       <div id="pro-tab-timeline" style="display:none">
         <div id="pro-form-timeline"><div class="tl-empty">Save the candidate first to see timeline.</div></div>
+      </div>
+      <div id="pro-tab-docs" style="display:none">
+        <div id="pro-doc-checklist"><div class="tl-empty">Save candidate first to manage documents.</div></div>
       </div>
     </div>
     <div class="modal-footer">
@@ -8377,6 +8403,7 @@ html body #app .integrity-row.medium{
       <button class="modal-tab active" onclick="switchModalTab('lb','details',this)">Details</button>
       <button class="modal-tab" onclick="switchModalTab('lb','refunds',this)">Refunds</button>
       <button class="modal-tab" onclick="switchModalTab('lb','timeline',this)">Timeline</button>
+      <button class="modal-tab" onclick="switchModalTab('lb','docs',this)">Docs</button>
     </div>
     <div class="modal-body">
       <div id="lb-tab-details">
@@ -8424,10 +8451,57 @@ html body #app .integrity-row.medium{
       <div id="lb-tab-timeline" style="display:none">
         <div id="lb-form-timeline"><div class="tl-empty">Save candidate first to see timeline.</div></div>
       </div>
+      <div id="lb-tab-docs" style="display:none">
+        <div id="lb-doc-checklist"><div class="tl-empty">Save candidate first to manage documents.</div></div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeModal('lb-modal')">Cancel</button>
       <button class="btn primary" onclick="saveLB()"><i class="ti ti-device-floppy"></i> Save candidate</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMPLOYER MODAL -->
+<div class="modal-bg" id="employer-modal">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <h3 id="emp-modal-title">Add Employer</h3>
+      <button class="modal-close" onclick="closeModal('employer-modal')">x</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field form-full"><label for="emp-name">Company / Employer name *</label><input type="text" id="emp-name" placeholder="e.g. Gulf Construction LLC"></div>
+        <div class="field"><label for="emp-country">Country</label><input type="text" id="emp-country" placeholder="e.g. UAE"></div>
+        <div class="field"><label for="emp-contact">Contact / Email</label><input type="text" id="emp-contact" placeholder="e.g. hr@company.com"></div>
+        <div class="field form-full"><label for="emp-notes">Notes</label><input type="text" id="emp-notes" placeholder="Optional notes"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('employer-modal')">Cancel</button>
+      <button class="btn primary" onclick="submitEmployerForm()"><i class="ti ti-device-floppy"></i> Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- JOB ORDER MODAL -->
+<div class="modal-bg" id="joborder-modal">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <h3 id="jo-modal-title">New Job Order</h3>
+      <button class="modal-close" onclick="closeModal('joborder-modal')">x</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field form-full"><label for="jo-title">Job title *</label><input type="text" id="jo-title" placeholder="e.g. Security Guard"></div>
+        <div class="field"><label for="jo-positions">No. of positions</label><input type="number" id="jo-positions" placeholder="e.g. 10" min="1"></div>
+        <div class="field"><label for="jo-deadline">Deadline</label><input type="date" id="jo-deadline"></div>
+        <div class="field form-full"><label for="jo-notes">Notes</label><input type="text" id="jo-notes" placeholder="Optional notes"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('joborder-modal')">Cancel</button>
+      <button class="btn primary" onclick="submitJobOrderForm()"><i class="ti ti-device-floppy"></i> Save</button>
     </div>
   </div>
 </div>

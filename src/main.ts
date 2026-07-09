@@ -4,8 +4,10 @@ import '@fontsource-variable/geist';
 import { createClient } from '@supabase/supabase-js';
 import { PRO_SEED, LB_SEED } from './data';
 import {
-  currentUser, proDB, lbDB, allDocs, allTimelines, proStages, lbStages,
+  currentUser, proDB, lbDB, allDocs, allTimelines, allChecklists, employers, jobOrders,
+  proStages, lbStages,
   setCurrentUser, setProDB, setLbDB, setAllDocs, setAllTimelines,
+  setAllChecklists, setEmployers, setJobOrders,
   setProStages, setLbStages,
 } from './state';
 import { injectDepsToD5 } from './dv5';
@@ -432,6 +434,11 @@ window.drecoExpenses = drecoExpenses;
 let drecoEvents   = JSON.parse(safeLocalGet('dreco_events') || '[]');
 let drecoAudit    = JSON.parse(safeLocalGet('dreco_audit') || '[]');
 let paymentRules  = getDefaultPaymentRules();
+const DEFAULT_DOC_REQUIREMENTS = {
+  pro: ['Passport copy','CV / Resume','Medical certificate','Police clearance','Work permit docs','Visa copy','Interview letter'],
+  lb: ['National ID','Passport application','Medical report','Embassy attestation','Travel ticket'],
+};
+let docRequirements = { pro: [...DEFAULT_DOC_REQUIREMENTS.pro], lb: [...DEFAULT_DOC_REQUIREMENTS.lb] };
 let editingEventId = null;
 let pendingStageType = null;
 let pendingStageSelect = null;
@@ -593,6 +600,8 @@ function getDefaultLocalStore() {
     lb: isDefaultCompany ? JSON.parse(JSON.stringify(LB_SEED)).map(normalizeLBRecord) : [],
     docs: {},
     timelines: {},
+    checklists: {},
+    docRequirements: { pro: [...DEFAULT_DOC_REQUIREMENTS.pro], lb: [...DEFAULT_DOC_REQUIREMENTS.lb] },
     proStages: [...proStages],
     lbStages: [...lbStages],
     paymentRules: getDefaultPaymentRules(),
@@ -840,6 +849,8 @@ function saveLocalStore() {
     lb: lbDB,
     docs: allDocs,
     timelines: allTimelines,
+    checklists: allChecklists,
+    docRequirements,
     proStages,
     lbStages,
     paymentRules,
@@ -1364,15 +1375,28 @@ async function loadAllData() {
     if (lbRes.data&&lbRes.data.length>0)   setLbDB(lbRes.data.map(normalizeLBRecord));   else if(companyId===DEFAULT_COMPANY.id) await seedLBData(); else setLbDB([]);
     setAllDocs({});
     setAllTimelines({});
-    if (docsRes.data)   docsRes.data.forEach(r=>{ if(companyId===DEFAULT_COMPANY.id&&!String(r.key).includes(':')) allDocs[r.key]=r.data; else if(String(r.key).startsWith(`${companyId}:`)) allDocs[stripCompanyScopedKey(r.key)]=r.data; });
+    setAllChecklists({});
+    if (docsRes.data) docsRes.data.forEach(r=>{
+      const rawKey = (companyId===DEFAULT_COMPANY.id&&!String(r.key).includes(':')) ? r.key
+        : (String(r.key).startsWith(`${companyId}:`) ? stripCompanyScopedKey(r.key) : null);
+      if (!rawKey) return;
+      if (rawKey.startsWith('checklist_')) allChecklists[rawKey] = r.data;
+      else allDocs[rawKey] = r.data;
+    });
     if (tlRes.data)     tlRes.data.forEach(r=>{ if(companyId===DEFAULT_COMPANY.id&&!String(r.key).includes(':')) allTimelines[r.key]=r.entries; else if(String(r.key).startsWith(`${companyId}:`)) allTimelines[stripCompanyScopedKey(r.key)]=r.entries; });
     if (stagesRes.data) {
       const ps=stagesRes.data.find(r=>r.key===getCompanyScopedKey('pro_stages')) || stagesRes.data.find(r=>r.key==='pro_stages'&&companyId===DEFAULT_COMPANY.id);
       const ls=stagesRes.data.find(r=>r.key===getCompanyScopedKey('lb_stages')) || stagesRes.data.find(r=>r.key==='lb_stages'&&companyId===DEFAULT_COMPANY.id);
       const pr=stagesRes.data.find(r=>r.key===getCompanyScopedKey('payment_rules')) || stagesRes.data.find(r=>r.key==='payment_rules'&&companyId===DEFAULT_COMPANY.id);
+      const dr=stagesRes.data.find(r=>r.key===getCompanyScopedKey('doc_requirements')) || stagesRes.data.find(r=>r.key==='doc_requirements'&&companyId===DEFAULT_COMPANY.id);
+      const emp=stagesRes.data.find(r=>r.key===getCompanyScopedKey('employers'));
+      const jo=stagesRes.data.find(r=>r.key===getCompanyScopedKey('job_orders'));
       if (ps) setProStages(normalizeProStageList(ps.value));
       if (ls) setLbStages(ls.value);
       if (pr) setPaymentRules(pr.value); else setPaymentRules(getDefaultPaymentRules());
+      if (dr) docRequirements = dr.value; else docRequirements = { pro: [...DEFAULT_DOC_REQUIREMENTS.pro], lb: [...DEFAULT_DOC_REQUIREMENTS.lb] };
+      setEmployers(emp ? (Array.isArray(emp.value) ? emp.value : []) : []);
+      setJobOrders(jo ? (Array.isArray(jo.value) ? jo.value : []) : []);
     }
   } catch(err) {
     console.warn('Supabase error, falling back to local data:',err);
@@ -1383,6 +1407,8 @@ async function loadAllData() {
     setLbDB(local.lb);
     setAllDocs(local.docs);
     setAllTimelines(local.timelines);
+    setAllChecklists(local.checklists || {});
+    if (local.docRequirements) docRequirements = local.docRequirements;
     setProStages(normalizeProStageList(local.proStages));
     setLbStages(local.lbStages);
     setPaymentRules(local.paymentRules);
@@ -1658,6 +1684,234 @@ async function saveDocsToDB(key, data) {
     setSaveStatus('saved');
   } catch (e) { fallBackToLocal(e); setSaveStatus('saved'); }
 }
+
+// ── Document Checklists ────────────────────────────────────────────────────────
+function getDocProgress(type, id) {
+  const reqs = (docRequirements[type] || DEFAULT_DOC_REQUIREMENTS[type] || []);
+  const checked = allChecklists[`checklist_${type}_${id}`] || {};
+  const done = reqs.filter(item => checked[item]).length;
+  return { done, total: reqs.length };
+}
+function renderDocChecklist(type, id) {
+  if (!id) return '<div class="tl-empty">Save the candidate first to manage documents.</div>';
+  const reqs = (docRequirements[type] || DEFAULT_DOC_REQUIREMENTS[type] || []);
+  const checked = allChecklists[`checklist_${type}_${id}`] || {};
+  const done = reqs.filter(i => checked[i]).length;
+  return `<div class="doc-checklist">
+    <div class="doc-checklist-head">
+      <span class="doc-checklist-title">Required Documents</span>
+      <span class="doc-checklist-progress${done===reqs.length&&reqs.length>0?' doc-check-all-done':''}">${done}/${reqs.length} collected</span>
+    </div>
+    ${reqs.map(item => `<label class="doc-check-item">
+      <input type="checkbox" ${checked[item]?'checked':''} onchange="toggleChecklistItem('${type}',${id},'${escHTML(item).replace(/'/g,"\\'")}',this.checked)">
+      <span class="doc-check-label${checked[item]?' doc-check-done':''}">${escHTML(item)}</span>
+    </label>`).join('')}
+  </div>`;
+}
+async function toggleChecklistItem(type, id, item, isChecked) {
+  const key = `checklist_${type}_${id}`;
+  if (!allChecklists[key]) allChecklists[key] = {};
+  allChecklists[key][item] = isChecked;
+  const el = document.getElementById(`${type}-doc-checklist`);
+  if (el) el.innerHTML = renderDocChecklist(type, id);
+  await saveDocsToDB(key, allChecklists[key]);
+}
+
+// ── Commission / Payment Status ────────────────────────────────────────────────
+function renderCommissionStatus(r) {
+  const el = document.getElementById('pro-commission-status'); if (!el) return;
+  if (!r || !r.commission) { el.innerHTML = ''; return; }
+  const ps = proPaymentStatus(r);
+  const pctColor = ps.dueNow > 0 ? '#b91c1c' : '#16a34a';
+  el.innerHTML = `<div class="commission-status-card">
+    <div class="cs-row"><span>Total Commission</span><strong>${moneyKES(ps.commission)}</strong></div>
+    <div class="cs-row"><span>Expected at this stage (${ps.expectedPercent}%)</span><strong>${moneyKES(ps.expected)}</strong></div>
+    <div class="cs-row"><span>Paid so far</span><strong style="color:#16a34a">${moneyKES(ps.paid)}</strong></div>
+    <div class="cs-row cs-row-highlight" style="border-top:1px solid #e5e7eb;padding-top:8px;margin-top:4px">
+      <span>Due now</span><strong style="color:${pctColor}">${moneyKES(ps.dueNow)}</strong>
+    </div>
+    <div class="cs-row"><span>Full outstanding</span><strong style="color:${ps.outstanding>0?'#b91c1c':'#6b7280'}">${moneyKES(ps.outstanding)}</strong></div>
+  </div>`;
+}
+
+// ── Per-Candidate P&L ─────────────────────────────────────────────────────────
+function getCandidateExpenses(type, id) {
+  return Array.isArray(allDocs[`expenses_${type}_${id}`]) ? allDocs[`expenses_${type}_${id}`] : [];
+}
+function renderCandidatePL(type, id) {
+  const el = document.getElementById('pro-pl-section'); if (!el) return;
+  if (!id) { el.innerHTML = ''; return; }
+  const r = proDB.find(x=>x.id==id); if (!r) return;
+  const commission = Number(r.commission)||0;
+  const expenses = getCandidateExpenses(type, id);
+  const totalExp = expenses.reduce((s,e)=>s+(Number(e.amount)||0),0);
+  const net = commission - totalExp;
+  el.innerHTML = `<div class="commission-status-card" style="margin-top:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <strong style="font-size:12px">P&amp;L — Candidate Expenses</strong>
+      <button class="dv5-action-btn" onclick="openAddCandidateExpense('${type}',${id})">+ Add expense</button>
+    </div>
+    ${expenses.length ? expenses.map((e,i)=>`<div class="cs-row" style="font-size:11.5px">
+      <span>${escHTML(e.label||'Expense')}</span>
+      <span style="display:flex;align-items:center;gap:6px">
+        <strong style="color:#b91c1c">${moneyKES(e.amount)}</strong>
+        <button onclick="removeCandidateExpense('${type}',${id},${i})" style="font-size:10px;border:none;background:none;cursor:pointer;color:#9ca3af;padding:0">×</button>
+      </span>
+    </div>`).join('') : '<div class="cs-row" style="color:var(--text-3);font-size:11.5px"><span>No expenses recorded</span></div>'}
+    <div class="cs-row" style="border-top:1px solid #e5e7eb;padding-top:8px;margin-top:4px">
+      <span>Total expenses</span><strong style="color:#b91c1c">${moneyKES(totalExp)}</strong>
+    </div>
+    <div class="cs-row">
+      <span>Net (Commission − Expenses)</span><strong style="color:${net>=0?'#16a34a':'#b91c1c'}">${moneyKES(net)}</strong>
+    </div>
+  </div>`;
+}
+function openAddCandidateExpense(type, id) {
+  const label = prompt('Expense label (e.g. Medical test)');
+  if (!label) return;
+  const amount = prompt('Amount (KES)');
+  if (!amount || isNaN(Number(amount))) { showToast('Invalid amount','error'); return; }
+  addCandidateExpense(type, id, label.trim(), Number(amount));
+}
+async function addCandidateExpense(type, id, label, amount) {
+  const key = `expenses_${type}_${id}`;
+  const list = getCandidateExpenses(type, id);
+  list.push({ label, amount, date: new Date().toISOString().slice(0,10) });
+  allDocs[key] = list;
+  renderCandidatePL(type, id);
+  await saveDocsToDB(key, list);
+}
+async function removeCandidateExpense(type, id, index) {
+  const key = `expenses_${type}_${id}`;
+  const list = getCandidateExpenses(type, id);
+  list.splice(index, 1);
+  allDocs[key] = list;
+  renderCandidatePL(type, id);
+  await saveDocsToDB(key, list);
+}
+
+// ── Employer / Job Order CRUD ──────────────────────────────────────────────────
+async function saveEmployersData() {
+  setSaveStatus('saving');
+  if (!useCloud()) { saveLocalStore(); setSaveStatus('saved'); return; }
+  try {
+    const { error } = await db.from('app_settings').upsert(
+      { key: getCompanyScopedKey('employers'), value: employers, company_id: getCompanyId() },
+      { onConflict: 'key' }
+    );
+    if (error) throw error;
+    setSaveStatus('saved');
+  } catch(e) { fallBackToLocal(e); setSaveStatus('saved'); }
+}
+async function saveJobOrdersData() {
+  setSaveStatus('saving');
+  if (!useCloud()) { saveLocalStore(); setSaveStatus('saved'); return; }
+  try {
+    const { error } = await db.from('app_settings').upsert(
+      { key: getCompanyScopedKey('job_orders'), value: jobOrders, company_id: getCompanyId() },
+      { onConflict: 'key' }
+    );
+    if (error) throw error;
+    setSaveStatus('saved');
+  } catch(e) { fallBackToLocal(e); setSaveStatus('saved'); }
+}
+function nextEmployerId() {
+  return (employers.reduce((m,e)=>Math.max(m,Number(e.id)||0),0))+1;
+}
+function nextJobOrderId() {
+  return (jobOrders.reduce((m,j)=>Math.max(m,Number(j.id)||0),0))+1;
+}
+async function saveEmployer(data) {
+  if (data.id) {
+    const i = employers.findIndex(e=>e.id===data.id);
+    if (i>=0) employers[i] = { ...employers[i], ...data };
+    else employers.push(data);
+  } else {
+    employers.push({ ...data, id: nextEmployerId() });
+  }
+  setEmployers([...employers]);
+  await saveEmployersData();
+  if (typeof window.renderJobsPage === 'function') window.renderJobsPage();
+  showToast('Employer saved ✓','success');
+}
+async function deleteEmployer(id) {
+  setEmployers(employers.filter(e=>e.id!==id));
+  setJobOrders(jobOrders.filter(j=>j.employerId!==id));
+  await saveEmployersData();
+  await saveJobOrdersData();
+  if (typeof window.renderJobsPage === 'function') window.renderJobsPage();
+  showToast('Employer removed','success');
+}
+async function saveJobOrder(data) {
+  if (data.id) {
+    const i = jobOrders.findIndex(j=>j.id===data.id);
+    if (i>=0) jobOrders[i] = { ...jobOrders[i], ...data };
+    else jobOrders.push(data);
+  } else {
+    jobOrders.push({ ...data, id: nextJobOrderId() });
+  }
+  setJobOrders([...jobOrders]);
+  await saveJobOrdersData();
+  if (typeof window.renderJobsPage === 'function') window.renderJobsPage();
+  showToast('Job order saved ✓','success');
+}
+async function deleteJobOrder(id) {
+  setJobOrders(jobOrders.filter(j=>j.id!==id));
+  await saveJobOrdersData();
+  if (typeof window.renderJobsPage === 'function') window.renderJobsPage();
+  showToast('Job order removed','success');
+}
+function openEmployerForm(id) {
+  const emp = id ? employers.find(e=>e.id===id) : null;
+  const el = document.getElementById('employer-modal'); if (!el) return;
+  document.getElementById('emp-modal-title').textContent = emp ? 'Edit Employer' : 'Add Employer';
+  document.getElementById('emp-name').value = emp?.name || '';
+  document.getElementById('emp-country').value = emp?.country || '';
+  document.getElementById('emp-contact').value = emp?.contact || '';
+  document.getElementById('emp-notes').value = emp?.notes || '';
+  el.dataset.editId = emp ? String(emp.id) : '';
+  el.classList.add('open');
+}
+async function submitEmployerForm() {
+  const modal = document.getElementById('employer-modal'); if (!modal) return;
+  const name = document.getElementById('emp-name').value.trim();
+  if (!name) { showToast('Employer name is required','error'); return; }
+  const data = {
+    name, country: document.getElementById('emp-country').value.trim(),
+    contact: document.getElementById('emp-contact').value.trim(),
+    notes: document.getElementById('emp-notes').value.trim(),
+  };
+  if (modal.dataset.editId) data.id = Number(modal.dataset.editId);
+  modal.classList.remove('open');
+  await saveEmployer(data);
+}
+function openJobOrderForm(employerId, jobId) {
+  const job = jobId ? jobOrders.find(j=>j.id===jobId) : null;
+  const el = document.getElementById('joborder-modal'); if (!el) return;
+  document.getElementById('jo-modal-title').textContent = job ? 'Edit Job Order' : 'New Job Order';
+  document.getElementById('jo-title').value = job?.title || '';
+  document.getElementById('jo-positions').value = job?.positions || '';
+  document.getElementById('jo-deadline').value = job?.deadline || '';
+  document.getElementById('jo-notes').value = job?.notes || '';
+  el.dataset.employerId = String(employerId || job?.employerId || '');
+  el.dataset.editId = job ? String(job.id) : '';
+  el.classList.add('open');
+}
+async function submitJobOrderForm() {
+  const modal = document.getElementById('joborder-modal'); if (!modal) return;
+  const title = document.getElementById('jo-title').value.trim();
+  if (!title) { showToast('Job title is required','error'); return; }
+  const data = {
+    title, employerId: Number(modal.dataset.employerId),
+    positions: Number(document.getElementById('jo-positions').value)||1,
+    deadline: document.getElementById('jo-deadline').value||null,
+    notes: document.getElementById('jo-notes').value.trim(),
+    status: 'open',
+  };
+  if (modal.dataset.editId) data.id = Number(modal.dataset.editId);
+  modal.classList.remove('open');
+  await saveJobOrder(data);
+}
 async function saveTimeline(key) {
   if (!allTimelines[key]) return;
   if (!useCloud()) { saveLocalStore(); return; }
@@ -1897,7 +2151,7 @@ let _currentTab = 'dash';
 function switchTab(tab, _pushHistory = true){
   if (window.innerWidth <= 860) closeMobileSidebar();
   // DV5 unified tab router — handles both legacy and new tabs
-  const DV5_TABS = ['dash','pipeline','candidates','finance','documents','reports','clients','notifications','settings'];
+  const DV5_TABS = ['dash','pipeline','candidates','finance','documents','reports','clients','jobs','notifications','settings'];
   const DV5_ALIASES = {
     pro:'candidates', lb:'candidates',
     kanban:'pipeline', travel:'pipeline', tasks:'pipeline',
@@ -1908,7 +2162,7 @@ function switchTab(tab, _pushHistory = true){
   const DV5_TITLES = {
     dash:'Home', pipeline:'Pipeline', candidates:'Candidates',
     tasks:'Tasks', finance:'Finance', documents:'Documents', account:'Profile',
-    reports:'Reports', clients:'Clients', notifications:'Notifications', settings:'Settings'
+    reports:'Reports', clients:'Clients', jobs:'Jobs', notifications:'Notifications', settings:'Settings'
   };
 
   const t = DV5_ALIASES[tab] || tab || 'dash';
@@ -1949,6 +2203,7 @@ function switchTab(tab, _pushHistory = true){
     documents: ()=> window.renderDocumentsPage?.(),
     reports: ()=> window.renderReportsPage?.(),
     clients: ()=> window.renderClientsPage?.(),
+    jobs: ()=> window.renderJobsPage?.(),
     notifications: ()=> (typeof renderNotificationsPage === 'function') && renderNotificationsPage(),
     settings: ()=> (typeof renderSettingsPage === 'function') && renderSettingsPage(),
     // Legacy fallbacks
@@ -2428,10 +2683,18 @@ function resetSavedFilters(){
   showToast('Filters reset','success');
 }
 function switchModalTab(modal,tab,btn){
-  const tabs=modal==='pro'?['details','pipeline','commission','timeline']:['details','refunds','timeline'];
+  const tabs=modal==='pro'?['details','pipeline','commission','timeline','docs']:['details','refunds','timeline','docs'];
   tabs.forEach(tt=>{ const el=document.getElementById(`${modal}-tab-${tt}`); if(el) el.style.display=tt===tab?'':'none'; });
   btn.closest('.modal-tabs').querySelectorAll('.modal-tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  if (tab==='docs') {
+    const id = modal==='pro' ? editingProId : editingLbId;
+    const el = document.getElementById(`${modal}-doc-checklist`); if(el) el.innerHTML=renderDocChecklist(modal,id);
+  }
+  if (tab==='commission' && modal==='pro' && editingProId) {
+    const r = proDB.find(x=>x.id==editingProId);
+    if(r) { renderCommissionStatus(r); renderCandidatePL('pro', editingProId); }
+  }
 }
 function closeModal(id){ const el=document.getElementById(id); if(el) el.classList.remove('open'); }
 
@@ -3714,7 +3977,7 @@ function openProForm(){
   renderProSummary(null);
   document.getElementById('pro-form-timeline').innerHTML='<div class="tl-empty">Save candidate first to see timeline.</div>';
   document.getElementById('pro-tab-details').style.display='';
-  ['pipeline','commission','timeline'].forEach(t=>{ const el=document.getElementById(`pro-tab-${t}`); if(el) el.style.display='none'; });
+  ['pipeline','commission','timeline','docs'].forEach(t=>{ const el=document.getElementById(`pro-tab-${t}`); if(el) el.style.display='none'; });
   document.getElementById('pro-modal').querySelectorAll('.modal-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
   document.getElementById('pro-modal').classList.add('open');
 }
@@ -3742,7 +4005,7 @@ function editPro(id){
   renderProSummary(r);
   document.getElementById('pro-form-timeline').innerHTML=renderTimelineHTML('pro',id);
   document.getElementById('pro-tab-details').style.display='';
-  ['pipeline','commission','timeline'].forEach(t=>{ const el=document.getElementById(`pro-tab-${t}`); if(el) el.style.display='none'; });
+  ['pipeline','commission','timeline','docs'].forEach(t=>{ const el=document.getElementById(`pro-tab-${t}`); if(el) el.style.display='none'; });
   document.getElementById('pro-modal').querySelectorAll('.modal-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
   document.getElementById('pro-modal').classList.add('open');
 }
@@ -3918,7 +4181,7 @@ function openLBForm(){
   renderLBSummary(null);
   document.getElementById('lb-form-timeline').innerHTML='<div class="tl-empty">Save candidate first to see timeline.</div>';
   document.getElementById('lb-tab-details').style.display='';
-  ['refunds','timeline'].forEach(t=>{ const el=document.getElementById(`lb-tab-${t}`); if(el) el.style.display='none'; });
+  ['refunds','timeline','docs'].forEach(t=>{ const el=document.getElementById(`lb-tab-${t}`); if(el) el.style.display='none'; });
   document.getElementById('lb-modal').querySelectorAll('.modal-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
   document.getElementById('lb-modal').classList.add('open');
 }
@@ -3954,7 +4217,7 @@ function editLB(id){
   renderLBSummary(r);
   document.getElementById('lb-form-timeline').innerHTML=renderTimelineHTML('lb',id);
   document.getElementById('lb-tab-details').style.display='';
-  ['refunds','timeline'].forEach(t=>{ const el=document.getElementById(`lb-tab-${t}`); if(el) el.style.display='none'; });
+  ['refunds','timeline','docs'].forEach(t=>{ const el=document.getElementById(`lb-tab-${t}`); if(el) el.style.display='none'; });
   document.getElementById('lb-modal').querySelectorAll('.modal-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
   document.getElementById('lb-modal').classList.add('open');
 }
@@ -4529,8 +4792,14 @@ Object.assign(window, {
   // LB candidates
   openLBForm, editLB, saveLB, deleteLB, renderLB,
   toggleLBSelect, toggleLBOwnPassport, batchSendProfiles,
-  // Documents
+  // Documents & checklists
   openFirstDocumentUpload, openPendingTravelView,
+  toggleChecklistItem, renderDocChecklist, getDocProgress,
+  // P&L
+  openAddCandidateExpense, removeCandidateExpense,
+  // Employers / Job orders
+  openEmployerForm, submitEmployerForm, deleteEmployer,
+  openJobOrderForm, submitJobOrderForm, deleteJobOrder,
   // Finance
   exportCSV, exportReportPDF,
   deleteExpense, openExpensePrompt, submitQuickExpense,
