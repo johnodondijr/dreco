@@ -8664,9 +8664,7 @@ html body #app .integrity-row.medium{
 <script type="module" src="/src/main.ts"></script>
 <script>
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch(err => console.warn('SW registration failed:', err));
-    });
+    navigator.serviceWorker.register('/sw.js');
   }
 </script>
 </body>
