@@ -1961,6 +1961,28 @@ function switchTab(tab, _pushHistory = true){
     help: ()=> (typeof renderHelpPage === 'function') && renderHelpPage(),
   };
   if (renderers[t]) renderers[t]();
+  if (t === 'pipeline' && target && !target.innerHTML.trim()) {
+    requestAnimationFrame(() => {
+      if (!target.innerHTML.trim() && typeof window.renderPipelinePage === 'function') {
+        window.renderPipelinePage();
+      }
+      if (!target.innerHTML.trim()) {
+        target.innerHTML = `
+          <div class="dv5-page">
+            <div class="dv5-page-head">
+              <div>
+                <h1>Pipeline</h1>
+                <p>Loading the candidate pipeline...</p>
+              </div>
+              <button class="dv5-btn" onclick="window.renderPipelinePage?.()">
+                <i class="ti ti-refresh"></i> Retry
+              </button>
+            </div>
+            <div class="dv5-empty">The pipeline renderer is still loading. Click Retry if this does not update automatically.</div>
+          </div>`;
+      }
+    });
+  }
   if (_pushHistory && t !== _currentTab) {
     history.pushState({ tab: t }, '', '#' + t);
   }

@@ -1062,15 +1062,14 @@ export function injectDepsToD5(deps) {
   function renderPipeline() {
     const el = document.getElementById('pipeline-section'); if (!el) return;
     const isPro = jobTypeTab === 'pro';
+    try {
     const pipelineRows = allRows();
-    const q = pipelineSearch.toLowerCase();
+    const q = String(pipelineSearch || '').toLowerCase();
     const matchSearch = r => !q || [r.name,r.position,r.company,r.pp,r.country,r.phone].join(' ').toLowerCase().includes(q);
     const proRows = pipelineRows.filter(r=>r.type==='pro'&&matchSearch(r));
     const lbRows = pipelineRows.filter(r=>r.type==='lb'&&matchSearch(r));
-    const proStageList = activeWorkflowStages('pro');
-    const lbStageList  = activeWorkflowStages('lb');
     const lbFiltered = lbCountryFilter ? lbRows.filter(r=>(r.country||'')=== lbCountryFilter) : lbRows;
-    const stages = isPro ? proStageList : lbStageList;
+    const stages = isPro ? activeWorkflowStages('pro') : activeWorkflowStages('lb');
     const totalShown = isPro ? proRows.length : lbFiltered.length;
 
     el.innerHTML = `
@@ -1093,8 +1092,8 @@ export function injectDepsToD5(deps) {
         <div class="dv5-kanban" style="margin-top:12px">
           ${stages.map(stage => {
             const items = isPro
-              ? proRows.filter(r=>r.pipelineStage===stage)
-              : lbFiltered.filter(r=>r.pipelineStage===stage);
+              ? proRows.filter(r=>String(r.pipelineStage || '').toUpperCase()===String(stage || '').toUpperCase())
+              : lbFiltered.filter(r=>String(r.pipelineStage || '').toUpperCase()===String(stage || '').toUpperCase());
             const label = stage.replace(/^DOCS /,'');
             return `<div class="dv5-col">
               <div class="dv5-col-head">
@@ -1120,6 +1119,10 @@ export function injectDepsToD5(deps) {
           }).join('')}
         </div>
       </div>`;
+    } catch (error) {
+      console.error('Dreco pipeline render failed', error);
+      el.innerHTML = `<div class="dv5-page"><div class="dv5-page-head"><div><h1>Pipeline</h1><p>We could not load the pipeline board.</p></div><button class="dv5-btn" onclick="window.renderPipelinePage?.()"><i class="ti ti-refresh"></i> Retry</button></div><div class="dv5-empty" style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:18px;text-align:left;color:#991b1b">Pipeline render error: ${h(error?.message || error || 'Unknown error')}</div></div>`;
+    }
   }
   window.renderPipelinePage = renderPipeline;
 
