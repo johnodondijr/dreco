@@ -6,7 +6,35 @@ on:
       - main
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Nav consistency test
+        run: npm run test:tabs
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Chromium for smoke test
+        run: npx playwright install --with-deps chromium
+
+      - name: Boot smoke test
+        run: npm run test:smoke
+
   deploy:
+    needs: check
     runs-on: ubuntu-latest
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
