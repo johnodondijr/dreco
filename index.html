@@ -7534,9 +7534,9 @@ html body #app .integrity-row.medium{
               <label for="signup-password">Password</label>
               <div class="lp-input-wrap">
                 <i class="ti ti-lock lp-input-icon"></i>
-                <input type="password" id="signup-password" placeholder="At least 6 characters" required autocomplete="new-password" aria-describedby="signup-password-hint">
+                <input type="password" id="signup-password" placeholder="At least 8 characters" required minlength="8" autocomplete="new-password" aria-describedby="signup-password-hint">
               </div>
-              <span class="auth-helper" id="signup-password-hint">Minimum 6 characters. Use something your team will not guess.</span>
+              <span class="auth-helper" id="signup-password-hint">Minimum 8 characters. Use something your team will not guess.</span>
             </div>
             <button type="submit" class="lp-submit">Create workspace</button>
           </form>
@@ -8158,7 +8158,7 @@ html body #app .integrity-row.medium{
       <div class="field form-full"><label for="quick-user-display">Display name *</label><input id="quick-user-display" type="text" placeholder="e.g. Mary Wanjiku"></div>
       <div class="field"><label for="quick-user-username">Username *</label><input id="quick-user-username" type="text" placeholder="e.g. mary" autocomplete="off"></div>
       <div class="field"><label for="quick-user-role">Role</label><select id="quick-user-role"><option value="staff">Staff</option><option value="admin">Admin</option></select></div>
-      <div class="field form-full"><label for="quick-user-password">Temporary password *</label><input id="quick-user-password" type="password" placeholder="At least 6 characters" aria-describedby="quick-user-pw-hint"><small id="quick-user-pw-hint" class="sr-only">At least 6 characters required</small></div>
+      <div class="field form-full"><label for="quick-user-password">Temporary password *</label><input id="quick-user-password" type="password" placeholder="At least 8 characters" minlength="8" aria-describedby="quick-user-pw-hint"><small id="quick-user-pw-hint" class="sr-only">At least 8 characters required</small></div>
     </div><div class="login-error" id="quick-user-error" role="alert" style="display:none"></div></div>
     <div class="modal-footer"><button class="btn" onclick="closeModal('quick-user-modal')">Cancel</button><button class="btn primary" onclick="submitQuickUser()">Add user</button></div>
   </div>
@@ -8287,7 +8287,7 @@ html body #app .integrity-row.medium{
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeModal('balance-pay-modal')">Cancel</button>
-      <button class="btn primary" onclick="submitBalancePayment()">Save Transaction</button>
+      <button class="btn primary" id="bpm-submit" onclick="submitBalancePayment()">Save Transaction</button>
     </div>
   </div>
 </div>
@@ -8558,7 +8558,7 @@ html body #app .integrity-row.medium{
             <div class="field"><label for="new-user-display">Display name</label><input type="text" id="new-user-display" placeholder="e.g. Jane Doe"></div>
             <div class="field"><label for="new-user-username">Username</label><input type="text" id="new-user-username" placeholder="e.g. jane" autocomplete="off"></div>
             <div class="field"><label for="new-user-role">Role</label><select id="new-user-role"><option value="staff">Staff</option><option value="admin">Admin</option></select></div>
-            <div class="field"><label for="new-user-password">Temporary password</label><input type="password" id="new-user-password" placeholder="At least 6 characters" autocomplete="new-password" aria-describedby="new-user-pw-hint"><small id="new-user-pw-hint" class="sr-only">At least 6 characters required</small></div>
+            <div class="field"><label for="new-user-password">Temporary password</label><input type="password" id="new-user-password" placeholder="At least 8 characters" minlength="8" autocomplete="new-password" aria-describedby="new-user-pw-hint"><small id="new-user-pw-hint" class="sr-only">At least 8 characters required</small></div>
           </div>
           <div class="login-error" id="new-user-error" role="alert" style="display:none;text-align:left"></div>
           <button class="btn primary" style="margin-top:10px" onclick="createCompanyUser()"><i class="ti ti-user-plus"></i> Add user</button>

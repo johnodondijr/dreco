@@ -2262,7 +2262,7 @@ export function injectDepsToD5(deps) {
                       <thead><tr><th>Job Title</th><th>Positions</th><th>Deadline</th><th>Notes</th><th></th></tr></thead>
                       <tbody>${jobs.map(j=>`<tr>
                         <td><strong>${h(j.title)}</strong></td>
-                        <td>${j.positions||1}</td>
+                        <td>${h(j.positions||1)}</td>
                         <td>${j.deadline?fmt(j.deadline):'—'}</td>
                         <td>${h(j.notes||'—')}</td>
                         <td><button class="dv5-action-btn" onclick="openJobOrderForm(${emp.id},${j.id})">Edit</button>

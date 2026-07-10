@@ -1273,6 +1273,81 @@ function doLogout() {
   hideForgotPassword();
 }
 
+// Global safety net: surface unexpected async failures instead of failing
+// silently (which previously left spinners/optimistic UI stuck). Toast is
+// best-effort; showToast is hoisted so this is safe at module load.
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('Unhandled promise rejection:', e.reason);
+  try { showToast('Something went wrong. Please retry.', 'error'); } catch {}
+});
+window.addEventListener('error', (e) => {
+  if (e?.error) console.error('Uncaught error:', e.error);
+});
+
+// ── Accessible modal controller (dialog semantics, focus trap, Esc, restore) ──
+let _modalReturnFocus = null;
+function _openModals(){ return Array.from(document.querySelectorAll('.modal-bg.open')); }
+function _focusablesIn(el){
+  return Array.from(el.querySelectorAll(
+    'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+  )).filter(n => n.offsetWidth > 0 || n.offsetHeight > 0 || n === document.activeElement);
+}
+function _onModalOpen(el){
+  _modalReturnFocus = document.activeElement;
+  el.setAttribute('role','dialog');
+  el.setAttribute('aria-modal','true');
+  el.setAttribute('tabindex','-1');
+  // Give the dialog an accessible name from its header if it has none.
+  if (!el.getAttribute('aria-label') && !el.getAttribute('aria-labelledby')) {
+    const title = el.querySelector('.modal-header h1, .modal-header h2, .modal-header h3, .modal-header');
+    const name = title?.textContent?.trim();
+    if (name) el.setAttribute('aria-label', name);
+  }
+  const f = _focusablesIn(el);
+  const target = f[0] || el;
+  setTimeout(() => { try { target.focus(); } catch {} }, 0);
+}
+function _onModalClose(){
+  const el = _modalReturnFocus;
+  _modalReturnFocus = null;
+  if (el && typeof el.focus === 'function') setTimeout(() => { try { el.focus(); } catch {} }, 0);
+}
+if (typeof MutationObserver !== 'undefined') {
+  const obs = new MutationObserver(muts => {
+    for (const m of muts) {
+      const el = m.target;
+      if (!el.classList || !el.classList.contains('modal-bg')) continue;
+      const wasOpen = m.oldValue ? /\bopen\b/.test(m.oldValue) : false;
+      const isOpen = el.classList.contains('open');
+      if (isOpen && !wasOpen) _onModalOpen(el);
+      else if (!isOpen && wasOpen) _onModalClose();
+    }
+  });
+  window.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.modal-bg').forEach(el => {
+      obs.observe(el, { attributes:true, attributeFilter:['class'], attributeOldValue:true });
+    });
+  });
+}
+document.addEventListener('keydown', (e) => {
+  const open = _openModals();
+  if (!open.length) return;
+  const top = open[open.length - 1];
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    if (typeof window.closeModal === 'function') window.closeModal(top.id); else top.classList.remove('open');
+    return;
+  }
+  if (e.key === 'Tab') {
+    const f = _focusablesIn(top);
+    if (!f.length) { e.preventDefault(); top.focus(); return; }
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    else if (!top.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+  }
+});
+
 window.addEventListener('DOMContentLoaded', async () => {
   await loadRuntimeConfig();
   await loadStaffAccounts();
@@ -2370,7 +2445,7 @@ function renderReports(){
   const tableRows=positionStats.length?positionStats.map(row=>{
     const conv=row.total?Math.round((row.travelled/row.total)*100):0;
     return `<tr>
-      <td class="name-cell">${row.position}</td>
+      <td class="name-cell">${escHTML(row.position||'')}</td>
       <td>${row.total}</td>
       <td>${row.travelled}</td>
       <td>${row.inProcess}</td>
@@ -2396,7 +2471,7 @@ function renderReports(){
       <div class="report-card-title"><i class="ti ti-briefcase"></i>Position Breakdown</div>
       <div class="report-subtitle">Top positions by candidate volume</div>
       <div class="report-chart">${chartBars(positionChart.length?positionChart:[{label:'No data',value:0,color:'#ECEDE6'}],maxPosition,(item)=>item.color)}</div>
-      <div class="report-note">${positionStats.slice(0,5).map(r=>`${r.position}: ${r.total}`).join('  |  ')||'No position records yet'}</div>
+      <div class="report-note">${positionStats.slice(0,5).map(r=>`${escHTML(r.position||'')}: ${r.total}`).join('  |  ')||'No position records yet'}</div>
     </div>
     <div class="report-card">
       <div class="report-card-title"><i class="ti ti-trending-up"></i>Monthly Trend</div>
@@ -2527,7 +2602,7 @@ async function createCompanyUser() {
   if (!display) return fail('Display name is required.');
   if (!/^[a-z0-9._-]{3,32}$/.test(username)) return fail('Username must be 3-32 letters, numbers, dots, underscores, or hyphens.');
   if (STAFF_ACCOUNTS[username]) return fail('That username is already taken.');
-  if (password.length < 6) return fail('Temporary password must be at least 8 characters.');
+  if (password.length < 8) return fail('Temporary password must be at least 8 characters.');
   if (db?.auth) {
     try {
       const { data: sessionData } = await db.auth.getSession();
@@ -3500,7 +3575,7 @@ async function submitRecordPayment(){
   showToast('Payment recorded','success');
 }
 // ── Balance card quick payment ──────────────────────────────────────────────
-let _bpmType='', _bpmId=0, _bpmBalance=0;
+let _bpmType='', _bpmId=0, _bpmBalance=0, _bpmSubmitting=false;
 function openBalancePayment(type, id){
   const r = type==='lb' ? lbDB.find(x=>x.id===id||String(x.id)===String(id)) : proDB.find(x=>x.id===id||String(x.id)===String(id));
   if(!r){ showToast('Candidate not found','error'); return; }
@@ -3532,32 +3607,44 @@ async function submitBalancePayment(){
   const fail=msg=>{ if(errEl){ errEl.textContent=msg; errEl.style.display='block'; } };
   if(!amount||amount<=0) return fail('Enter a valid amount greater than 0.');
   if(amount>_bpmBalance) return fail(`Amount exceeds outstanding balance of ${_bpmType==='lb'?moneyUSD(_bpmBalance):moneyKES(_bpmBalance)}.`);
+  // Guard against double-submit (repeated clicks / Enter) creating duplicate payments.
+  if(_bpmSubmitting) return;
   const id=_bpmId, type=_bpmType;
-  const updates={};
-  if(type==='lb'){
-    const r=lbDB.find(x=>x.id===id||String(x.id)===String(id));
-    if(!r) return fail('Candidate not found.');
-    if(!r.r1Amt){ updates.r1Amt=amount; updates.r1Date=date; r.r1Amt=amount; r.r1Date=date; }
-    else if(!r.r2Amt){ updates.r2Amt=amount; updates.r2Date=date; r.r2Amt=amount; r.r2Date=date; }
-    else{
-      // Both slots used — accumulate into r2Amt
-      updates.r2Amt=(Number(r.r2Amt)||0)+amount; updates.r2Date=date; r.r2Amt=updates.r2Amt; r.r2Date=date;
+  const btn=document.getElementById('bpm-submit');
+  const origLabel=btn?btn.textContent:'';
+  _bpmSubmitting=true;
+  if(btn){ btn.disabled=true; btn.textContent='Saving…'; }
+  const release=()=>{ _bpmSubmitting=false; if(btn){ btn.disabled=false; btn.textContent=origLabel; } };
+  try {
+    const updates={};
+    if(type==='lb'){
+      const r=lbDB.find(x=>x.id===id||String(x.id)===String(id));
+      if(!r) return fail('Candidate not found.');
+      const snapshot={ r1Amt:r.r1Amt, r1Date:r.r1Date, r2Amt:r.r2Amt, r2Date:r.r2Date };
+      if(!r.r1Amt){ updates.r1Amt=amount; updates.r1Date=date; r.r1Amt=amount; r.r1Date=date; }
+      else if(!r.r2Amt){ updates.r2Amt=amount; updates.r2Date=date; r.r2Amt=amount; r.r2Date=date; }
+      else{
+        // Both slots used — accumulate into r2Amt
+        updates.r2Amt=(Number(r.r2Amt)||0)+amount; updates.r2Date=date; r.r2Amt=updates.r2Amt; r.r2Date=date;
+      }
+      try{ if(useCloud()) await dbUpdate('lb_candidates',id,updates); else saveLocalStore(); addTimeline('lb',id,`Payment recorded: ${moneyUSD(amount)}`); auditAction('Finance','Repayment recorded',`${r.name} - ${moneyUSD(amount)}`); }
+      catch(e){ Object.assign(r, snapshot); return fail(e.message||'Save failed.'); }
+    } else {
+      const r=proDB.find(x=>x.id===id||String(x.id)===String(id));
+      if(!r) return fail('Candidate not found.');
+      const prevPaid=proPaidAmount(r);
+      const newTotal=prevPaid+amount;
+      r.paid=newTotal;
+      try{ if(useCloud()) await dbUpdate('pro_candidates',id,{paid:newTotal}); else saveLocalStore(); addTimeline('pro',id,`Commission payment: ${moneyKES(amount)}`); auditAction('Finance','Commission payment recorded',`${r.name} - ${moneyKES(amount)}`); }
+      catch(e){ r.paid=prevPaid; return fail(e.message||'Save failed.'); }
     }
-    try{ if(useCloud()) await dbUpdate('lb_candidates',id,updates); else saveLocalStore(); addTimeline('lb',id,`Payment recorded: ${moneyUSD(amount)}`); auditAction('Finance','Repayment recorded',`${r.name} - ${moneyUSD(amount)}`); }
-    catch(e){ return fail(e.message||'Save failed.'); }
-  } else {
-    const r=proDB.find(x=>x.id===id||String(x.id)===String(id));
-    if(!r) return fail('Candidate not found.');
-    const prevPaid=proPaidAmount(r);
-    const newTotal=prevPaid+amount;
-    r.paid=newTotal;
-    try{ if(useCloud()) await dbUpdate('pro_candidates',id,{paid:newTotal}); else saveLocalStore(); addTimeline('pro',id,`Commission payment: ${moneyKES(amount)}`); auditAction('Finance','Commission payment recorded',`${r.name} - ${moneyKES(amount)}`); }
-    catch(e){ r.paid=prevPaid; return fail(e.message||'Save failed.'); }
+    closeModal('balance-pay-modal');
+    window.openCandidateProfile?.(type, id);
+    window.renderDash?.();
+    showToast('Payment recorded','success');
+  } finally {
+    release();
   }
-  closeModal('balance-pay-modal');
-  window.openCandidateProfile?.(type, id);
-  window.renderDash?.();
-  showToast('Payment recorded','success');
 }
 function openExpensePrompt(){
   if(!requireFinanceAction('Adding expenses')) return;
@@ -4255,7 +4342,10 @@ function showToast(msg,type=''){
   const t=document.getElementById('toast'); if(!t) return;
   const icon=type==='error'?'ti-alert-circle':'ti-circle-check';
   t.className='toast '+type;
-  t.innerHTML=`<i class="ti ${icon}"></i><span>${msg}</span>`;
+  // Message is inserted as text, never HTML — candidate-controlled values
+  // (e.g. names) must not be able to inject markup/script here.
+  t.innerHTML=`<i class="ti ${icon}"></i><span></span>`;
+  const span=t.querySelector('span'); if(span) span.textContent=String(msg==null?'':msg);
   void t.offsetWidth; t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2800);
 }
@@ -4409,7 +4499,7 @@ async function saveProfileChanges() {
     }
     if (!passwordCheck.ok) { showMsg('Current password is incorrect.', 'err'); return; }
     if (!newPw) { showMsg('Enter a new password.', 'err'); return; }
-    if (newPw.length < 6) { showMsg('New password must be at least 8 characters.', 'err'); return; }
+    if (newPw.length < 8) { showMsg('New password must be at least 8 characters.', 'err'); return; }
     if (newPw !== confirmPw) { showMsg('New passwords do not match.', 'err'); return; }
     try {
       await setAccountPassword(STAFF_ACCOUNTS[currentUser.username], newPw);

@@ -159,16 +159,18 @@ module.exports = async function handler(req, res) {
     if (password.length < 8) throw new Error('Password must be at least 8 characters.');
 
     if (action === 'create_workspace') {
-      // Require a signup secret if one is configured — prevents open registration
+      // Fail closed: workspace signup must be explicitly enabled with a secret.
       const signupSecret = process.env.DRECO_SIGNUP_SECRET;
-      if (signupSecret && String(body.signupSecret || '').trim() !== signupSecret) {
+      if (!signupSecret) throw new Error('Workspace signup is disabled. Contact the administrator.');
+      if (String(body.signupSecret || '').trim() !== signupSecret) {
         throw new Error('Invalid signup token. Contact the administrator.');
       }
-      let companyName = String(body.companyName || '').trim();
+      const companyName = String(body.companyName || '').trim();
       if (!companyName) throw new Error('Company name is required.');
-      const companyId = slugify(companyName);
-      const defaults = getDefaultCompany();
-      if (companyId === defaults.id) companyName = defaults.name;
+      // The tenant id is server-generated and unguessable. It is NEVER derived
+      // from user input, so a new workspace can never collide with — or silently
+      // join — an existing tenant (RLS authorizes rows by company_id).
+      const companyId = require('crypto').randomUUID();
       const account = await createAuthUser({
         username,
         password,
@@ -176,7 +178,7 @@ module.exports = async function handler(req, res) {
         role: 'admin',
         companyId,
         companyName,
-        generalJobsCountries: defaults.generalJobsCountries,
+        generalJobsCountries: getDefaultCompany().generalJobsCountries,
       });
       return res.status(200).json({ account });
     }
