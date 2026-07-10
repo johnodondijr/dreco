@@ -1074,7 +1074,14 @@ function enterApp(user) {
   document.getElementById('bottom-nav')?.classList.add('visible');
   setUserDisplay(currentUser.display, currentUser.role);
   appStorageMode = db ? 'cloud' : 'local';
-  loadAllData();
+  // Don't let a data-load failure surface as an unhandled rejection (which the
+  // global handler would otherwise log as a scary generic error right after
+  // sign-in). loadAllData handles cloud errors internally with a local
+  // fallback; this catch covers any render/tail failure.
+  loadAllData().catch(err => {
+    console.error('Initial data load failed:', err);
+    showToast('Some data could not be loaded. Tap refresh to retry.', 'error');
+  });
 }
 
 // Refresh expiry on user activity (throttled to once per minute)
@@ -1284,12 +1291,13 @@ function doLogout() {
   hideForgotPassword();
 }
 
-// Global safety net: surface unexpected async failures instead of failing
-// silently (which previously left spinners/optimistic UI stuck). Toast is
-// best-effort; showToast is hoisted so this is safe at module load.
+// Global safety net: log unexpected async failures so they aren't fully silent.
+// We deliberately do NOT show a user-facing toast here — many background
+// rejections (blocked writes, cancelled fetches) are benign, and a generic
+// "something went wrong" on every one cries wolf. User-facing failures are
+// reported by the specific code paths that own them (loadAllData, payments…).
 window.addEventListener('unhandledrejection', (e) => {
   console.error('Unhandled promise rejection:', e.reason);
-  try { showToast('Something went wrong. Please retry.', 'error'); } catch {}
 });
 window.addEventListener('error', (e) => {
   if (e?.error) console.error('Uncaught error:', e.error);
