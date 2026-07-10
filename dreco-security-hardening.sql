@@ -110,3 +110,11 @@ ALTER TABLE lb_candidates DROP CONSTRAINT IF EXISTS lb_r1_nonneg;
 ALTER TABLE lb_candidates ADD  CONSTRAINT lb_r1_nonneg CHECK ("r1Amt" IS NULL OR "r1Amt" >= 0);
 ALTER TABLE lb_candidates DROP CONSTRAINT IF EXISTS lb_r2_nonneg;
 ALTER TABLE lb_candidates ADD  CONSTRAINT lb_r2_nonneg CHECK ("r2Amt" IS NULL OR "r2Amt" >= 0);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- M9 (optional) — remove any legacy staff-accounts row that may contain PBKDF2
+-- password hashes. The client no longer writes hashes to the cloud; Supabase
+-- Auth + per-device localStorage remain the sources of truth, so deleting this
+-- row is safe. Run only if the row exists.
+-- ─────────────────────────────────────────────────────────────────────────────
+DELETE FROM app_settings WHERE key = 'dreco_accounts_v2';

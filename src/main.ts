@@ -293,9 +293,20 @@ async function loadStaffAccounts() {
   // Step 7: Push corrected accounts back to cloud so stale hashes don't persist
   if (db) {
     try {
-      await db.from('app_settings').upsert({ key: CLOUD_ACCOUNTS_KEY, value: STAFF_ACCOUNTS }, { onConflict: 'key' });
+      await db.from('app_settings').upsert({ key: CLOUD_ACCOUNTS_KEY, value: cloudSafeAccounts() }, { onConflict: 'key' });
     } catch (_) {}
   }
+}
+// Password material (PBKDF2 hash/salt) backs the offline/local-fallback login
+// and must never leave the device. Strip it from anything synced to the cloud
+// app_settings row so hashes are not persisted in a shared table.
+function cloudSafeAccounts() {
+  const out = {};
+  for (const [u, a] of Object.entries(STAFF_ACCOUNTS)) {
+    const { passwordHash, passwordSalt, hashVersion, password, ...rest } = a || {};
+    out[u] = rest;
+  }
+  return out;
 }
 async function saveStaffAccounts() {
   normalizeAllAccounts();
@@ -303,7 +314,7 @@ async function saveStaffAccounts() {
   safeLocalSet(LOCAL_STAFF_KEY, JSON.stringify(STAFF_ACCOUNTS));
   if (db) {
     try {
-      await db.from('app_settings').upsert({ key: CLOUD_ACCOUNTS_KEY, value: STAFF_ACCOUNTS }, { onConflict: 'key' });
+      await db.from('app_settings').upsert({ key: CLOUD_ACCOUNTS_KEY, value: cloudSafeAccounts() }, { onConflict: 'key' });
     } catch (err) {
       console.warn('Cloud staff accounts could not be saved:', err);
     }
