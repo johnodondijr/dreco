@@ -7770,7 +7770,7 @@ html body #app .integrity-row.medium{
       <button class="topbar-icon-btn topbar-refresh-btn" id="topbar-refresh-btn" type="button" aria-label="Refresh data" title="Refresh data" onclick="refreshDrecoData()">
         <i class="ti ti-refresh"></i>
       </button>
-      <button class="topbar-icon-btn topbar-notif-btn" id="topbar-notif-btn" type="button" aria-label="Notifications" title="Notifications" onclick="switchTab('notifications')">
+      <button class="topbar-icon-btn topbar-notif-btn" id="topbar-notif-btn" type="button" aria-label="Notifications" title="Notifications" data-action="tab.switch" data-tab="notifications">
         <i class="ti ti-bell"></i>
       </button>
       <div class="save-dot" id="save-dot" style="display:none"></div>
@@ -7868,34 +7868,34 @@ html body #app .integrity-row.medium{
       <div class="sidebar-divider"></div>
 
       <div class="nav-section-label">Workspace</div>
-      <button type="button" class="nav-item active" id="nav-dash" data-title="Home" aria-label="Home" onclick="switchTab('dash')">
+      <button type="button" class="nav-item active" id="nav-dash" data-title="Home" aria-label="Home" data-action="tab.switch" data-tab="dash">
         <i class="ti ti-layout-dashboard"></i><span class="nav-item-label">Home</span>
       </button>
-      <button type="button" class="nav-item" id="nav-pipeline" data-title="Pipeline" aria-label="Pipeline" onclick="switchTab('pipeline')">
+      <button type="button" class="nav-item" id="nav-pipeline" data-title="Pipeline" aria-label="Pipeline" data-action="tab.switch" data-tab="pipeline">
         <i class="ti ti-briefcase"></i><span class="nav-item-label">Pipeline</span>
       </button>
-      <button type="button" class="nav-item" id="nav-candidates" data-title="Candidates" aria-label="Candidates" onclick="switchTab('candidates')">
+      <button type="button" class="nav-item" id="nav-candidates" data-title="Candidates" aria-label="Candidates" data-action="tab.switch" data-tab="candidates">
         <i class="ti ti-users"></i><span class="nav-item-label">Candidates</span>
       </button>
-      <button type="button" class="nav-item" id="nav-notifications" data-title="Notifications" aria-label="Notifications" onclick="switchTab('notifications')">
+      <button type="button" class="nav-item" id="nav-notifications" data-title="Notifications" aria-label="Notifications" data-action="tab.switch" data-tab="notifications">
         <i class="ti ti-bell"></i><span class="nav-item-label">Notifications</span>
       </button>
 
       <div class="nav-section-label">Operations</div>
-      <button type="button" class="nav-item" id="nav-finance" data-title="Finance" aria-label="Finance" onclick="switchTab('finance')">
+      <button type="button" class="nav-item" id="nav-finance" data-title="Finance" aria-label="Finance" data-action="tab.switch" data-tab="finance">
         <i class="ti ti-wallet"></i><span class="nav-item-label">Finance</span>
       </button>
-      <button type="button" class="nav-item" id="nav-documents" data-title="Documents" aria-label="Documents" onclick="switchTab('documents')">
+      <button type="button" class="nav-item" id="nav-documents" data-title="Documents" aria-label="Documents" data-action="tab.switch" data-tab="documents">
         <i class="ti ti-clipboard-text"></i><span class="nav-item-label">Documents</span>
       </button>
-      <button type="button" class="nav-item" id="nav-reports" data-title="Reports" aria-label="Reports" onclick="switchTab('reports')">
+      <button type="button" class="nav-item" id="nav-reports" data-title="Reports" aria-label="Reports" data-action="tab.switch" data-tab="reports">
         <i class="ti ti-chart-line"></i><span class="nav-item-label">Reports</span>
       </button>
-      <button type="button" class="nav-item" id="nav-jobs" data-title="Employers" aria-label="Employers" onclick="switchTab('jobs')">
+      <button type="button" class="nav-item" id="nav-jobs" data-title="Employers" aria-label="Employers" data-action="tab.switch" data-tab="jobs">
         <i class="ti ti-building"></i><span class="nav-item-label">Employers</span>
       </button>
 
-      <button type="button" class="nav-item" id="nav-settings" data-title="Settings" aria-label="Settings" onclick="switchTab('settings')">
+      <button type="button" class="nav-item" id="nav-settings" data-title="Settings" aria-label="Settings" data-action="tab.switch" data-tab="settings">
         <i class="ti ti-settings"></i><span class="nav-item-label">Settings</span>
       </button>
 
@@ -8087,7 +8087,7 @@ html body #app .integrity-row.medium{
         </div>
 
         <div id="account-section" style="display:none">
-          <div class="section-page-head"><div><h2>Profile</h2><p>Your Dreco account, profile photo, login name, and password.</p></div><button class="btn" onclick="switchTab('settings')"><i class="ti ti-settings"></i> Settings</button></div>
+          <div class="section-page-head"><div><h2>Profile</h2><p>Your Dreco account, profile photo, login name, and password.</p></div><button class="btn" data-action="tab.switch" data-tab="settings"><i class="ti ti-settings"></i> Settings</button></div>
           <div id="account-page-content"></div>
         </div>
 
@@ -8106,12 +8106,12 @@ html body #app .integrity-row.medium{
           <div class="settings-page-grid" id="settings-page-content">
   <div class="settings-page-card"><h3>Workspace</h3><p>Manage company identity and data mode.</p><div class="setting-row"><span>Company</span><button onclick="openSettingsModal()">Edit</button></div></div>
   <div class="settings-page-card"><h3>Data</h3><p>Export backups or reset local filters.</p><div class="setting-row"><span>Backup</span><button onclick="downloadBackup()">Download</button></div></div>
-  <div class="settings-page-card"><h3>Team & permissions</h3><p>Add staff and review roles from the Team page.</p><div class="setting-row"><span>Team members</span><button onclick="switchTab('team')">Manage</button></div></div>
+  <div class="settings-page-card"><h3>Team & permissions</h3><p>Add staff and review roles from the Team page.</p><div class="setting-row"><span>Team members</span><button data-action="tab.switch" data-tab="team">Manage</button></div></div>
 </div>
         </div>
 
         <div id="help-section" style="display:none">
-          <div class="section-page-head"><div><h2>Help &amp; Support</h2><p>Practical guidance for running Dreco efficiently.</p></div><button class="btn" onclick="switchTab('settings')"><i class="ti ti-settings"></i> Settings</button></div>
+          <div class="section-page-head"><div><h2>Help &amp; Support</h2><p>Practical guidance for running Dreco efficiently.</p></div><button class="btn" data-action="tab.switch" data-tab="settings"><i class="ti ti-settings"></i> Settings</button></div>
           <div class="settings-page-grid" id="help-section-content"></div>
         </div>
 
@@ -8628,28 +8628,28 @@ html body #app .integrity-row.medium{
 
 <!-- MOBILE BOTTOM NAV -->
 <nav class="bottom-nav" id="bottom-nav" aria-label="Mobile navigation">
-  <button class="bottom-nav-item active" id="bnav-dash" onclick="switchTab('dash')" aria-label="Home">
+  <button class="bottom-nav-item active" id="bnav-dash" data-action="tab.switch" data-tab="dash" aria-label="Home">
     <i class="ti ti-layout-dashboard"></i><span>Home</span>
   </button>
-  <button class="bottom-nav-item" id="bnav-pipeline" onclick="switchTab('pipeline')" aria-label="Pipeline">
+  <button class="bottom-nav-item" id="bnav-pipeline" data-action="tab.switch" data-tab="pipeline" aria-label="Pipeline">
     <i class="ti ti-layout-columns"></i><span>Pipeline</span>
   </button>
-  <button class="bottom-nav-item" id="bnav-candidates" onclick="switchTab('candidates')" aria-label="Candidates">
+  <button class="bottom-nav-item" id="bnav-candidates" data-action="tab.switch" data-tab="candidates" aria-label="Candidates">
     <i class="ti ti-users"></i><span>Candidates</span>
   </button>
-  <button class="bottom-nav-item" id="bnav-finance" onclick="switchTab('finance')" aria-label="Finance">
+  <button class="bottom-nav-item" id="bnav-finance" data-action="tab.switch" data-tab="finance" aria-label="Finance">
     <i class="ti ti-coin"></i><span>Finance</span>
   </button>
-  <button class="bottom-nav-item" id="bnav-documents" onclick="switchTab('documents')" aria-label="Documents">
+  <button class="bottom-nav-item" id="bnav-documents" data-action="tab.switch" data-tab="documents" aria-label="Documents">
     <i class="ti ti-folder"></i><span>Docs</span>
   </button>
-  <button class="bottom-nav-item" id="bnav-reports" onclick="switchTab('reports')" aria-label="Reports">
+  <button class="bottom-nav-item" id="bnav-reports" data-action="tab.switch" data-tab="reports" aria-label="Reports">
     <i class="ti ti-chart-bar"></i><span>Reports</span>
   </button>
-  <button class="bottom-nav-item" id="bnav-jobs" onclick="switchTab('jobs')" aria-label="Employers">
+  <button class="bottom-nav-item" id="bnav-jobs" data-action="tab.switch" data-tab="jobs" aria-label="Employers">
     <i class="ti ti-building"></i><span>Employers</span>
   </button>
-  <button class="bottom-nav-item" id="bnav-settings" onclick="switchTab('settings')" aria-label="Settings">
+  <button class="bottom-nav-item" id="bnav-settings" data-action="tab.switch" data-tab="settings" aria-label="Settings">
     <i class="ti ti-settings"></i><span>Settings</span>
   </button>
 </nav>

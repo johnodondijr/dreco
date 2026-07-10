@@ -935,13 +935,13 @@ export function injectDepsToD5(deps) {
     if (sidebarBuilt) return;
     const side = document.querySelector('#app .sidebar');
     if (!side) return;
-    const navItem = t => `<a class="nav-item" id="nav-${t}" onclick="switchTab('${t}')" title="${h(TITLES[t])}">
+    const navItem = t => `<a class="nav-item" id="nav-${t}" data-action="tab.switch" data-tab="${t}" title="${h(TITLES[t])}">
       <i class="ti ${h(ICONS[t])}" style="font-size:15px;width:16px;flex-shrink:0"></i>
       <span class="nav-item-label" style="font-size:12.5px;font-weight:625;letter-spacing:0">${h(TITLES[t])}</span>
     </a>`;
     side.innerHTML = `
       <div class="sidebar-top">
-        <a class="sidebar-logo" onclick="switchTab('dash')" aria-label="Dreco home">
+        <a class="sidebar-logo" data-action="tab.switch" data-tab="dash" aria-label="Dreco home">
           <img class="dreco-wordmark dreco-wordmark-lime" src="/wordmark-lime.png" alt="Dreco">
         </a>
         <button class="sidebar-toggle" onclick="toggleSidebar()" type="button" aria-label="Toggle sidebar">
@@ -1064,7 +1064,7 @@ export function injectDepsToD5(deps) {
         <div class="dv5-card dv5-card-pipeline">
           <div class="dv5-card-head" style="margin-bottom:16px">
             <span class="dv5-card-title dv5-pipeline-title">${isPro?'Candidates':'General Jobs'} Pipeline</span>
-            <button class="dv5-link dv5-pipeline-link" onclick="switchTab('pipeline')">View all →</button>
+            <button class="dv5-link dv5-pipeline-link" data-action="tab.switch" data-tab="pipeline">View all →</button>
           </div>
           <div class="dv5-pipeline-flow" style="justify-content:space-between">
             ${flowSteps.map(([label,val], i) => {
@@ -1090,7 +1090,7 @@ export function injectDepsToD5(deps) {
                 <span class="dv5-card-title">Candidate Movement</span>
                 <div class="dv5-card-sub">${isPro?'Professional':'General'} — new candidates added per week</div>
               </div>
-              <button class="dv5-link" style="color:rgba(190,18,60,.7)" onclick="switchTab('candidates')">All →</button>
+              <button class="dv5-link" style="color:rgba(190,18,60,.7)" data-action="tab.switch" data-tab="candidates">All →</button>
             </div>
             ${buildLineChart(normRows, candMovMonth || new Date().toISOString().slice(0,7))}
           </div>
@@ -1114,7 +1114,7 @@ export function injectDepsToD5(deps) {
           <div class="dv5-card" style="margin-bottom:0">
             <div class="dv5-card-head">
               <span class="dv5-card-title">Upcoming Reminders</span>
-              <button class="dv5-link" onclick="switchTab('pipeline')">All →</button>
+              <button class="dv5-link" data-action="tab.switch" data-tab="pipeline">All →</button>
             </div>
             <div class="dv5-task-list">
               ${tasks.length ? tasks.map(taskRow).join('') : '<div class="dv5-empty">No urgent tasks.</div>'}
@@ -1517,7 +1517,7 @@ export function injectDepsToD5(deps) {
         <div class="dv5-page-head">
           <div><h1>Tasks</h1><p>Auto-generated action items plus your own manual tasks. Dismiss any item to clear it.</p></div>
           <div class="dv5-head-actions">
-            <button class="dv5-btn primary" onclick="switchTab('candidates')"><i class="ti ti-users"></i>Open Candidates</button>
+            <button class="dv5-btn primary" data-action="tab.switch" data-tab="candidates"><i class="ti ti-users"></i>Open Candidates</button>
           </div>
         </div>
         <div class="dv5-stat-grid">
@@ -3934,7 +3934,7 @@ export function injectDepsToD5(deps) {
     const complete = all.filter(x=>completion(x.type,x.id).pct >= 100).length;
     const partial = all.filter(x=>{ const c=completion(x.type,x.id); return c.done>0 && c.pct<100; }).length;
     const missing = all.filter(x=>completion(x.type,x.id).done===0).length;
-    el.innerHTML = `<div class="v4-page"><div class="v4-head"><div><h1>Documents</h1><p>Direct per-candidate uploads with checklist status, view, replace and delete actions.</p></div><div class="v4-actions"><button class="dreco-btn primary" onclick="switchTab('candidates')">Open Candidates</button></div></div><div class="v4-kpi-grid"><div class="v4-kpi"><span>Complete</span><strong>${complete}</strong><small>All required files</small></div><div class="v4-kpi"><span>Partial</span><strong>${partial}</strong><small>Some files uploaded</small></div><div class="v4-kpi"><span>Missing</span><strong>${missing}</strong><small>No documents yet</small></div><div class="v4-kpi"><span>Total files</span><strong>${all.reduce((s,x)=>s+uploadedCount(x.type,x.id),0)}</strong><small>Uploaded records</small></div></div><div class="v4-card"><table class="v4-table"><thead><tr><th>Candidate</th><th>Type</th><th>Required Checklist</th><th>Progress</th><th>Status</th><th>Action</th></tr></thead><tbody>${rowsHTML}</tbody></table></div></div>`;
+    el.innerHTML = `<div class="v4-page"><div class="v4-head"><div><h1>Documents</h1><p>Direct per-candidate uploads with checklist status, view, replace and delete actions.</p></div><div class="v4-actions"><button class="dreco-btn primary" data-action="tab.switch" data-tab="candidates">Open Candidates</button></div></div><div class="v4-kpi-grid"><div class="v4-kpi"><span>Complete</span><strong>${complete}</strong><small>All required files</small></div><div class="v4-kpi"><span>Partial</span><strong>${partial}</strong><small>Some files uploaded</small></div><div class="v4-kpi"><span>Missing</span><strong>${missing}</strong><small>No documents yet</small></div><div class="v4-kpi"><span>Total files</span><strong>${all.reduce((s,x)=>s+uploadedCount(x.type,x.id),0)}</strong><small>Uploaded records</small></div></div><div class="v4-card"><table class="v4-table"><thead><tr><th>Candidate</th><th>Type</th><th>Required Checklist</th><th>Progress</th><th>Status</th><th>Action</th></tr></thead><tbody>${rowsHTML}</tbody></table></div></div>`;
   };
   // switchTab wrapper removed — DV5 handles tab routing.
   // renderDocumentsV4 is available globally for direct calls if needed.
