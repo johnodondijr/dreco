@@ -3721,9 +3721,11 @@ export function injectDepsToD5(deps) {
     refreshDocsUI(type,id);
   }
   function refreshDocsUI(type,id){
-    try { renderDocChecklist(type,id); } catch {}
+    try { window.drecoRenderDocsModal(type,id); } catch {}
     const active = sessionStorage.getItem('dreco_active_tab') || '';
     try { if(typeof renderDocumentsV4 === 'function') renderDocumentsV4(); } catch {}
+    // Keep the candidate profile's Record Health / gauge counter in sync.
+    try { window.renderDocumentsPage?.(); } catch {}
   }
   function closeOverlays(exceptId){
     $$('.modal-bg.open,.modal.open,.v4-modal.open').forEach(el => { if(el.id !== exceptId) el.classList.remove('open'); });
@@ -3764,11 +3766,14 @@ export function injectDepsToD5(deps) {
         </div>
       `;
     }
-    renderDocChecklist(type,id);
+    window.drecoRenderDocsModal(type,id);
     modal.classList.add('open');
   };
 
-  window.renderDocChecklist = function(type,id){
+  // Renderer for the document-UPLOAD modal (#docs-checklist). Named distinctly
+  // from main.ts's renderDocChecklist (the candidate "Docs" tab) which used to
+  // collide on window.renderDocChecklist and shadow this one.
+  window.drecoRenderDocsModal = function(type,id){
     const el = $('#docs-checklist'); if(!el) return;
     const store = getDocStore(type,id);
     const items = store.items || {};
@@ -3778,14 +3783,22 @@ export function injectDepsToD5(deps) {
     if(progress) progress.innerHTML = `<strong>${c.done}/${c.total}</strong><span>${c.pct}% complete</span><i><b style="width:${Math.min(100,c.pct)}%"></b></i>`;
     el.innerHTML = defs.map(([key,label]) => {
       const d = items[key];
-      const uploaded = !!d;
+      const marked = !!(d && d.markedComplete);   // marked complete, no file
+      const uploaded = !!(d && !d.markedComplete); // has an actual file
+      const done = uploaded || marked;
+      const icon = uploaded ? 'ti-circle-check-filled' : marked ? 'ti-circle-check' : 'ti-cloud-upload';
+      const copy = uploaded
+        ? `<span>${esc(d.fileName || 'Uploaded file')} ${d.size ? '• '+fmtBytes(d.size) : ''}</span><small>Uploaded ${esc(formatDocDate(d.uploadedAt))} by ${esc(d.uploadedBy || 'User')}</small>`
+        : marked
+          ? `<span>Marked complete — no file on record</span><small>Marked ${esc(formatDocDate(d.uploadedAt))} by ${esc(d.uploadedBy || 'User')}</small>`
+          : `<span>Missing</span><small>Accepted: PDF, image, Word, Excel, text files</small>`;
       return `
-        <div class="dreco-doc-item ${uploaded ? 'uploaded' : 'missing'}">
+        <div class="dreco-doc-item ${done ? 'uploaded' : 'missing'}${marked ? ' marked' : ''}">
           <div class="dreco-doc-main">
-            <div class="dreco-doc-status"><i class="ti ${uploaded ? 'ti-circle-check-filled' : 'ti-cloud-upload'}"></i></div>
+            <div class="dreco-doc-status"><i class="ti ${icon}"></i></div>
             <div class="dreco-doc-copy">
               <strong>${esc(label)}</strong>
-              ${uploaded ? `<span>${esc(d.fileName || 'Uploaded file')} ${d.size ? '• '+fmtBytes(d.size) : ''}</span><small>Uploaded ${esc(formatDocDate(d.uploadedAt))} by ${esc(d.uploadedBy || 'User')}</small>` : `<span>Missing</span><small>Accepted: PDF, image, Word, Excel, text files</small>`}
+              ${copy}
             </div>
           </div>
           <div class="dreco-doc-actions">
@@ -3794,6 +3807,9 @@ export function injectDepsToD5(deps) {
               <i class="ti ${uploaded ? 'ti-refresh' : 'ti-upload'}"></i> ${uploaded ? 'Replace' : 'Upload'}
               <input type="file" hidden onchange="drecoUploadDoc('${js(type)}','${js(id)}','${js(key)}',this)">
             </label>
+            ${!uploaded ? (marked
+              ? `<button class="btn tiny" data-action="doc.mark" data-type="${js(type)}" data-id="${js(id)}" data-doc="${js(key)}" data-complete="0"><i class="ti ti-x"></i> Unmark</button>`
+              : `<button class="btn tiny" data-action="doc.mark" data-type="${js(type)}" data-id="${js(id)}" data-doc="${js(key)}" data-complete="1"><i class="ti ti-check"></i> Mark complete</button>`) : ''}
             ${uploaded ? `<button class="btn tiny danger" onclick="drecoDeleteDoc('${js(type)}','${js(id)}','${js(key)}')"><i class="ti ti-trash"></i></button>` : ''}
           </div>
         </div>`;
@@ -3877,6 +3893,26 @@ export function injectDepsToD5(deps) {
   };
   window.drecoViewDoc = function(type,id,docType){
     return openDocItem(docItems(type,id)[docType]);
+  };
+  // Mark a required document as complete WITHOUT a file on record (e.g. the
+  // agency doesn't hold the file but the candidate already completed/travelled).
+  // A fileless "marked" item still counts toward completion, so it no longer
+  // shows as missing in the counter / Record Health / readiness gauge.
+  window.drecoMarkDocComplete = async function(type,id,docType,complete){
+    const label = Object.fromEntries(getDefs(type))[docType] || docType;
+    const store = getDocStore(type,id);
+    store.items = store.items || {};
+    const existing = store.items[docType];
+    if(complete){
+      if(existing && !existing.markedComplete) return; // never clobber a real file
+      store.items[docType] = { label, markedComplete:true, uploadedAt:nowISO(), uploadedBy:currentDisplay(), storage:'marked' };
+    } else {
+      if(!existing || !existing.markedComplete) return; // only clear manual marks
+      delete store.items[docType];
+    }
+    await persistDocs(type,id,store); // persist + refresh modal, docs page, counter
+    try { addTimeline(type,id, complete?`${label} marked complete (no file on record)`:`${label} completion mark removed`); } catch {}
+    try { auditAction('Documents', complete?`${label} marked complete`:`${label} completion mark removed`, (recordByType(type,id)||{}).name || 'Candidate'); } catch {}
   };
   window.drecoDeleteDoc = async function(type,id,docType){
     const store = getDocStore(type,id); const d = store.items?.[docType];

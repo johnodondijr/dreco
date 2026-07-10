@@ -1373,6 +1373,16 @@ const DRECO_ACTIONS = {
     const t = el.getAttribute('data-tab');
     if (t && typeof window.switchTab === 'function') window.switchTab(t);
   },
+  'doc.mark': (el) => {
+    if (typeof window.drecoMarkDocComplete === 'function') {
+      window.drecoMarkDocComplete(
+        el.getAttribute('data-type'),
+        el.getAttribute('data-id'),
+        el.getAttribute('data-doc'),
+        el.getAttribute('data-complete') === '1'
+      );
+    }
+  },
 };
 window.DRECO_ACTIONS = DRECO_ACTIONS;
 document.addEventListener('click', (e) => {
