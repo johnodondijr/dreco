@@ -76,6 +76,38 @@ function accountFromUser(user) {
   };
 }
 
+async function findAuthUserByUsername(username) {
+  const email = authEmail(username);
+  let page = 1;
+  const perPage = 200;
+  while (page <= 10) {
+    const data = await supabaseAdminFetch(`/auth/v1/admin/users?page=${page}&per_page=${perPage}`, {
+      method: 'GET',
+      headers: { 'content-type': undefined },
+    });
+    const users = Array.isArray(data?.users) ? data.users : [];
+    const match = users.find(user => String(user.email || '').toLowerCase() === email);
+    if (match) return match;
+    if (users.length < perPage) break;
+    page += 1;
+  }
+  return null;
+}
+
+async function loadCloudAccount(username) {
+  try {
+    const data = await supabaseAdminFetch('/rest/v1/app_settings?key=eq.dreco_accounts_v2&select=value', {
+      method: 'GET',
+      headers: { accept: 'application/json' },
+    });
+    const row = Array.isArray(data) ? data[0] : null;
+    const account = row?.value?.[username];
+    return account && typeof account === 'object' ? account : null;
+  } catch {
+    return null;
+  }
+}
+
 async function createAuthUser({ username, password, display, role, companyId, companyName, generalJobsCountries }) {
   const user = await supabaseAdminFetch('/auth/v1/admin/users', {
     method: 'POST',
@@ -98,6 +130,55 @@ async function createAuthUser({ username, password, display, role, companyId, co
     }),
   });
   return accountFromUser(user);
+}
+
+async function resetAuthPassword({ username, password, display }) {
+  const cloudAccount = await loadCloudAccount(username);
+  const defaults = getDefaultCompany();
+  const profile = {
+    username,
+    display: display || cloudAccount?.display || username,
+    role: cloudAccount?.role === 'admin' ? 'admin' : 'staff',
+    companyId: cloudAccount?.companyId || cloudAccount?.company_id || defaults.id,
+    companyName: cloudAccount?.companyName || cloudAccount?.company_name || defaults.name,
+    generalJobsCountries: Array.isArray(cloudAccount?.generalJobsCountries) && cloudAccount.generalJobsCountries.length
+      ? cloudAccount.generalJobsCountries
+      : defaults.generalJobsCountries,
+  };
+
+  const existing = await findAuthUserByUsername(username);
+  if (existing?.id) {
+    const user = await supabaseAdminFetch(`/auth/v1/admin/users/${existing.id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        password,
+        email_confirm: true,
+        user_metadata: {
+          username,
+          display: profile.display,
+        },
+        app_metadata: {
+          username,
+          display: profile.display,
+          role: profile.role,
+          company_id: profile.companyId,
+          company_name: profile.companyName,
+          general_jobs_countries: profile.generalJobsCountries,
+        },
+      }),
+    });
+    return accountFromUser(user);
+  }
+
+  return createAuthUser({
+    username,
+    password,
+    display: profile.display,
+    role: profile.role,
+    companyId: profile.companyId,
+    companyName: profile.companyName,
+    generalJobsCountries: profile.generalJobsCountries,
+  });
 }
 
 // ── Rate limiter ──────────────────────────────────────────────────────────────
@@ -155,7 +236,7 @@ module.exports = async function handler(req, res) {
     const display = String(body.display || '').trim();
 
     if (!/^[a-z0-9._-]{3,32}$/.test(username)) throw new Error('Username must be 3-32 letters, numbers, dots, underscores, or hyphens.');
-    if (!display) throw new Error('Display name is required.');
+    if ((action === 'create_workspace' || action === 'create_user') && !display) throw new Error('Display name is required.');
     if (password.length < 8) throw new Error('Password must be at least 8 characters.');
 
     if (action === 'create_workspace') {
@@ -198,6 +279,14 @@ module.exports = async function handler(req, res) {
         generalJobsCountries: Array.isArray(meta.general_jobs_countries) ? meta.general_jobs_countries : getDefaultCompany().generalJobsCountries,
       });
       return res.status(200).json({ account });
+    }
+
+    if (action === 'reset_password') {
+      const recoveryCode = process.env.DRECO_RECOVERY_CODE;
+      if (!recoveryCode) throw new Error('Recovery is not configured.');
+      if (String(body.code || '').trim() !== recoveryCode) throw new Error('Incorrect recovery code.');
+      const account = await resetAuthPassword({ username, password, display });
+      return res.status(200).json({ account, message: 'Password reset. You can sign in now.' });
     }
 
     throw new Error('Unknown auth action.');

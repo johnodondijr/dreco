@@ -7550,8 +7550,33 @@ html body #app .integrity-row.medium{
         <div id="forgot-section" style="display:none">
           <div class="lp-header">
             <h1>Reset Password</h1>
-            <p>Password resets are handled by your workspace admin. Ask them to reset your password from the Team settings page.</p>
+            <p>Use your workspace recovery code to create a new password.</p>
           </div>
+          <form id="recovery-form">
+            <div class="lp-input-group">
+              <label for="recovery-username">Username</label>
+              <div class="lp-input-wrap">
+                <i class="ti ti-user lp-input-icon"></i>
+                <input type="text" id="recovery-username" placeholder="e.g. admin" required autocomplete="username" autocapitalize="none" spellcheck="false">
+              </div>
+            </div>
+            <div class="lp-input-group">
+              <label for="recovery-code">Recovery Code</label>
+              <div class="lp-input-wrap">
+                <i class="ti ti-key lp-input-icon"></i>
+                <input type="password" id="recovery-code" placeholder="Enter recovery code" required autocomplete="one-time-code">
+              </div>
+            </div>
+            <div class="lp-input-group">
+              <label for="recovery-password">New Password</label>
+              <div class="lp-input-wrap">
+                <i class="ti ti-lock lp-input-icon"></i>
+                <input type="password" id="recovery-password" placeholder="At least 8 characters" required minlength="8" autocomplete="new-password">
+              </div>
+            </div>
+            <button type="submit" class="lp-submit" id="recovery-submit"><span class="lp-submit-label">Reset password</span><span class="lp-submit-dots" aria-hidden="true"><i></i><i></i><i></i></span></button>
+          </form>
+          <div class="login-error" id="recovery-error" role="alert" style="display:none"></div>
           <span class="lp-forgot auth-back-link" onclick="hideForgotPassword()" style="margin-top:16px;display:inline-block"><i class="ti ti-arrow-left"></i>Back to login</span>
         </div>
       </div>

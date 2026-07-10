@@ -979,6 +979,18 @@ function setLoginSuccessState() {
   btn.classList.add('is-success');
   if (label) label.textContent = 'Signed in';
 }
+function setRecoveryBusy(isBusy) {
+  const btn = document.getElementById('recovery-submit');
+  const label = btn?.querySelector('.lp-submit-label');
+  ['recovery-username','recovery-code','recovery-password'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = isBusy;
+  });
+  if (!btn) return;
+  btn.disabled = isBusy;
+  btn.classList.toggle('is-loading', isBusy);
+  if (label) label.textContent = isBusy ? 'Resetting...' : 'Reset password';
+}
 function initLoginInteractions() {
   const pw = document.getElementById('pw-input');
   const hint = document.getElementById('caps-lock-hint');
@@ -991,6 +1003,10 @@ function initLoginInteractions() {
     pw.addEventListener('keyup', updateCapsHint);
     pw.addEventListener('blur', () => hint.classList.remove('show'));
   }
+  document.getElementById('recovery-form')?.addEventListener('submit', e => {
+    e.preventDefault();
+    doRecoveryReset();
+  });
   const media = document.querySelector('.lp-media');
   const hero = document.querySelector('.lp-hero-object');
   if (media && hero) {
@@ -1054,6 +1070,40 @@ function hideSignup() {
   document.getElementById('signup-section').style.display='none';
   document.getElementById('forgot-section').style.display='none';
   document.getElementById('login-main').style.display='block';
+}
+
+async function doRecoveryReset() {
+  const username=(document.getElementById('recovery-username')?.value||'').trim().toLowerCase();
+  const code=(document.getElementById('recovery-code')?.value||'').trim();
+  const password=(document.getElementById('recovery-password')?.value||'').trim();
+  const errEl=document.getElementById('recovery-error');
+  const fail=msg=>{ if(errEl){ errEl.textContent=msg; errEl.style.display='block'; } setRecoveryBusy(false); };
+  if(errEl) errEl.style.display='none';
+  if(!/^[a-z0-9._-]{3,32}$/.test(username)) return fail('Username must be 3-32 letters, numbers, dots, underscores, or hyphens.');
+  if(!code) return fail('Recovery code is required.');
+  if(password.length<8) return fail('Password must be at least 8 characters.');
+  setRecoveryBusy(true);
+  try {
+    const result = await postAuthAction({ action:'reset_password', username, code, password });
+    STAFF_ACCOUNTS[username]=normalizeAccount(username,result.account);
+    await signInWithSupabaseAuth(username,password);
+    await saveStaffAccounts();
+    _clearLoginFailures(username);
+    setRecoveryBusy(false);
+    hideForgotPassword();
+    setLoginSuccessState();
+    enterApp({
+      username,
+      role: result.account.role,
+      display: result.account.display,
+      companyId: result.account.companyId,
+      companyName: result.account.companyName,
+      generalJobsCountries: result.account.generalJobsCountries,
+      authUserId: result.account.authUserId,
+    });
+  } catch(e) {
+    fail(e.message || 'Password reset failed.');
+  }
 }
 
 // ── Centralised post-login entry point ───────────────────────────────────────
@@ -4784,7 +4834,7 @@ injectDepsToD5({
 // ES modules don't pollute global scope, so onclick="fn()" handlers need this.
 Object.assign(window, {
   // Auth & session
-  doLogin, doSignup, doLogout, loadAllData, setUserDisplay,
+  doLogin, doSignup, doRecoveryReset, doLogout, loadAllData, setUserDisplay,
   // Navigation
   switchTab, toggleSidebar, openMobileSidebar, closeMobileSidebar,
   // Pro candidates
