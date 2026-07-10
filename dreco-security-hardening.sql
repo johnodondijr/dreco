@@ -1,10 +1,19 @@
 -- Dreco security hardening migration (from audit: H3, H4, M2)
 -- Run in the Supabase SQL editor. Safe to re-run (idempotent guards used).
 --
--- IMPORTANT manual step for H3 (do this first, in the dashboard):
---   Storage → candidate-documents bucket → make it PRIVATE (turn off "Public").
---   Public buckets expose passport/ID scans at guessable URLs. The app now
---   generates a short-lived signed URL per view instead of a public URL.
+-- H3 — Create the candidate-documents bucket as PRIVATE (with size/type limits
+-- matching the client-side validation). If the bucket already exists this just
+-- forces it private. Public buckets expose passport/ID scans at guessable URLs;
+-- the app generates a short-lived signed URL per view instead.
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'candidate-documents', 'candidate-documents', false, 15728640,
+  ARRAY['image/png','image/jpeg','image/jpg','image/webp','image/gif','application/pdf']
+)
+ON CONFLICT (id) DO UPDATE
+  SET public = false,
+      file_size_limit = 15728640,
+      allowed_mime_types = EXCLUDED.allowed_mime_types;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- H3 — Storage RLS: a company may only touch objects under its own company_id
