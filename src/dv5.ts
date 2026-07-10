@@ -2591,7 +2591,7 @@ export function injectDepsToD5(deps) {
                   </td>
                   <td style="color:#6b7280;font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item ? h(item.fileName||'Document') : '—'}</td>
                   <td style="display:flex;gap:6px;flex-wrap:wrap">
-                    ${item?.url ? `<button class="dv5-action-btn" onclick="window.safeOpenUrl('${js(item.url)}')"><i class="ti ti-external-link"></i>View</button>` : ''}
+                    ${item ? `<button class="dv5-action-btn" onclick="window.drecoViewDoc('${type}',${JSON.stringify(r.id)},'${js(key)}')"><i class="ti ti-external-link"></i>View</button>` : ''}
                     <button class="dv5-action-btn" onclick="openDocs('${type}',${JSON.stringify(r.id)},'${js(r.name)}')"><i class="ti ti-upload"></i>${item?'Replace':'Upload'}</button>
                   </td>
                 </tr>`;
@@ -3813,8 +3813,25 @@ export function injectDepsToD5(deps) {
     if(!client?.storage) return null;
     const { error } = await client.storage.from(BUCKET).upload(path, file, { upsert: true, contentType: file.type || 'application/octet-stream' });
     if(error) throw error;
-    const { data } = client.storage.from(BUCKET).getPublicUrl(path);
-    return data?.publicUrl || '';
+    // No public URL is stored — the bucket is private and access is granted
+    // per-view via a short-lived signed URL generated from the object path.
+    return '';
+  }
+  async function signedUrlFor(path){
+    const client = _supabaseDb;
+    if(!client?.storage || !path) return null;
+    try {
+      const { data, error } = await client.storage.from(BUCKET).createSignedUrl(path, 120);
+      if(error) return null;
+      return data?.signedUrl || null;
+    } catch { return null; }
+  }
+  async function openDocItem(d){
+    if(!d){ alert('File not available.'); return; }
+    let url = d.url;
+    if (d.storage === 'supabase' && d.path) url = await signedUrlFor(d.path);
+    if(!url){ alert('File not available. Please re-upload.'); return; }
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
   window.drecoUploadDoc = async function(type,id,docType,input){
     const file = input?.files?.[0];
@@ -3846,9 +3863,7 @@ export function injectDepsToD5(deps) {
     }finally{ if(input) input.value=''; }
   };
   window.drecoViewDoc = function(type,id,docType){
-    const d = docItems(type,id)[docType];
-    if(!d?.url){ alert('File not available.'); return; }
-    window.open(d.url, '_blank', 'noopener,noreferrer');
+    return openDocItem(docItems(type,id)[docType]);
   };
   window.drecoDeleteDoc = async function(type,id,docType){
     const store = getDocStore(type,id); const d = store.items?.[docType];
@@ -3885,7 +3900,7 @@ export function injectDepsToD5(deps) {
   window.onDocsLinkInput = function(){};
   window.openCurrentDocLink = function(){
     const t = window.docsTarget || (typeof docsTarget !== 'undefined' ? docsTarget : null); if(!t) return;
-    const first = Object.values(docItems(t.type,t.id))[0]; if(first?.url) window.open(first.url,'_blank');
+    const first = Object.values(docItems(t.type,t.id))[0]; if(first) openDocItem(first);
   };
   window.saveDocs = async function(){
     const t = window.docsTarget || (typeof docsTarget !== 'undefined' ? docsTarget : null); if(!t) return;
