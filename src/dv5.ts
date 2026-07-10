@@ -1738,7 +1738,7 @@ export function injectDepsToD5(deps) {
                   </div>
                   <span class="dv5-badge ${r.type==='pro'?'teal':'blue'} dv5-fin-tx-badge" style="font-size:10px;padding:2px 7px">${r.type==='pro'?'Commission':'Refund'}</span>
                   <div class="dv5-fin-tx-amt">${amtStr}</div>
-                  <button class="dv5-fin-tx-chev" onclick="event.stopPropagation();${editFn}"><i class="ti ti-chevron-right" style="font-size:12px"></i></button>
+                  <button class="dv5-fin-tx-chev" aria-label="Open transaction" onclick="event.stopPropagation();${editFn}"><i class="ti ti-chevron-right" style="font-size:12px"></i></button>
                 </div>`;
               }).join('') || '<div class="dv5-empty" style="padding:32px">No payments recorded.</div>'}
             </div>
@@ -3836,6 +3836,19 @@ export function injectDepsToD5(deps) {
   window.drecoUploadDoc = async function(type,id,docType,input){
     const file = input?.files?.[0];
     if(!file) return;
+    // Validate before uploading: allow images and PDFs only, cap size.
+    const MAX_DOC_BYTES = 15 * 1024 * 1024;
+    const okType = /^image\//.test(file.type) || file.type === 'application/pdf';
+    if(!okType){
+      if(input) input.value='';
+      if(typeof showToast === 'function') showToast('Only image or PDF files are allowed.', 'error'); else alert('Only image or PDF files are allowed.');
+      return;
+    }
+    if(file.size > MAX_DOC_BYTES){
+      if(input) input.value='';
+      if(typeof showToast === 'function') showToast('File is too large (max 15MB).', 'error'); else alert('File is too large (max 15MB).');
+      return;
+    }
     const defs = Object.fromEntries(getDefs(type));
     const label = defs[docType] || docType;
     const store = getDocStore(type,id);
