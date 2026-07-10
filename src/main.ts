@@ -1184,6 +1184,17 @@ function _clearLoginFailures(username) {
 }
 
 async function doLogin() {
+  // Safety net: whatever goes wrong, never leave the button spinning forever.
+  try {
+    await _doLoginInner();
+  } catch (err) {
+    console.error('Login error:', err);
+    const errEl = document.getElementById('login-error');
+    if (errEl) { errEl.textContent = 'Sign-in failed. Please try again.'; errEl.style.display = 'block'; }
+    setLoginBusy(false);
+  }
+}
+async function _doLoginInner() {
   const username = (document.getElementById('username-input').value||'').trim().toLowerCase();
   const password = (document.getElementById('pw-input').value||'').trim();
   const errEl = document.getElementById('login-error');
@@ -1229,11 +1240,17 @@ async function doLogin() {
   }
 
   // ── STAFF ACCOUNTS: loaded from cloud + localStorage ─────────────────────
-  await loadStaffAccounts();
+  // Best-effort: a failure here (e.g. RLS/network) must never block sign-in or
+  // leave the button spinning — Supabase Auth below is the real credential check.
+  try { await loadStaffAccounts(); } catch (e) { console.warn('loadStaffAccounts failed during login:', e); }
 
-  // Try Supabase Auth first (gives us a live session token)
+  // Try Supabase Auth first (gives us a live session token). Race against a
+  // timeout so a hung network request can't leave the button spinning forever.
   try {
-    const authLogin = await signInWithSupabaseAuth(username, password);
+    const authLogin = await Promise.race([
+      signInWithSupabaseAuth(username, password),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Sign-in timed out. Check your connection.')), 15000)),
+    ]);
     if (authLogin?.account) {
       _clearLoginFailures(username);
       // Preserve password fields — Supabase Auth doesn't store them
