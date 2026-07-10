@@ -8132,44 +8132,44 @@ html body #app .integrity-row.medium{
 <!-- QUICK ACTION MODALS -->
 <div class="modal-bg" id="quick-add-modal">
   <div class="modal quick-modal">
-    <div class="modal-header"><h3>Add candidate</h3><button class="modal-close" aria-label="Close" onclick="closeModal('quick-add-modal')">x</button></div>
+    <div class="modal-header"><h3>Add candidate</h3><button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="quick-add-modal">x</button></div>
     <div class="modal-body">
       <div class="quick-choice-grid">
         <label class="quick-choice"><input type="radio" name="quick-workflow" value="pro" checked><span><i class="ti ti-users"></i><strong>Professional Jobs</strong><small>Recruitment pipeline, visas, commissions, travel.</small></span></label>
         <label class="quick-choice"><input type="radio" name="quick-workflow" value="lb"><span><i class="ti ti-briefcase"></i><strong>General Jobs</strong><small>General job records, refunds, repayments, travel.</small></span></label>
       </div>
     </div>
-    <div class="modal-footer"><button class="btn" onclick="closeModal('quick-add-modal')">Cancel</button><button class="btn primary" onclick="submitQuickAddCandidate()">Continue</button></div>
+    <div class="modal-footer"><button class="btn" data-action="modal.close" data-modal="quick-add-modal">Cancel</button><button class="btn primary" onclick="submitQuickAddCandidate()">Continue</button></div>
   </div>
 </div>
 
 <div class="modal-bg" id="edit-team-modal">
   <div class="modal quick-modal">
-    <div class="modal-header"><h3>Edit user</h3><button class="modal-close" aria-label="Close" onclick="closeModal('edit-team-modal')">x</button></div>
+    <div class="modal-header"><h3>Edit user</h3><button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="edit-team-modal">x</button></div>
     <div class="modal-body"><div class="form-grid">
       <input type="hidden" id="edit-team-username">
       <div class="field form-full"><label for="edit-team-display">Display name *</label><input id="edit-team-display" type="text" placeholder="e.g. Mary Wanjiku"></div>
       <div class="field form-full"><label for="edit-team-role">Role</label><select id="edit-team-role"><option value="staff">Staff</option><option value="admin">Admin</option></select></div>
     </div><div class="login-error" id="edit-team-error" role="alert" style="display:none"></div></div>
-    <div class="modal-footer"><button class="btn" onclick="closeModal('edit-team-modal')">Cancel</button><button class="btn primary" onclick="submitEditTeamMember()">Save changes</button></div>
+    <div class="modal-footer"><button class="btn" data-action="modal.close" data-modal="edit-team-modal">Cancel</button><button class="btn primary" onclick="submitEditTeamMember()">Save changes</button></div>
   </div>
 </div>
 <div class="modal-bg" id="quick-user-modal">
   <div class="modal quick-modal">
-    <div class="modal-header"><h3>Add user</h3><button class="modal-close" aria-label="Close" onclick="closeModal('quick-user-modal')">x</button></div>
+    <div class="modal-header"><h3>Add user</h3><button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="quick-user-modal">x</button></div>
     <div class="modal-body"><div class="form-grid">
       <div class="field form-full"><label for="quick-user-display">Display name *</label><input id="quick-user-display" type="text" placeholder="e.g. Mary Wanjiku"></div>
       <div class="field"><label for="quick-user-username">Username *</label><input id="quick-user-username" type="text" placeholder="e.g. mary" autocomplete="off"></div>
       <div class="field"><label for="quick-user-role">Role</label><select id="quick-user-role"><option value="staff">Staff</option><option value="admin">Admin</option></select></div>
       <div class="field form-full"><label for="quick-user-password">Temporary password *</label><input id="quick-user-password" type="password" placeholder="At least 8 characters" minlength="8" aria-describedby="quick-user-pw-hint"><small id="quick-user-pw-hint" class="sr-only">At least 8 characters required</small></div>
     </div><div class="login-error" id="quick-user-error" role="alert" style="display:none"></div></div>
-    <div class="modal-footer"><button class="btn" onclick="closeModal('quick-user-modal')">Cancel</button><button class="btn primary" onclick="submitQuickUser()">Add user</button></div>
+    <div class="modal-footer"><button class="btn" data-action="modal.close" data-modal="quick-user-modal">Cancel</button><button class="btn primary" onclick="submitQuickUser()">Add user</button></div>
   </div>
 </div>
 
 <div class="modal-bg" id="quick-expense-modal">
   <div class="modal quick-modal">
-    <div class="modal-header"><h3>Add expense</h3><button class="modal-close" aria-label="Close" onclick="closeModal('quick-expense-modal')">x</button></div>
+    <div class="modal-header"><h3>Add expense</h3><button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="quick-expense-modal">x</button></div>
     <div class="modal-body"><div class="form-grid">
       <div class="field"><label for="quick-expense-date">Date</label><input id="quick-expense-date" type="date"></div>
       <div class="field"><label for="quick-expense-amount">Amount (KES) *</label><input id="quick-expense-amount" type="number" min="0" placeholder="e.g. 2500"></div>
@@ -8177,41 +8177,41 @@ html body #app .integrity-row.medium{
       <div class="field"><label for="quick-expense-client">Client / candidate *</label><input id="quick-expense-client" type="text" placeholder="Name" list="expense-candidate-options"><datalist id="expense-candidate-options"></datalist></div>
       <div class="field form-full"><label for="quick-expense-notes">Notes</label><textarea id="quick-expense-notes" rows="3" placeholder="What was this expense for?"></textarea></div>
     </div><div class="login-error" id="quick-expense-error" role="alert" style="display:none"></div></div>
-    <div class="modal-footer"><button class="btn" onclick="closeModal('quick-expense-modal')">Cancel</button><button class="btn primary" onclick="submitQuickExpense()">Save expense</button></div>
+    <div class="modal-footer"><button class="btn" data-action="modal.close" data-modal="quick-expense-modal">Cancel</button><button class="btn primary" onclick="submitQuickExpense()">Save expense</button></div>
   </div>
 </div>
 
 <div class="modal-bg" id="quick-event-modal">
   <div class="modal quick-modal">
-    <div class="modal-header"><h3 id="quick-event-heading">Record calendar event</h3><button class="modal-close" aria-label="Close" onclick="closeModal('quick-event-modal')">x</button></div>
+    <div class="modal-header"><h3 id="quick-event-heading">Record calendar event</h3><button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="quick-event-modal">x</button></div>
     <div class="modal-body"><div class="form-grid">
       <div class="field"><label for="quick-event-date">Date *</label><input id="quick-event-date" type="date"></div>
       <div class="field"><label for="quick-event-title">Title *</label><input id="quick-event-title" type="text" placeholder="e.g. Embassy appointment"></div>
       <div class="field form-full"><label for="quick-event-notes">Notes</label><textarea id="quick-event-notes" rows="3" placeholder="Optional details"></textarea></div>
     </div><div class="login-error" id="quick-event-error" role="alert" style="display:none"></div></div>
-    <div class="modal-footer"><button class="btn" id="quick-event-delete" onclick="deleteCalendarEvent()" style="display:none">Delete</button><button class="btn" onclick="closeModal('quick-event-modal')">Cancel</button><button class="btn primary" onclick="submitCalendarEvent()">Save event</button></div>
+    <div class="modal-footer"><button class="btn" id="quick-event-delete" onclick="deleteCalendarEvent()" style="display:none">Delete</button><button class="btn" data-action="modal.close" data-modal="quick-event-modal">Cancel</button><button class="btn primary" onclick="submitCalendarEvent()">Save event</button></div>
   </div>
 </div>
 
 <div class="modal-bg" id="quick-country-modal">
   <div class="modal quick-modal">
-    <div class="modal-header"><h3>Add destination country</h3><button class="modal-close" aria-label="Close" onclick="closeModal('quick-country-modal')">x</button></div>
+    <div class="modal-header"><h3>Add destination country</h3><button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="quick-country-modal">x</button></div>
     <div class="modal-body"><div class="field"><label for="quick-country-name">Country name *</label><input id="quick-country-name" type="text" placeholder="e.g. Qatar"></div><div class="login-error" id="quick-country-error" role="alert" style="display:none"></div></div>
-    <div class="modal-footer"><button class="btn" onclick="closeModal('quick-country-modal')">Cancel</button><button class="btn primary" onclick="submitQuickCountry()">Add country</button></div>
+    <div class="modal-footer"><button class="btn" data-action="modal.close" data-modal="quick-country-modal">Cancel</button><button class="btn primary" onclick="submitQuickCountry()">Add country</button></div>
   </div>
 </div>
 
 <div class="modal-bg" id="quick-stage-modal">
   <div class="modal quick-modal">
-    <div class="modal-header"><h3 id="quick-stage-heading">Add stage</h3><button class="modal-close" aria-label="Close" onclick="closeModal('quick-stage-modal')">x</button></div>
+    <div class="modal-header"><h3 id="quick-stage-heading">Add stage</h3><button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="quick-stage-modal">x</button></div>
     <div class="modal-body"><div class="field"><label for="quick-stage-name">Name *</label><input id="quick-stage-name" type="text" placeholder="e.g. Medical"></div><div class="login-error" id="quick-stage-error" role="alert" style="display:none"></div></div>
-    <div class="modal-footer"><button class="btn" onclick="closeModal('quick-stage-modal')">Cancel</button><button class="btn primary" onclick="submitQuickStage()">Add</button></div>
+    <div class="modal-footer"><button class="btn" data-action="modal.close" data-modal="quick-stage-modal">Cancel</button><button class="btn primary" onclick="submitQuickStage()">Add</button></div>
   </div>
 </div>
 <!-- ADD PAYMENT MODAL -->
 <div class="modal-bg" id="ap-modal">
   <div class="modal quick-modal">
-    <div class="modal-header"><h3>Add payment</h3><button class="modal-close" aria-label="Close" onclick="closeModal('ap-modal')">×</button></div>
+    <div class="modal-header"><h3>Add payment</h3><button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="ap-modal">×</button></div>
     <div class="modal-body">
       <div style="margin-bottom:12px">
         <div style="font-weight:375;font-size:14px" id="ap-name"></div>
@@ -8223,14 +8223,14 @@ html body #app .integrity-row.medium{
       </div>
       <div class="login-error" id="ap-error" role="alert" style="display:none"></div>
     </div>
-    <div class="modal-footer"><button class="btn" onclick="closeModal('ap-modal')">Cancel</button><button class="btn primary" onclick="submitAddPayment()">Save payment</button></div>
+    <div class="modal-footer"><button class="btn" data-action="modal.close" data-modal="ap-modal">Cancel</button><button class="btn primary" onclick="submitAddPayment()">Save payment</button></div>
   </div>
 </div>
 
 <!-- PAYMENT MODAL -->
 <div class="modal-bg" id="quick-payment-modal">
   <div class="modal quick-modal">
-    <div class="modal-header"><h3>Record payment</h3><button class="modal-close" aria-label="Close" onclick="closeModal('quick-payment-modal')">×</button></div>
+    <div class="modal-header"><h3>Record payment</h3><button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="quick-payment-modal">×</button></div>
     <div class="modal-body">
       <div class="form-grid">
         <div class="field">
@@ -8258,7 +8258,7 @@ html body #app .integrity-row.medium{
       </div>
       <div class="login-error" id="qp-error" role="alert" style="display:none"></div>
     </div>
-    <div class="modal-footer"><button class="btn" onclick="closeModal('quick-payment-modal')">Cancel</button><button class="btn primary" onclick="submitRecordPayment()">Save payment</button></div>
+    <div class="modal-footer"><button class="btn" data-action="modal.close" data-modal="quick-payment-modal">Cancel</button><button class="btn primary" onclick="submitRecordPayment()">Save payment</button></div>
   </div>
 </div>
 
@@ -8267,7 +8267,7 @@ html body #app .integrity-row.medium{
   <div class="modal quick-modal" style="max-width:400px">
     <div class="modal-header">
       <h3 id="bpm-title">Record Payment</h3>
-      <button class="modal-close" aria-label="Close" onclick="closeModal('balance-pay-modal')">×</button>
+      <button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="balance-pay-modal">×</button>
     </div>
     <div class="modal-body">
       <div id="bpm-summary" style="background:#F8F7EF;border:1px solid #E4E1D6;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;line-height:1.7"></div>
@@ -8289,7 +8289,7 @@ html body #app .integrity-row.medium{
       <div class="login-error" id="bpm-error" role="alert" style="display:none;margin-top:10px"></div>
     </div>
     <div class="modal-footer">
-      <button class="btn" onclick="closeModal('balance-pay-modal')">Cancel</button>
+      <button class="btn" data-action="modal.close" data-modal="balance-pay-modal">Cancel</button>
       <button class="btn primary" id="bpm-submit" onclick="submitBalancePayment()">Save Transaction</button>
     </div>
   </div>
@@ -8298,7 +8298,7 @@ html body #app .integrity-row.medium{
 <!-- TRAVEL MODAL -->
 <div class="modal-bg" id="quick-travel-modal">
   <div class="modal quick-modal">
-    <div class="modal-header"><h3>Record travel details</h3><button class="modal-close" aria-label="Close" onclick="closeModal('quick-travel-modal')">×</button></div>
+    <div class="modal-header"><h3>Record travel details</h3><button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="quick-travel-modal">×</button></div>
     <div class="modal-body">
       <div class="form-grid">
         <div class="field form-full">
@@ -8324,7 +8324,7 @@ html body #app .integrity-row.medium{
       </div>
       <div class="login-error" id="qt-error" role="alert" style="display:none"></div>
     </div>
-    <div class="modal-footer"><button class="btn" onclick="closeModal('quick-travel-modal')">Cancel</button><button class="btn primary" onclick="submitTravelEvent()">Save</button></div>
+    <div class="modal-footer"><button class="btn" data-action="modal.close" data-modal="quick-travel-modal">Cancel</button><button class="btn primary" onclick="submitTravelEvent()">Save</button></div>
   </div>
 </div>
 
@@ -8333,7 +8333,7 @@ html body #app .integrity-row.medium{
   <div class="modal">
     <div class="modal-header">
       <h3 id="pro-modal-title">Add professional candidate</h3>
-      <button class="modal-close" aria-label="Close" onclick="closeModal('pro-modal')">x</button>
+      <button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="pro-modal">x</button>
     </div>
     <div class="candidate-summary" id="pro-summary"></div>
     <div class="modal-tabs">
@@ -8385,7 +8385,7 @@ html body #app .integrity-row.medium{
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn" onclick="closeModal('pro-modal')">Cancel</button>
+      <button class="btn" data-action="modal.close" data-modal="pro-modal">Cancel</button>
       <button class="btn primary" onclick="savePro()"><i class="ti ti-device-floppy"></i> Save candidate</button>
     </div>
   </div>
@@ -8396,7 +8396,7 @@ html body #app .integrity-row.medium{
   <div class="modal">
     <div class="modal-header">
       <h3 id="lb-modal-title">Add General Jobs candidate</h3>
-      <button class="modal-close" aria-label="Close" onclick="closeModal('lb-modal')">x</button>
+      <button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="lb-modal">x</button>
     </div>
     <div class="candidate-summary" id="lb-summary"></div>
     <div class="modal-tabs">
@@ -8456,7 +8456,7 @@ html body #app .integrity-row.medium{
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn" onclick="closeModal('lb-modal')">Cancel</button>
+      <button class="btn" data-action="modal.close" data-modal="lb-modal">Cancel</button>
       <button class="btn primary" onclick="saveLB()"><i class="ti ti-device-floppy"></i> Save candidate</button>
     </div>
   </div>
@@ -8467,7 +8467,7 @@ html body #app .integrity-row.medium{
   <div class="modal" style="max-width:440px">
     <div class="modal-header">
       <h3 id="emp-modal-title">Add Employer</h3>
-      <button class="modal-close" aria-label="Close" onclick="closeModal('employer-modal')">x</button>
+      <button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="employer-modal">x</button>
     </div>
     <div class="modal-body">
       <div class="form-grid">
@@ -8478,7 +8478,7 @@ html body #app .integrity-row.medium{
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn" onclick="closeModal('employer-modal')">Cancel</button>
+      <button class="btn" data-action="modal.close" data-modal="employer-modal">Cancel</button>
       <button class="btn primary" onclick="submitEmployerForm()"><i class="ti ti-device-floppy"></i> Save</button>
     </div>
   </div>
@@ -8489,7 +8489,7 @@ html body #app .integrity-row.medium{
   <div class="modal" style="max-width:440px">
     <div class="modal-header">
       <h3 id="jo-modal-title">New Job Order</h3>
-      <button class="modal-close" aria-label="Close" onclick="closeModal('joborder-modal')">x</button>
+      <button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="joborder-modal">x</button>
     </div>
     <div class="modal-body">
       <div class="form-grid">
@@ -8500,7 +8500,7 @@ html body #app .integrity-row.medium{
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn" onclick="closeModal('joborder-modal')">Cancel</button>
+      <button class="btn" data-action="modal.close" data-modal="joborder-modal">Cancel</button>
       <button class="btn primary" onclick="submitJobOrderForm()"><i class="ti ti-device-floppy"></i> Save</button>
     </div>
   </div>
@@ -8511,7 +8511,7 @@ html body #app .integrity-row.medium{
   <div class="modal" style="max-width:460px">
     <div class="modal-header">
       <h3 id="docs-modal-title">Documents</h3>
-      <button class="modal-close" aria-label="Close" onclick="closeModal('docs-modal')">x</button>
+      <button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="docs-modal">x</button>
     </div>
     <div class="modal-body"></div>
     <div class="modal-footer" style="justify-content:space-between"></div>
@@ -8523,7 +8523,7 @@ html body #app .integrity-row.medium{
   <div class="modal" style="max-width:720px">
     <div class="modal-header">
       <h3>Settings</h3>
-      <button class="modal-close" aria-label="Close" onclick="closeModal('settings-modal')">x</button>
+      <button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="settings-modal">x</button>
     </div>
     <div class="modal-body">
       <div class="settings-kpi-row" id="settings-kpis"></div>
@@ -8595,7 +8595,7 @@ html body #app .integrity-row.medium{
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn" onclick="closeModal('settings-modal')">Close</button>
+      <button class="btn" data-action="modal.close" data-modal="settings-modal">Close</button>
     </div>
   </div>
 </div>
@@ -8605,7 +8605,7 @@ html body #app .integrity-row.medium{
   <div class="modal" style="max-width:720px">
     <div class="modal-header">
       <h3>Help & Support</h3>
-      <button class="modal-close" aria-label="Close" onclick="closeModal('help-modal')">x</button>
+      <button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="help-modal">x</button>
     </div>
     <div class="modal-body">
       <div class="help-list">
@@ -8621,7 +8621,7 @@ html body #app .integrity-row.medium{
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn" onclick="closeModal('help-modal')">Close</button>
+      <button class="btn" data-action="modal.close" data-modal="help-modal">Close</button>
     </div>
   </div>
 </div>

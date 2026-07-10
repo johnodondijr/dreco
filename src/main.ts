@@ -1359,6 +1359,25 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+// ── Delegated action dispatcher (H6: replacing inline on*= handlers) ──────────
+// Elements opt in with data-action="name" and read their own data-* args. Each
+// handler migrated here removes an inline on*= attribute, ratcheting toward a
+// CSP without script-src 'unsafe-inline'. Register new actions as modules move
+// off inline handlers (see tests/check-inline-handlers.cjs).
+const DRECO_ACTIONS = {
+  'modal.close': (el) => {
+    const id = el.getAttribute('data-modal') || el.closest('.modal-bg')?.id;
+    if (id) closeModal(id);
+  },
+};
+window.DRECO_ACTIONS = DRECO_ACTIONS;
+document.addEventListener('click', (e) => {
+  const el = e.target?.closest?.('[data-action]');
+  if (!el) return;
+  const fn = DRECO_ACTIONS[el.getAttribute('data-action')];
+  if (fn) fn(el, e);
+});
+
 window.addEventListener('DOMContentLoaded', async () => {
   await loadRuntimeConfig();
   await loadStaffAccounts();
