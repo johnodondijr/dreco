@@ -1182,6 +1182,10 @@ function _checkLoginLockout(username) {
 function _clearLoginFailures(username) {
   safeLocalRemove(_laKey(username));
 }
+function _remainingLoginAttempts(username) {
+  const entry = _getAttempts(username);
+  return Math.max(0, MAX_FAILURES - (entry.count || 0));
+}
 
 async function doLogin() {
   // Safety net: whatever goes wrong, never leave the button spinning forever.
@@ -1225,7 +1229,7 @@ async function _doLoginInner() {
     }
     if (!check.ok) {
       _recordLoginFailure(username);
-      const remaining = MAX_FAILURES - (_loginAttempts[username]?.count || 0);
+      const remaining = _remainingLoginAttempts(username);
       fail(`Incorrect username or password.${remaining > 0 ? ` (${remaining} attempt${remaining!==1?'s':''} left)` : ''}`);
       return;
     }
@@ -1283,7 +1287,7 @@ async function _doLoginInner() {
   }
   if (!passwordCheck.ok) {
     _recordLoginFailure(username);
-    const remaining = MAX_FAILURES - (_loginAttempts[username]?.count || 0);
+    const remaining = _remainingLoginAttempts(username);
     fail(`Incorrect username or password.${remaining > 0 ? ` (${remaining} attempt${remaining!==1?'s':''} left)` : ''}`);
     return;
   }
