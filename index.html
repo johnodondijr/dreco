@@ -1467,6 +1467,9 @@ td,th,.badge,.btn,.toolbar-select,.pill-tab,.country-tab,.field input,.field sel
 /* Dreco login exact reference redesign */
 :root{--font-heading:'Geist Variable',sans-serif;--font-body:'Geist Variable',sans-serif}
 
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
 #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:22px;background:#EEF2F8;overflow:auto;font-family:var(--font-body);color:#10172F}
 #login-screen *{box-sizing:border-box;letter-spacing:0}
 .lp-window{width:100%;max-width:1490px;height:calc(100vh - 44px);min-height:820px;max-height:980px;background:#fff;border:1px solid #E7ECF5;border-radius:14px;box-shadow:0 22px 54px rgba(31,42,73,.08);display:grid;grid-template-columns:42.15% 57.85%;overflow:hidden}

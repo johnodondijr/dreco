@@ -8,8 +8,9 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test:tabs": "node tests/check-tabs.cjs",
+    "test:handlers": "node tests/check-inline-handlers.cjs",
     "test:smoke": "node tests/smoke.cjs",
-    "test": "npm run test:tabs && npm run test:smoke"
+    "test": "npm run test:tabs && npm run test:handlers && npm run test:smoke"
   },
   "repository": {
     "type": "git",

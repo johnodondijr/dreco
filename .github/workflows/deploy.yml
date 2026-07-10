@@ -24,6 +24,9 @@ jobs:
       - name: Nav consistency test
         run: npm run test:tabs
 
+      - name: Inline-handler ratchet (CSP hardening)
+        run: npm run test:handlers
+
       - name: Build
         run: npm run build
 
