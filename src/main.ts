@@ -55,6 +55,8 @@ function normalizeAccount(username, account = {}) {
     companyId,
     companyName,
     authUserId: account.authUserId || '',
+    email: account.email || account.account_email || '',
+    emailVerified: account.emailVerified === true || account.account_email_verified === true,
     passwordHash: account.passwordHash || '',
     passwordSalt: account.passwordSalt || '',
     generalJobsCountries: [...new Set(generalJobsCountries.map(c => String(c || '').trim()).filter(Boolean))],
@@ -136,6 +138,8 @@ function accountFromAuthUser(user, fallbackUsername = '') {
     display: meta.display || meta.username || fallbackUsername,
     companyId: meta.company_id,
     companyName: meta.company_name,
+    email: meta.account_email || '',
+    emailVerified: meta.account_email_verified === true,
     generalJobsCountries: meta.general_jobs_countries,
   });
 }
@@ -164,6 +168,12 @@ async function signInWithSupabaseAuth(username, password) {
   if (error || !data?.user) return null;
   const account = accountFromAuthUser(data.user, username);
   return { account, session: data.session };
+}
+
+async function authToken() {
+  if (!db?.auth) return '';
+  const { data } = await db.auth.getSession();
+  return data?.session?.access_token || '';
 }
 function makePasswordSalt() {
   const bytes = new Uint8Array(16);
@@ -1007,6 +1017,9 @@ function initLoginInteractions() {
     e.preventDefault();
     doRecoveryReset();
   });
+  document.getElementById('send-recovery-email')?.addEventListener('click', () => {
+    sendRecoveryCodeEmail();
+  });
   const media = document.querySelector('.lp-media');
   const hero = document.querySelector('.lp-hero-object');
   if (media && hero) {
@@ -1103,6 +1116,27 @@ async function doRecoveryReset() {
     });
   } catch(e) {
     fail(e.message || 'Password reset failed.');
+  }
+}
+
+async function sendRecoveryCodeEmail() {
+  const username=(document.getElementById('recovery-username')?.value||'').trim().toLowerCase();
+  const errEl=document.getElementById('recovery-error');
+  const show = (msg, ok=false) => {
+    if (!errEl) return;
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+    errEl.style.background = ok ? '#ECFDF5' : '#FFF1F3';
+    errEl.style.color = ok ? '#047857' : '#A51232';
+  };
+  if(!/^[a-z0-9._-]{3,32}$/.test(username)) {
+    show('Enter your username first.'); return;
+  }
+  try {
+    await postAuthAction({ action:'send_recovery_email', username });
+    show('If this account has a verified email, a recovery code has been sent.', true);
+  } catch(e) {
+    show(e.message || 'Could not send recovery email.');
   }
 }
 
@@ -1462,6 +1496,8 @@ const DRECO_ACTIONS = {
       );
     }
   },
+  'account.email.request': () => requestAccountEmailVerification(),
+  'account.email.verify': () => verifyAccountEmail(),
 };
 window.DRECO_ACTIONS = DRECO_ACTIONS;
 document.addEventListener('click', (e) => {
@@ -3391,6 +3427,9 @@ function renderAccountPage(){
   const display=escHTML(currentUser?.display||'User');
   const username=escHTML(currentUser?.username||'user');
   const role=currentUser?.role==='admin'?'Administrator':'Staff';
+  const account=STAFF_ACCOUNTS[currentUser?.username || ''] || currentUser || {};
+  const email=escHTML(account.email || '');
+  const emailVerified=account.emailVerified === true;
   el.innerHTML=`
     <div class="dv5-profile-panel account-profile-page">
       <div class="dv5-profile-hero">
@@ -3439,9 +3478,24 @@ function renderAccountPage(){
         <div class="account-form-grid">
           <label class="field"><span>Display name</span><input id="account-display-name" value="${display}" placeholder="Your name"></label>
           <label class="field"><span>Username</span><input id="account-username" value="${username}" placeholder="username" autocomplete="off"></label>
+          <label class="field"><span>Email</span><input id="account-email" type="email" value="${email}" placeholder="you@company.com" autocomplete="email"></label>
           <label class="field"><span>Current password</span><input id="account-current-pw" type="password" placeholder="Required when changing password"></label>
           <label class="field"><span>New password</span><input id="account-new-pw" type="password" placeholder="New password"></label>
           <label class="field"><span>Confirm password</span><input id="account-confirm-pw" type="password" placeholder="Repeat new password"></label>
+        </div>
+        <div class="dv5-card" style="margin-top:14px;box-shadow:none">
+          <div class="dv5-card-title">Email verification</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <div style="color:#657188;font-size:12px">
+              ${email ? `Recovery email: <strong style="color:#0B1024">${email}</strong>` : 'Add an email so password recovery can be sent to you.'}
+              <span class="settings-pill" style="margin-left:8px">${emailVerified ? 'Verified' : 'Not verified'}</span>
+            </div>
+            <button class="dv5-btn" data-action="account.email.request"><i class="ti ti-mail"></i>Send code</button>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:12px;max-width:420px">
+            <input id="account-email-code" placeholder="6-digit code" inputmode="numeric" style="height:38px;border:1px solid #DDE4F0;border-radius:10px;padding:0 12px;flex:1">
+            <button class="dv5-btn primary" data-action="account.email.verify">Verify</button>
+          </div>
         </div>
         <div class="pd-msg" id="account-profile-msg"></div>
         <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
@@ -4733,6 +4787,7 @@ async function saveAccountPageChanges() {
   };
   const newDisplay = ((document.getElementById('account-display-name') as HTMLInputElement)?.value || '').trim();
   const newUsername = ((document.getElementById('account-username') as HTMLInputElement)?.value || '').trim().toLowerCase();
+  const newEmail = ((document.getElementById('account-email') as HTMLInputElement)?.value || '').trim().toLowerCase();
   const currentPw = (document.getElementById('account-current-pw') as HTMLInputElement)?.value || '';
   const newPw = (document.getElementById('account-new-pw') as HTMLInputElement)?.value || '';
   const confirmPw = (document.getElementById('account-confirm-pw') as HTMLInputElement)?.value || '';
@@ -4760,6 +4815,19 @@ async function saveAccountPageChanges() {
     STAFF_ACCOUNTS[newUsername] = { ...originalAccount };
     delete STAFF_ACCOUNTS[originalUsername];
     currentUser.username = newUsername;
+    changed = true;
+  }
+
+  const accountForEmail = STAFF_ACCOUNTS[currentUser.username];
+  const oldEmail = String(accountForEmail.email || '').toLowerCase();
+  if (newEmail !== oldEmail) {
+    if (newEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+      showMsg('Enter a valid email address.', 'err'); return;
+    }
+    accountForEmail.email = newEmail;
+    accountForEmail.emailVerified = false;
+    currentUser.email = newEmail;
+    currentUser.emailVerified = false;
     changed = true;
   }
 
@@ -4793,6 +4861,65 @@ async function saveAccountPageChanges() {
     const el = document.getElementById(id) as HTMLInputElement; if (el) el.value = '';
   });
   renderAccountPage();
+}
+
+async function requestAccountEmailVerification() {
+  const msgEl = document.getElementById('account-profile-msg');
+  const showMsg = (txt, type) => {
+    if (!msgEl) return;
+    msgEl.textContent = txt;
+    msgEl.className = 'pd-msg ' + type;
+  };
+  const email = ((document.getElementById('account-email') as HTMLInputElement)?.value || '').trim().toLowerCase();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showMsg('Enter a valid email address first.', 'err'); return;
+  }
+  try {
+    const token = await authToken();
+    if (!token) throw new Error('Sign in again before verifying your email.');
+    await postAuthAction({ action:'request_email_verification', email }, token);
+    const account = STAFF_ACCOUNTS[currentUser.username] || {};
+    account.email = email;
+    account.emailVerified = false;
+    STAFF_ACCOUNTS[currentUser.username] = normalizeAccount(currentUser.username, account);
+    currentUser.email = email;
+    currentUser.emailVerified = false;
+    _saveSession(currentUser);
+    await saveStaffAccounts();
+    showMsg('Verification code sent. Check your email.', 'ok');
+  } catch (e: any) {
+    showMsg(e.message || 'Could not send verification email.', 'err');
+  }
+}
+
+async function verifyAccountEmail() {
+  const msgEl = document.getElementById('account-profile-msg');
+  const showMsg = (txt, type) => {
+    if (!msgEl) return;
+    msgEl.textContent = txt;
+    msgEl.className = 'pd-msg ' + type;
+  };
+  const code = ((document.getElementById('account-email-code') as HTMLInputElement)?.value || '').trim();
+  if (!code) { showMsg('Enter the verification code.', 'err'); return; }
+  try {
+    const token = await authToken();
+    if (!token) throw new Error('Sign in again before verifying your email.');
+    const result = await postAuthAction({ action:'verify_email', code }, token);
+    const next = normalizeAccount(currentUser.username, {
+      ...(STAFF_ACCOUNTS[currentUser.username] || {}),
+      ...(result.account || {}),
+      emailVerified: true,
+    });
+    STAFF_ACCOUNTS[currentUser.username] = next;
+    currentUser.email = next.email;
+    currentUser.emailVerified = true;
+    _saveSession(currentUser);
+    await saveStaffAccounts();
+    showMsg('Email verified successfully.', 'ok');
+    renderAccountPage();
+  } catch (e: any) {
+    showMsg(e.message || 'Email verification failed.', 'err');
+  }
 }
 
 function setUserDisplay(display, role) {
@@ -4834,7 +4961,7 @@ injectDepsToD5({
 // ES modules don't pollute global scope, so onclick="fn()" handlers need this.
 Object.assign(window, {
   // Auth & session
-  doLogin, doSignup, doRecoveryReset, doLogout, loadAllData, setUserDisplay,
+  doLogin, doSignup, doRecoveryReset, sendRecoveryCodeEmail, doLogout, loadAllData, setUserDisplay,
   // Navigation
   switchTab, toggleSidebar, openMobileSidebar, closeMobileSidebar,
   // Pro candidates
@@ -4880,7 +5007,7 @@ Object.assign(window, {
   hideForgotPassword, showForgotPassword, hideSignup, showSignup,
   goPage,
   // Account / profile
-  renderAccountPage, saveAccountPageChanges, saveProfileChanges,
+  renderAccountPage, saveAccountPageChanges, saveProfileChanges, requestAccountEmailVerification, verifyAccountEmail,
   applyUserAvatar, handleAvatarUpload, handleAccountAvatarUpload, removeUserAvatar,
   // Workspace
   getCompanyName, getCompanyId, getGeneralCountries, getActiveGeneralCountry,
