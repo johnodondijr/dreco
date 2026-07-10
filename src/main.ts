@@ -1642,10 +1642,23 @@ async function dbInsert(table, rec) {
   if(error) throw error;
   return data;
 }
-async function dbUpdate(table, id, rec) {
-  const ts={...rec, company_id:getCompanyId()}; delete ts.id;
-  const {error}=await db.from(table).update(ts).eq('id',id).eq('company_id',getCompanyId());
+// Optimistic concurrency (M3): when opts.expectedUpdatedAt is provided AND the
+// row's updated_at no longer matches, the update affects 0 rows and we raise a
+// DRECO_CONFLICT so callers can prompt before clobbering someone else's edit.
+// The guard is inert until the updated_at column exists (expected is undefined),
+// so this is a no-op on databases that haven't run dreco-optimistic-locking.sql.
+async function dbUpdate(table, id, rec, opts={}) {
+  const ts={...rec, company_id:getCompanyId()}; delete ts.id; delete ts.updated_at;
+  let q = db.from(table).update(ts).eq('id',id).eq('company_id',getCompanyId());
+  if (opts.expectedUpdatedAt) q = q.eq('updated_at', opts.expectedUpdatedAt);
+  const {data,error}=await q.select();
   if(error) throw error;
+  if (opts.expectedUpdatedAt && (!data || !data.length)) {
+    const err=new Error('This record was changed by someone else since you opened it.');
+    err.code='DRECO_CONFLICT';
+    throw err;
+  }
+  return (data && data[0]) || null;
 }
 async function dbDelete(table, id) {
   const {error}=await db.from(table).delete().eq('id',id).eq('company_id',getCompanyId());
@@ -1681,9 +1694,12 @@ async function saveProRecord(rec, isUpdate = false) {
   setSaveStatus('saving');
   if (!useCloud()) { saveLocalStore(); setSaveStatus('saved'); return; }
   const tempId = rec.id;
-  async function doProSave(payload) {
+  async function doProSave(payload, guarded=true) {
     if (isUpdate) {
-      await dbUpdate('pro_candidates', rec.id, payload);
+      const cur = proDB.find(x=>String(x.id)===String(rec.id));
+      const expected = guarded ? cur?.updated_at : null;
+      const row = await dbUpdate('pro_candidates', rec.id, payload, { expectedUpdatedAt: expected });
+      if (row?.updated_at && cur) cur.updated_at = row.updated_at;
     } else {
       const data = await dbInsert('pro_candidates', payload);
       if (data) {
@@ -1694,18 +1710,22 @@ async function saveProRecord(rec, isUpdate = false) {
       }
     }
   }
+  const saveWith = async (payloadFn, guarded) => { await doProSave(payloadFn(rec), guarded); await saveTimeline(`pro_${rec.id}`); setSaveStatus('saved'); };
   try {
-    await doProSave(toProDbPayload(rec));
-    await saveTimeline(`pro_${rec.id}`);
-    setSaveStatus('saved');
+    await saveWith(toProDbPayload, true);
   } catch(e) {
-    if (isMissingColumnError(e)) {
-      try {
-        await doProSave(toProCorePayload(rec));
-        await saveTimeline(`pro_${rec.id}`);
-        setSaveStatus('saved');
-        showToast('Saved (run dreco-schema-v2-migration.sql in Supabase to enable all fields)', 'error');
-      } catch(e2) { fallBackToLocal(e2); setSaveStatus('saved'); }
+    if (e?.code === 'DRECO_CONFLICT') {
+      if (!confirm('This candidate was changed by someone else since you opened it. Overwrite their changes?')) {
+        setSaveStatus('saved'); showToast('Save cancelled — reload to see the latest.', 'error'); return;
+      }
+      try { await saveWith(toProDbPayload, false); }
+      catch(e2) {
+        if (isMissingColumnError(e2)) { try { await saveWith(toProCorePayload, false); } catch(e3){ fallBackToLocal(e3); setSaveStatus('saved'); } }
+        else { fallBackToLocal(e2); setSaveStatus('saved'); }
+      }
+    } else if (isMissingColumnError(e)) {
+      try { await saveWith(toProCorePayload, true); showToast('Saved (run dreco-schema-v2-migration.sql in Supabase to enable all fields)', 'error'); }
+      catch(e2) { fallBackToLocal(e2); setSaveStatus('saved'); }
     } else { fallBackToLocal(e); setSaveStatus('saved'); }
   }
 }
@@ -1713,9 +1733,12 @@ async function saveLBRecord(rec, isUpdate = false) {
   setSaveStatus('saving');
   if (!useCloud()) { saveLocalStore(); setSaveStatus('saved'); return; }
   const tempId = rec.id;
-  async function doLBSave(payload) {
+  async function doLBSave(payload, guarded=true) {
     if (isUpdate) {
-      await dbUpdate('lb_candidates', rec.id, payload);
+      const cur = lbDB.find(x=>String(x.id)===String(rec.id));
+      const expected = guarded ? cur?.updated_at : null;
+      const row = await dbUpdate('lb_candidates', rec.id, payload, { expectedUpdatedAt: expected });
+      if (row?.updated_at && cur) cur.updated_at = row.updated_at;
     } else {
       const data = await dbInsert('lb_candidates', payload);
       if (data) {
@@ -1726,18 +1749,22 @@ async function saveLBRecord(rec, isUpdate = false) {
       }
     }
   }
+  const saveWith = async (payloadFn, guarded) => { await doLBSave(payloadFn(rec), guarded); await saveTimeline(`lb_${rec.id}`); setSaveStatus('saved'); };
   try {
-    await doLBSave(toLBDbPayload(rec));
-    await saveTimeline(`lb_${rec.id}`);
-    setSaveStatus('saved');
+    await saveWith(toLBDbPayload, true);
   } catch(e) {
-    if (isMissingColumnError(e)) {
-      try {
-        await doLBSave(toLBCorePayload(rec));
-        await saveTimeline(`lb_${rec.id}`);
-        setSaveStatus('saved');
-        showToast('Saved (run dreco-schema-v2-migration.sql in Supabase to enable all fields)', 'error');
-      } catch(e2) { fallBackToLocal(e2); setSaveStatus('saved'); }
+    if (e?.code === 'DRECO_CONFLICT') {
+      if (!confirm('This candidate was changed by someone else since you opened it. Overwrite their changes?')) {
+        setSaveStatus('saved'); showToast('Save cancelled — reload to see the latest.', 'error'); return;
+      }
+      try { await saveWith(toLBDbPayload, false); }
+      catch(e2) {
+        if (isMissingColumnError(e2)) { try { await saveWith(toLBCorePayload, false); } catch(e3){ fallBackToLocal(e3); setSaveStatus('saved'); } }
+        else { fallBackToLocal(e2); setSaveStatus('saved'); }
+      }
+    } else if (isMissingColumnError(e)) {
+      try { await saveWith(toLBCorePayload, true); showToast('Saved (run dreco-schema-v2-migration.sql in Supabase to enable all fields)', 'error'); }
+      catch(e2) { fallBackToLocal(e2); setSaveStatus('saved'); }
     } else { fallBackToLocal(e); setSaveStatus('saved'); }
   }
 }
