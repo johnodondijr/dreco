@@ -5,10 +5,10 @@ import { createClient } from '@supabase/supabase-js';
 import { PRO_SEED, LB_SEED } from './data';
 import {
   currentUser, proDB, lbDB, allDocs, allTimelines, allChecklists, employers, jobOrders,
-  proStages, lbStages,
+  proStages, lbStages, generalWorkflows,
   setCurrentUser, setProDB, setLbDB, setAllDocs, setAllTimelines,
   setAllChecklists, setEmployers, setJobOrders,
-  setProStages, setLbStages,
+  setProStages, setLbStages, setGeneralWorkflows,
 } from './state';
 import { injectDepsToD5 } from './dv5';
 
@@ -507,19 +507,43 @@ function normalizeCountryKey(country) {
 function getGeneralWorkflowPreset(country = getActiveGeneralCountry()) {
   return GENERAL_COUNTRY_WORKFLOW_PRESETS[normalizeCountryKey(country)] || GENERAL_COUNTRY_WORKFLOW_PRESETS.DEFAULT;
 }
+// Single source of truth for a country's General Jobs pipeline, resolved in one
+// clear order (no silent merges):
+//   1. a saved per-country override (generalWorkflows[country]) — set when a
+//      user edits or applies a template for that country, else
+//   2. the built-in country preset (Saudi/Lebanon/Oman), else
+//   3. the workspace General default (lbStages).
 function getGeneralWorkflowStages(country = getActiveGeneralCountry()) {
-  const preset = getGeneralWorkflowPreset(country);
-  const usesPreset = Array.isArray(preset.stages) && preset.stages.length;
-  const source = usesPreset ? preset.stages : lbStages;
-  const cleaned = [...new Set((source || []).map(s => cleanStage(s)).filter(Boolean))];
-  if (usesPreset && Array.isArray(lbStages) && lbStages.length) {
-    const templateStages = new Set(LB_WORKFLOW_TEMPLATES.flatMap(t => t.stages).map(s => cleanStage(s)));
-    lbStages.map(s => cleanStage(s)).filter(s => s && !templateStages.has(s) && !cleaned.includes(s)).forEach(s => cleaned.push(s));
+  const saved = generalWorkflows[country];
+  if (Array.isArray(saved) && saved.length) {
+    return [...new Set(saved.map(s => cleanStage(s)).filter(Boolean))];
   }
+  const preset = getGeneralWorkflowPreset(country);
+  const source = (Array.isArray(preset.stages) && preset.stages.length) ? preset.stages : lbStages;
+  const cleaned = [...new Set((source || []).map(s => cleanStage(s)).filter(Boolean))];
   return cleaned.length ? cleaned : LB_PIPELINE_STAGES;
 }
 function getLBWorkflowStagesForRecord(row = {}) {
   return getGeneralWorkflowStages(row.country || getActiveGeneralCountry());
+}
+// Which General Jobs country the Settings workflow editor is currently editing.
+function getSettingsGeneralCountry() {
+  const countries = getGeneralCountries();
+  if (!window.settingsGeneralCountry || !countries.includes(window.settingsGeneralCountry)) {
+    window.settingsGeneralCountry = getActiveGeneralCountry();
+  }
+  return window.settingsGeneralCountry;
+}
+// Persist a country's pipeline as its per-country override (the one source).
+// Editing the workspace "General" default still writes lbStages so untouched
+// countries keep following it.
+function setGeneralWorkflowForCountry(country, stages) {
+  const clean = [...new Set((stages || []).map(s => cleanStage(s)).filter(Boolean))];
+  if (!clean.length) return false;
+  const next = { ...generalWorkflows, [country]: clean };
+  setGeneralWorkflows(next);
+  if (normalizeCountryKey(country) === 'DEFAULT') setLbStages(clean);
+  return true;
 }
 function getCompanyScopedKey(key) {
   return `${getCompanyId()}:${key}`;
@@ -625,6 +649,7 @@ function getDefaultLocalStore() {
     docRequirements: { pro: [...DEFAULT_DOC_REQUIREMENTS.pro], lb: [...DEFAULT_DOC_REQUIREMENTS.lb] },
     proStages: [...proStages],
     lbStages: [...lbStages],
+    generalWorkflows: {},
     paymentRules: getDefaultPaymentRules(),
   };
 }
@@ -874,6 +899,7 @@ function saveLocalStore() {
     docRequirements,
     proStages,
     lbStages,
+    generalWorkflows,
     paymentRules,
   }));
 }
@@ -1498,6 +1524,10 @@ const DRECO_ACTIONS = {
   },
   'account.email.request': () => requestAccountEmailVerification(),
   'account.email.verify': () => verifyAccountEmail(),
+  'settings.general.country': (el) => {
+    const c = el.getAttribute('data-country');
+    if (c) { window.settingsGeneralCountry = c; renderSettingsPage?.(); }
+  },
 };
 window.DRECO_ACTIONS = DRECO_ACTIONS;
 document.addEventListener('click', (e) => {
@@ -1570,6 +1600,7 @@ async function loadAllData() {
     setAllTimelines(local.timelines);
     setProStages(normalizeProStageList(local.proStages));
     setLbStages(local.lbStages);
+    setGeneralWorkflows(local.generalWorkflows || {});
     setPaymentRules(local.paymentRules);
     rebuildStageSelects();
     restoreUserFilters();
@@ -1622,12 +1653,14 @@ async function loadAllData() {
     if (stagesRes.data) {
       const ps=stagesRes.data.find(r=>r.key===getCompanyScopedKey('pro_stages')) || stagesRes.data.find(r=>r.key==='pro_stages'&&companyId===DEFAULT_COMPANY.id);
       const ls=stagesRes.data.find(r=>r.key===getCompanyScopedKey('lb_stages')) || stagesRes.data.find(r=>r.key==='lb_stages'&&companyId===DEFAULT_COMPANY.id);
+      const gw=stagesRes.data.find(r=>r.key===getCompanyScopedKey('general_workflows')) || stagesRes.data.find(r=>r.key==='general_workflows'&&companyId===DEFAULT_COMPANY.id);
       const pr=stagesRes.data.find(r=>r.key===getCompanyScopedKey('payment_rules')) || stagesRes.data.find(r=>r.key==='payment_rules'&&companyId===DEFAULT_COMPANY.id);
       const dr=stagesRes.data.find(r=>r.key===getCompanyScopedKey('doc_requirements')) || stagesRes.data.find(r=>r.key==='doc_requirements'&&companyId===DEFAULT_COMPANY.id);
       const emp=stagesRes.data.find(r=>r.key===getCompanyScopedKey('employers'));
       const jo=stagesRes.data.find(r=>r.key===getCompanyScopedKey('job_orders'));
       if (ps) setProStages(normalizeProStageList(ps.value));
       if (ls) setLbStages(ls.value);
+      setGeneralWorkflows(gw && gw.value && typeof gw.value==='object' && !Array.isArray(gw.value) ? gw.value : {});
       if (pr) setPaymentRules(pr.value); else setPaymentRules(getDefaultPaymentRules());
       if (dr) docRequirements = dr.value; else docRequirements = { pro: [...DEFAULT_DOC_REQUIREMENTS.pro], lb: [...DEFAULT_DOC_REQUIREMENTS.lb] };
       setEmployers(emp ? (Array.isArray(emp.value) ? emp.value : []) : []);
@@ -1646,6 +1679,7 @@ async function loadAllData() {
     if (local.docRequirements) docRequirements = local.docRequirements;
     setProStages(normalizeProStageList(local.proStages));
     setLbStages(local.lbStages);
+    setGeneralWorkflows(local.generalWorkflows || {});
     setPaymentRules(local.paymentRules);
     showToast('Cloud sync unavailable. Using local mode.','error');
   }
@@ -2188,7 +2222,7 @@ async function saveTimeline(key) {
 async function saveStages(){
   setSaveStatus('saving');
   if(!useCloud()){ saveLocalStore(); setSaveStatus('saved'); return; }
-  try{ const {error}=await db.from('app_settings').upsert([{key:getCompanyScopedKey('pro_stages'),value:proStages,company_id:getCompanyId()},{key:getCompanyScopedKey('lb_stages'),value:lbStages,company_id:getCompanyId()}],{onConflict:'key'}); if(error) throw error; setSaveStatus('saved'); }
+  try{ const {error}=await db.from('app_settings').upsert([{key:getCompanyScopedKey('pro_stages'),value:proStages,company_id:getCompanyId()},{key:getCompanyScopedKey('lb_stages'),value:lbStages,company_id:getCompanyId()},{key:getCompanyScopedKey('general_workflows'),value:generalWorkflows,company_id:getCompanyId()}],{onConflict:'key'}); if(error) throw error; setSaveStatus('saved'); }
   catch(e){fallBackToLocal(e);setSaveStatus('saved');}
 }
 async function savePaymentRules(){
@@ -2216,13 +2250,13 @@ function getWorkflowTemplates(type){
   return type==='pro' ? PRO_WORKFLOW_TEMPLATES : LB_WORKFLOW_TEMPLATES;
 }
 function getWorkflowStages(type){
-  return type==='pro' ? proStages : lbStages;
+  return type==='pro' ? proStages : getGeneralWorkflowStages(getSettingsGeneralCountry());
 }
 function setWorkflowStages(type, stages){
   const clean=[...new Set((stages||[]).map(s=>cleanStage(s)).filter(Boolean))];
   if(!clean.length) return false;
   if(type==='pro') setProStages(clean);
-  else setLbStages(clean);
+  else if(!setGeneralWorkflowForCountry(getSettingsGeneralCountry(), clean)) return false;
   rebuildStageSelects();
   rebuildProPills();
   return true;
@@ -2230,21 +2264,30 @@ function setWorkflowStages(type, stages){
 async function applyWorkflowTemplate(type,key){
   const tpl=getWorkflowTemplates(type).find(t=>t.key===key);
   if(!tpl) return;
-  if(!confirm(`Apply "${tpl.name}" stages? Existing candidates stay in their current stage, but your workflow stage list will change.`)) return;
+  const scope=type==='pro' ? 'Professional Jobs' : `${getSettingsGeneralCountry()} General Jobs`;
+  if(!confirm(`Apply "${tpl.name}" stages to ${scope}? Existing candidates stay in their current stage, but this pipeline's stage list will change.`)) return;
   if(!setWorkflowStages(type,tpl.stages)) return;
   await saveStages();
-  auditAction('Settings','Workflow template applied',tpl.name);
+  auditAction('Settings','Workflow template applied',`${tpl.name} (${scope})`);
   renderSettingsPage();
   window.renderPipelinePage?.();
   window.renderDash?.();
-  showToast(`${tpl.name} workflow applied`,'success');
+  showToast(`${tpl.name} applied to ${scope}`,'success');
 }
 async function resetWorkflowStages(type){
-  const stages=type==='pro' ? PRO_WORKFLOW_TEMPLATES[0].stages : LB_WORKFLOW_TEMPLATES[0].stages;
-  if(!confirm(`Reset ${type==='pro'?'Professional':'General Jobs'} workflow to the default stages?`)) return;
-  if(!setWorkflowStages(type,stages)) return;
+  if(type==='pro'){
+    if(!confirm('Reset Professional workflow to the default stages?')) return;
+    if(!setWorkflowStages('pro',PRO_WORKFLOW_TEMPLATES[0].stages)) return;
+  } else {
+    const country=getSettingsGeneralCountry();
+    if(!confirm(`Reset ${country} General Jobs workflow to its built-in default stages?`)) return;
+    // Drop the per-country override so it follows the built-in preset / default again.
+    const next={...generalWorkflows}; delete next[country]; setGeneralWorkflows(next);
+    if(normalizeCountryKey(country)==='DEFAULT') setLbStages([...LB_PIPELINE_STAGES]);
+    rebuildStageSelects(); rebuildProPills();
+  }
   await saveStages();
-  auditAction('Settings','Workflow stages reset',type==='pro'?'Professional':'General Jobs');
+  auditAction('Settings','Workflow stages reset',type==='pro'?'Professional':`${getSettingsGeneralCountry()} General Jobs`);
   renderSettingsPage();
   window.renderPipelinePage?.();
   window.renderDash?.();
@@ -2262,19 +2305,24 @@ function workflowTemplateCards(type){
       <button onclick="applyWorkflowTemplate('${type}','${t.key}')">Apply</button>
     </div>`).join('');
 }
+// Country picker for the General Jobs workflow editor: clicking a country makes
+// the editor above act on that country's pipeline (the one source of truth).
 function countryWorkflowCards(){
+  const active=getSettingsGeneralCountry();
   return getGeneralCountries().map(country => {
     const preset = getGeneralWorkflowPreset(country);
-    const stages = getGeneralWorkflowStages(country);
+    const overridden = Array.isArray(generalWorkflows[country]) && generalWorkflows[country].length;
+    const label = overridden ? 'Custom' : preset.name;
     return `
-      <div class="workflow-template-card">
-        <strong>${escHTML(country)} - ${escHTML(preset.name)}</strong>
-        <p>${escHTML(preset.description)}</p>
-        <div class="workflow-stage-preview">${stages.map(s=>`<span>${escHTML(s)}</span>`).join('')}</div>
-      </div>`;
+      <button type="button" class="workflow-country-pick${country===active?' active':''}" data-action="settings.general.country" data-country="${escHTML(country)}">
+        <strong>${escHTML(country)}</strong>
+        <span>${escHTML(label)}</span>
+      </button>`;
   }).join('');
 }
 function renderWorkflowSettingsPanel(){
+  const genCountry=getSettingsGeneralCountry();
+  const multiCountry=getGeneralCountries().length>1;
   return `
     <div class="settings-page-card workflow-settings-card">
       <h3>Workflow templates</h3>
@@ -2290,20 +2338,14 @@ function renderWorkflowSettingsPanel(){
         </section>
         <section>
           <div class="workflow-settings-head">
-            <strong>General Jobs</strong>
+            <strong>General Jobs — ${escHTML(genCountry)}</strong>
             <button onclick="resetWorkflowStages('lb')">Reset</button>
           </div>
+          ${multiCountry ? `<p class="workflow-country-hint">Each destination keeps its own pipeline. Pick a country to edit, then apply a template or reset below.</p>
+          <div class="workflow-country-picker">${countryWorkflowCards()}</div>` : ''}
           <div class="workflow-current-stages">${workflowStageChips('lb')}</div>
           <div class="workflow-template-grid">${workflowTemplateCards('lb')}</div>
         </section>
-      </div>
-      <div class="workflow-country-block">
-        <div class="workflow-settings-head">
-          <strong>Country-specific General Jobs workflows</strong>
-          <button data-action="tab.switch" data-tab="lb">Open countries</button>
-        </div>
-        <p>Saudi, Lebanon, and Oman automatically use their own operational flow. Other destinations use the workspace General Jobs stages.</p>
-        <div class="workflow-template-grid">${countryWorkflowCards()}</div>
       </div>
     </div>`;
 }
@@ -2868,6 +2910,7 @@ function downloadBackup(){
     timelines:allTimelines,
     proStages,
     lbStages,
+    generalWorkflows,
     staffAccounts: safeAccounts,
   };
   const a=Object.assign(document.createElement('a'),{
@@ -2890,6 +2933,7 @@ function restoreBackupFromFile(file){
       setAllTimelines(data.timelines||{});
       setProStages(normalizeProStageList(Array.isArray(data.proStages)&&data.proStages.length?data.proStages:[...proStages]));
       setLbStages(Array.isArray(data.lbStages)&&data.lbStages.length?data.lbStages:[...lbStages]);
+      setGeneralWorkflows(data.generalWorkflows&&typeof data.generalWorkflows==='object'&&!Array.isArray(data.generalWorkflows)?data.generalWorkflows:{});
       if(data.staffAccounts&&typeof data.staffAccounts==='object'){
         // Validate each restored account before merging – a crafted backup file
         // could otherwise inject accounts with arbitrary roles or credentials.

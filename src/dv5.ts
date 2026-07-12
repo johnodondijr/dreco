@@ -5,9 +5,13 @@ import {
   setProDB, setLbDB, setAllDocs, setAllTimelines, setProStages, setLbStages,
 } from './state';
 
-// Constants mirrored from main.ts (never change at runtime)
+// Constants mirrored from main.ts (never change at runtime). These are only
+// last-resort fallbacks; the live pipeline comes from the injected
+// getGeneralWorkflowStages resolver. Kept in sync with the canonical defaults
+// (state.ts lbStages / main.ts LB_PIPELINE_STAGES) so no screen sees a
+// different default general pipeline.
 const PRO_PIPELINE_STAGES = ['INTERVIEW','OFFER LETTER','MEDICAL & ATTESTATION','WORK PERMIT','VISA','TICKET BOOKED','TRAVELLED'];
-const LB_PIPELINE_STAGES  = ['UNSELECTED','SELECTED','TRAVELLED'];
+const LB_PIPELINE_STAGES  = ['SUBMITTED','PROFILE SENT','SELECTED','PASSPORT APPLIED','VISA PROCESSING','TRAVELLED','REFUND PENDING','REFUND COMPLETE'];
 // Fallback only — overridden by injectDepsToD5 in practice
 let DEFAULT_COMPANY = { name: 'Dreco', id: 'dreco-default', generalJobsCountries: ['UAE'] };
 let getActiveGeneralCountry, getGeneralWorkflowStages, getLBWorkflowStagesForRecord;
