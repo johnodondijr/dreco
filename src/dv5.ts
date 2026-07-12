@@ -3730,6 +3730,12 @@ export function injectDepsToD5(deps) {
     try { if(typeof renderDocumentsV4 === 'function') renderDocumentsV4(); } catch {}
     // Keep the candidate profile's Record Health / gauge counter in sync.
     try { window.renderDocumentsPage?.(); } catch {}
+    // Keep the candidate modal's "Docs" tab checklist (a view over this same
+    // system) in sync after a mark-complete toggle.
+    try {
+      const el = document.getElementById(`${type}-doc-checklist`);
+      if (el && typeof window.renderDocChecklist === 'function') el.innerHTML = window.renderDocChecklist(type, id);
+    } catch {}
   }
   function closeOverlays(exceptId){
     $$('.modal-bg.open,.modal.open,.v4-modal.open').forEach(el => { if(el.id !== exceptId) el.classList.remove('open'); });

@@ -1982,35 +1982,46 @@ async function saveDocsToDB(key, data) {
 }
 
 // ── Document Checklists ────────────────────────────────────────────────────────
+// The candidate "Docs" tab is now a lightweight VIEW over the single document
+// system (dv5: DOC_DEFS + uploaded/marked items), so the checklist, the upload
+// modal, and the readiness gauge always agree. Toggling a row marks a required
+// document complete without a file (via the shared doc.mark action); a real
+// uploaded file shows as "On file" and is managed in the upload panel.
 function getDocProgress(type, id) {
-  const reqs = (docRequirements[type] || DEFAULT_DOC_REQUIREMENTS[type] || []);
-  const checked = allChecklists[`checklist_${type}_${id}`] || {};
-  const done = reqs.filter(item => checked[item]).length;
-  return { done, total: reqs.length };
+  const c = (typeof window.drecoDocCompletion === 'function') ? window.drecoDocCompletion(type, id) : null;
+  return c ? { done: c.done, total: c.total } : { done: 0, total: 0 };
 }
 function renderDocChecklist(type, id) {
   if (!id) return '<div class="tl-empty">Save the candidate first to manage documents.</div>';
-  const reqs = (docRequirements[type] || DEFAULT_DOC_REQUIREMENTS[type] || []);
-  const checked = allChecklists[`checklist_${type}_${id}`] || {};
-  const done = reqs.filter(i => checked[i]).length;
+  const defs = (typeof window.drecoDocDefs === 'function' ? window.drecoDocDefs(type) : []) || [];
+  const items = (typeof window.drecoCandidateDocs === 'function' ? window.drecoCandidateDocs(type, id) : {}) || {};
+  const { done, total } = getDocProgress(type, id);
+  const rec = (type === 'pro' ? (window.proDB || proDB) : (window.lbDB || lbDB)).find(r => String(r.id) === String(id));
+  const rows = defs.map(([key, label]) => {
+    const it = items[key];
+    const onFile = !!(it && !it.markedComplete);   // a real uploaded file
+    const checked = !!it;
+    // Real files are managed in the upload panel; marked/missing rows toggle
+    // the completion mark via the shared doc.mark delegated action.
+    const attrs = onFile ? '' : ` data-action="doc.mark" data-type="${type}" data-id="${id}" data-doc="${escHTML(key)}" data-complete="${checked ? '0' : '1'}"`;
+    const icon = onFile ? 'ti-circle-check' : (checked ? 'ti-square-check' : 'ti-square');
+    const tag = onFile ? '<span class="doc-check-tag">On file</span>' : (checked ? '<span class="doc-check-tag marked">Marked</span>' : '');
+    return `<button type="button" class="doc-check-item${onFile ? ' on-file' : ''}"${attrs}>
+      <i class="ti ${icon}"></i>
+      <span class="doc-check-label${checked ? ' doc-check-done' : ''}">${escHTML(label)}</span>
+      ${tag}
+    </button>`;
+  }).join('');
   return `<div class="doc-checklist">
     <div class="doc-checklist-head">
       <span class="doc-checklist-title">Required Documents</span>
-      <span class="doc-checklist-progress${done===reqs.length&&reqs.length>0?' doc-check-all-done':''}">${done}/${reqs.length} collected</span>
+      <span class="doc-checklist-progress${done===total&&total>0?' doc-check-all-done':''}">${done}/${total} collected</span>
     </div>
-    ${reqs.map(item => `<label class="doc-check-item">
-      <input type="checkbox" ${checked[item]?'checked':''} onchange="toggleChecklistItem('${type}',${id},'${escHTML(item).replace(/'/g,"\\'")}',this.checked)">
-      <span class="doc-check-label${checked[item]?' doc-check-done':''}">${escHTML(item)}</span>
-    </label>`).join('')}
+    ${rows}
+    <div class="doc-checklist-foot">
+      <button type="button" class="dreco-open-docs doc-checklist-upload" data-type="${type}" data-id="${id}" data-name="${escHTML(rec?.name || '')}"><i class="ti ti-upload"></i>Upload or view files</button>
+    </div>
   </div>`;
-}
-async function toggleChecklistItem(type, id, item, isChecked) {
-  const key = `checklist_${type}_${id}`;
-  if (!allChecklists[key]) allChecklists[key] = {};
-  allChecklists[key][item] = isChecked;
-  const el = document.getElementById(`${type}-doc-checklist`);
-  if (el) el.innerHTML = renderDocChecklist(type, id);
-  await saveDocsToDB(key, allChecklists[key]);
 }
 
 // ── Commission / Payment Status ────────────────────────────────────────────────
@@ -5015,7 +5026,7 @@ Object.assign(window, {
   toggleLBSelect, toggleLBOwnPassport, batchSendProfiles,
   // Documents & checklists
   openFirstDocumentUpload, openPendingTravelView,
-  toggleChecklistItem, renderDocChecklist, getDocProgress,
+  renderDocChecklist, getDocProgress,
   // P&L
   openAddCandidateExpense, removeCandidateExpense,
   // Employers / Job orders
