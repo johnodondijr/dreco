@@ -1,9 +1,15 @@
-// @ts-nocheck
 import {
   proDB, lbDB, allDocs, allTimelines, currentUser, proStages, lbStages,
   employers, jobOrders,
   setProDB, setLbDB, setAllDocs, setAllTimelines, setProStages, setLbStages,
 } from './state';
+
+// The candidate view-model dv5 renders from. It is deliberately open: records
+// are a merge of DB fields (which differ between pro and general candidates)
+// plus computed fields, keyed by a non-literal `type`, so branch-specific
+// access (r.paid1, r.r1Amt, …) is dynamic by design. The index signature keeps
+// that flexibility while the rest of the file is type-checked.
+type DrecoRow = { type: string; id: any; raw?: any; [k: string]: any };
 
 // Constants mirrored from main.ts (never change at runtime). These are only
 // last-resort fallbacks; the live pipeline comes from the injected
@@ -62,7 +68,7 @@ function canonicalProProcessStage(stage) {
 function hasMilestone(value) {
   return value !== undefined && value !== null && String(value).trim() !== '';
 }
-function resolveProProcessStage(row = {}) {
+function resolveProProcessStage(row: any = {}) {
   const raw = row.raw || row;
   const order = Object.fromEntries(PRO_PROFILE_PROCESS.map((stage, index) => [stage, index]));
   const stage = canonicalProProcessStage(row.pipelineStage || raw.stage || row.stage || PRO_PROFILE_PROCESS[0]);
@@ -178,7 +184,7 @@ export function injectDepsToD5(deps) {
 
   // Country sub-filter for General Jobs
   function lbCountryBar(rows) {
-    const countries = [...new Set(rows.map(r=>r.country).filter(Boolean))].sort();
+    const countries: any[] = [...new Set(rows.map(r=>r.country).filter(Boolean))].sort();
     if (countries.length < 2) return '';
     return `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px">
       <span style="font-size:11px;font-weight:375;color:#71717a;letter-spacing:.04em">DESTINATION:</span>
@@ -188,8 +194,8 @@ export function injectDepsToD5(deps) {
   }
 
   // ── Micro-helpers ─────────────────────────────────────────
-  const $ = (s, root=document) => root.querySelector(s);
-  const $$ = (s, root=document) => Array.from(root.querySelectorAll(s));
+  const $ = (s, root=document): any => root.querySelector(s);
+  const $$ = (s, root=document): any[] => Array.from(root.querySelectorAll(s));
   const h = (v='') => String(v ?? '').replace(/[&<>"']/g, m =>
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
   const js = (v='') => String(v ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ');
@@ -281,7 +287,7 @@ export function injectDepsToD5(deps) {
         ...r,
         pipelineStage: safeCall(proPipelineStageValue, canonicalProProcessStage(r.stage || 'INTERVIEW'), r)
       });
-      return {
+      return <DrecoRow>{
         type:'pro', id:r.id, name:r.name||'—', pp:r.pp||'', phone:r.phone||'',
         position:r.position||'—', company:r.company||'—', country:r.country||'—',
         stage:resolvedStage, pipelineStage:resolvedStage, submitted:r.submitted, interview:r.interview,
@@ -302,7 +308,7 @@ export function injectDepsToD5(deps) {
     const lb = (Array.isArray(lbDB) ? lbDB : []).map(r => {
       const r1Amt = Number(r.r1Amt||r.r1_amt)||0;
       const r2Amt = Number(r.r2Amt||r.r2_amt)||0;
-      return {
+      return <DrecoRow>{
         type:'lb', id:r.id, name:r.name||'—', pp:r.pp||r.passport||'', phone:r.phone||'',
         position: r.country || 'General Job',
         company:r.company||r.country||'—',
@@ -355,8 +361,8 @@ export function injectDepsToD5(deps) {
   window.dismissTask = key => { dismissedAutoTasks.add(key); saveDismissedTasks(); renderTasks(); if(typeof renderDash==='function') renderDash(); };
   window.dismissManualTask = idx => { manualTasks.splice(idx,1); saveManualTasks(); renderTasks(); if(typeof renderDash==='function') renderDash(); };
   window.addManualTask = () => {
-    const title = (document.getElementById('new-task-title')?.value||'').trim();
-    const due = document.getElementById('new-task-due')?.value||'';
+    const title = ((document.getElementById('new-task-title') as HTMLInputElement)?.value||'').trim();
+    const due = (document.getElementById('new-task-due') as HTMLInputElement)?.value||'';
     if (!title) { showToast('Task title required','error'); return; }
     manualTasks.push({title, due, created: new Date().toISOString()});
     saveManualTasks(); renderTasks();
@@ -381,7 +387,7 @@ export function injectDepsToD5(deps) {
       if (r.followUp) {
         const fu = new Date(r.followUp); fu.setHours(0,0,0,0);
         if (fu <= today) auto.push({key:`fu_${r.type}_${r.id}`, priority:'High', label:'Overdue', title:`Follow up — ${r.name}`, meta:`Due ${fmt(r.followUp)}`, action:edit, icon:'ti-calendar-event'});
-        else if ((fu-today)/86400000 <= 3) auto.push({key:`fu_${r.type}_${r.id}`, priority:'Medium', label:'Soon', title:`Follow up — ${r.name}`, meta:`Due ${fmt(r.followUp)}`, action:edit, icon:'ti-calendar-event'});
+        else if ((+fu - +today)/86400000 <= 3) auto.push({key:`fu_${r.type}_${r.id}`, priority:'Medium', label:'Soon', title:`Follow up — ${r.name}`, meta:`Due ${fmt(r.followUp)}`, action:edit, icon:'ti-calendar-event'});
       }
     });
     return auto.filter(t => !dismissedAutoTasks.has(t.key));
@@ -395,7 +401,7 @@ export function injectDepsToD5(deps) {
     if (r.followUp) {
       const today = new Date(); today.setHours(0,0,0,0);
       const due = new Date(r.followUp); due.setHours(0,0,0,0);
-      if (!isNaN(due) && due <= today) return 'Follow up today';
+      if (!isNaN(+due) && due <= today) return 'Follow up today';
     }
     if (r.type === 'pro') {
       if (s === 'INTERVIEW' || s === 'PENDING OFFER LETTER') return 'Run interview';
@@ -663,7 +669,7 @@ export function injectDepsToD5(deps) {
       ['Documents', docs],
       ['Finance', finance],
       ['Workflow', workflow],
-    ].sort((a,b)=>a[1]-b[1])[0];
+    ].sort((a,b)=>Number(a[1])-Number(b[1]))[0];
     return {
       score,
       label: score >= 85 ? 'Ready' : score >= 65 ? 'Needs cleanup' : 'At risk',
@@ -744,7 +750,7 @@ export function injectDepsToD5(deps) {
     entries.forEach(e => { const pos = e.r?.position || 'Other'; byPos[pos] = (byPos[pos]||0) + (Number(e.amt)||0); });
     const sorted = Object.entries(byPos).sort((a,b)=>b[1]-a[1]);
     const topN: [string,number][] = sorted.slice(0,6) as any;
-    const otherAmt = sorted.slice(6).reduce((s:[number],_:[string,number])=>s+_[1], 0);
+    const otherAmt = sorted.slice(6).reduce((s:number,_:[string,number])=>s+_[1], 0);
     if (otherAmt > 0) topN.push(['Other', otherAmt]);
     if (!topN.length) return `<div style="text-align:center;padding:24px;font-size:12px;color:#9ca3af">No collections data for this period.</div>`;
     const totalAmt = topN.reduce((s,_)=>s+_[1], 0) || 1;
@@ -904,7 +910,7 @@ export function injectDepsToD5(deps) {
     const entries = Object.entries(allTimelines||{})
       .flatMap(([key,arr]) => (arr||[]).map(e => ({...e, key})))
       .filter(e => e.ts || e.at)
-      .sort((a,b) => new Date(b.ts||b.at||0) - new Date(a.ts||a.at||0))
+      .sort((a,b) => +new Date(b.ts||b.at||0) - +new Date(a.ts||a.at||0))
       .slice(0, limit);
     if (!entries.length)
       return `<div class="dv5-empty">Activity appears here as candidates are updated, paid, and moved through stages.</div>`;
@@ -1072,13 +1078,13 @@ export function injectDepsToD5(deps) {
           </div>
           <div class="dv5-pipeline-flow" style="justify-content:space-between">
             ${flowSteps.map(([label,val], i) => {
-              const maxVal = Math.max(...flowSteps.map(([,v])=>v), 1);
-              const pct = Math.round((val/maxVal)*100);
+              const maxVal = Math.max(...flowSteps.map(([,v])=>Number(v)), 1);
+              const pct = Math.round((Number(val)/maxVal)*100);
               const isLast = i === flowSteps.length - 1;
               return `
               <div class="dv5-flow-step" style="flex:1;position:relative;padding:0 8px">
                 <strong style="font-size:28px">${h(String(val))}</strong>
-                <span style="font-size:10px;letter-spacing:.04em;text-transform:uppercase">${h(label)}</span>
+                <span style="font-size:10px;letter-spacing:.04em;text-transform:uppercase">${h(String(label))}</span>
                 <div class="dv5-flow-track">
                   <div class="dv5-flow-fill ${isLast?'done':''}" style="width:${pct}%"></div>
                 </div>
@@ -1143,14 +1149,14 @@ export function injectDepsToD5(deps) {
   let pipelineSearch = '';
   function restoreInputFocus(id, cursor) {
     requestAnimationFrame(() => {
-      const input = document.getElementById(id);
+      const input = document.getElementById(id) as HTMLInputElement;
       if (!input) return;
       input.focus({ preventScroll: true });
       if (typeof input.setSelectionRange === 'function') input.setSelectionRange(cursor, cursor);
     });
   }
   window.setPipelineSearch = v => {
-    const cursor = document.activeElement?.selectionStart ?? v.length;
+    const cursor = (document.activeElement as HTMLInputElement)?.selectionStart ?? v.length;
     pipelineSearch = v;
     renderPipeline();
     restoreInputFocus('pipeline-search', cursor);
@@ -1231,7 +1237,7 @@ export function injectDepsToD5(deps) {
   let selectedCandidates = new Set(); // 'type_id' strings
 
   function setCandidateSearch(v) {
-    const cursor = document.activeElement?.selectionStart ?? v.length;
+    const cursor = (document.activeElement as HTMLInputElement)?.selectionStart ?? v.length;
     candidateSearch = v;
     renderCandidates();
     restoreInputFocus('cand-search', cursor);
@@ -1259,7 +1265,7 @@ export function injectDepsToD5(deps) {
     const countEl = document.getElementById('cand-bulk-count');
     if (bar) bar.style.display = selectedCandidates.size > 0 ? 'flex' : 'none';
     if (countEl) countEl.textContent = selectedCandidates.size + ' selected';
-    const selectAll = document.getElementById('cand-select-all');
+    const selectAll = document.getElementById('cand-select-all') as HTMLInputElement;
     if (selectAll) {
       const list = filterCandidates();
       selectAll.indeterminate = selectedCandidates.size > 0 && selectedCandidates.size < list.length;
@@ -1615,13 +1621,13 @@ export function injectDepsToD5(deps) {
     const monthly = months.map(({label,y,m}) => {
       const mrs = rows.filter(r=>{
         const d = new Date(r.submitted||r.created_at||'');
-        return !isNaN(d) && d.getFullYear()===y && d.getMonth()===m;
+        return !isNaN(+d) && d.getFullYear()===y && d.getMonth()===m;
       });
       return { label, invoiced: mrs.reduce((s,r)=>s+r.commission,0), paid: mrs.reduce((s,r)=>s+r.paid,0) };
     });
 
     // Outstanding by company
-    const byPosition = {};
+    const byPosition: Record<string, any> = {};
     rows.filter(r=>r.balance>0).forEach(r => {
       const pos = r.position || 'Unknown Position';
       if (!byPosition[pos]) byPosition[pos] = {name:pos,balance:0,count:0};
@@ -1634,7 +1640,7 @@ export function injectDepsToD5(deps) {
     const now2 = new Date();
     function inPreset(r) {
       const d = new Date(r.submitted || r.created_at || '');
-      if (isNaN(d) || financeDatePreset === 'all') return true;
+      if (isNaN(+d) || financeDatePreset === 'all') return true;
       const y = d.getFullYear(), mo = d.getMonth();
       if (financeDatePreset === 'this_month') return y === now2.getFullYear() && mo === now2.getMonth();
       if (financeDatePreset === 'last_month') { const lm = new Date(now2.getFullYear(), now2.getMonth()-1,1); return y === lm.getFullYear() && mo === lm.getMonth(); }
@@ -1657,7 +1663,7 @@ export function injectDepsToD5(deps) {
         if (!r1 && !r2 && r.paid > 0) paymentEntries.push({ r, label: `${r.name} — Refund`, amt: r.paid, date: r.travelDate || r.submitted || r.created_at, slot: null, isUSD: true });
       }
     });
-    paymentEntries.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
+    paymentEntries.sort((a,b) => +new Date(b.date||0) - +new Date(a.date||0));
     const upcomingRows = dateRows
       .filter(r => r.type === 'pro' ? (Number(r.dueNow)||0) > 0 : r.balance > 0)
       .sort((a,b) => (b.type === 'pro' ? Number(b.dueNow)||0 : b.balance) - (a.type === 'pro' ? Number(a.dueNow)||0 : a.balance));
@@ -1915,12 +1921,12 @@ export function injectDepsToD5(deps) {
     const fmt2 = v => isPro ? money(v) : moneyUSD(v);
     const total = rows.reduce((s,r)=>s+r.commission,0);
     const paid  = rows.reduce((s,r)=>s+r.paid,0);
-    const stageCounts = {};
+    const stageCounts: Record<string, any> = {};
     rows.forEach(r => stageCounts[r.stage] = (stageCounts[r.stage]||0)+1);
     const travelled = rows.filter(r=>String(r.stage).toUpperCase()==='TRAVELLED');
 
     // Pro: top jobs by position
-    const jobCounts = {};
+    const jobCounts: Record<string, any> = {};
     if (isPro) {
       rows.forEach(r => {
         if (r.position) { jobCounts[r.position] = jobCounts[r.position]||{count:0,travelled:0,commission:0}; jobCounts[r.position].count++; if(r.stage==='TRAVELLED') jobCounts[r.position].travelled++; jobCounts[r.position].commission+=Number(r.commission)||0; }
@@ -1929,7 +1935,7 @@ export function injectDepsToD5(deps) {
     const topJobs = Object.entries(jobCounts).sort((a,b)=>b[1].count-a[1].count).slice(0,5);
 
     // General: top countries
-    const countryCounts = {};
+    const countryCounts: Record<string, any> = {};
     if (!isPro) {
       lbBase.forEach(r => {
         const c = r.country||'Unknown';
@@ -1943,10 +1949,10 @@ export function injectDepsToD5(deps) {
     let avgProcessing = '—';
     if (isPro) {
       const withDates = (proDB||[]).filter(r => proPipelineStageValue(r)==='TRAVELLED' && r.travel && r.submitted);
-      if (withDates.length) { const avg = Math.round(withDates.reduce((s,r)=>s+Math.max(0,(new Date(r.travel)-new Date(r.submitted))/86400000),0)/withDates.length); avgProcessing = avg>0?avg+' days':'—'; }
+      if (withDates.length) { const avg = Math.round(withDates.reduce((s,r)=>s+Math.max(0,(+new Date(r.travel)-+new Date(r.submitted))/86400000),0)/withDates.length); avgProcessing = avg>0?avg+' days':'—'; }
     } else {
       const withDates = lbBase.filter(r=>r.stage==='TRAVELLED'&&r.travelDate&&r.created_at);
-      if (withDates.length) { const avg = Math.round(withDates.reduce((s,r)=>s+Math.max(0,(new Date(r.travelDate)-new Date(r.created_at))/86400000),0)/withDates.length); avgProcessing = avg>0?avg+' days':'—'; }
+      if (withDates.length) { const avg = Math.round(withDates.reduce((s,r)=>s+Math.max(0,(+new Date(r.travelDate)-+new Date(r.created_at))/86400000),0)/withDates.length); avgProcessing = avg>0?avg+' days':'—'; }
     }
 
     // Clients for this type
@@ -1959,7 +1965,7 @@ export function injectDepsToD5(deps) {
     rows.forEach(r=>{
       if(String(r.stage||'').toUpperCase()!=='TRAVELLED') return;
       const travelField = isPro ? (r.raw?.travel||r.travel) : (r.travelDate||r.travel_date);
-      const d=travelField?new Date(travelField):null; if(!d||isNaN(d)) return;
+      const d=travelField?new Date(travelField):null; if(!d||isNaN(+d)) return;
       const slot=last12.find(s=>s.y===d.getFullYear()&&s.m===d.getMonth()); if(slot) slot.count++;
     });
     const chartMax=Math.max(...last12.map(s=>s.count),1);
@@ -1977,16 +1983,16 @@ export function injectDepsToD5(deps) {
     // Avg days per stage (Pro only)
     let stageTimeHTML = '';
     if (isPro) {
-      const stageFields = [
-        ['SUBMITTED→INTERVIEW',    r=>r.interview&&r.submitted,      r=>(new Date(r.interview)-new Date(r.submitted))/86400000],
-        ['INTERVIEW→OFFER',        r=>r.ol&&r.interview,             r=>(new Date(r.ol)-new Date(r.interview))/86400000],
-        ['OFFER→MEDICAL',          r=>r.medical&&r.ol,               r=>(new Date(r.medical)-new Date(r.ol))/86400000],
-        ['MEDICAL→PERMIT',         r=>r.mol&&r.medical,              r=>(new Date(r.mol)-new Date(r.medical))/86400000],
-        ['PERMIT→VISA',            r=>r.visa&&r.mol,                 r=>(new Date(r.visa)-new Date(r.mol))/86400000],
-        ['VISA→TRAVEL',            r=>r.travel&&r.visa,              r=>(new Date(r.travel)-new Date(r.visa))/86400000],
+      const stageFields: Array<[string, (r: any) => any, (r: any) => number]> = [
+        ['SUBMITTED→INTERVIEW',    r=>r.interview&&r.submitted,      r=>(+new Date(r.interview)-+new Date(r.submitted))/86400000],
+        ['INTERVIEW→OFFER',        r=>r.ol&&r.interview,             r=>(+new Date(r.ol)-+new Date(r.interview))/86400000],
+        ['OFFER→MEDICAL',          r=>r.medical&&r.ol,               r=>(+new Date(r.medical)-+new Date(r.ol))/86400000],
+        ['MEDICAL→PERMIT',         r=>r.mol&&r.medical,              r=>(+new Date(r.mol)-+new Date(r.medical))/86400000],
+        ['PERMIT→VISA',            r=>r.visa&&r.mol,                 r=>(+new Date(r.visa)-+new Date(r.mol))/86400000],
+        ['VISA→TRAVEL',            r=>r.travel&&r.visa,              r=>(+new Date(r.travel)-+new Date(r.visa))/86400000],
       ];
       const stageTimes = stageFields.map(([label,filter,calc])=>{
-        const subset=(proDB||[]).filter(r=>{ try{return filter(r)&&!isNaN(new Date(r.travel||r.visa||r.ol||r.submitted))}catch{return false;}});
+        const subset=(proDB||[]).filter(r=>{ try{return filter(r)&&!isNaN(+new Date(r.travel||r.visa||r.ol||r.submitted))}catch{return false;}});
         const vals=subset.map(r=>{try{return calc(r);}catch{return 0;}}).filter(v=>v>0&&v<365);
         const avg=vals.length?Math.round(vals.reduce((s,v)=>s+v,0)/vals.length):null;
         return {label,avg,n:vals.length};
@@ -2646,7 +2652,7 @@ export function injectDepsToD5(deps) {
     const rec = db.find(r => String(r.id) === String(id));
     if (!rec) return;
 
-    let updates = {};
+    let updates: any = {};
 
     if (type === 'pro') {
       const map = PRO_CHECKLIST_MAP[label];
@@ -3638,8 +3644,8 @@ export function injectDepsToD5(deps) {
 // =============================================================
 (function(){
   const BUCKET = 'candidate-documents';
-  const $ = s => document.querySelector(s);
-  const $$ = s => Array.from(document.querySelectorAll(s));
+  const $ = (s): any => document.querySelector(s);
+  const $$ = (s): any[] => Array.from(document.querySelectorAll(s));
   const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const js = v => String(v ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ');
   const nowISO = () => new Date().toISOString();
@@ -3828,7 +3834,7 @@ export function injectDepsToD5(deps) {
   function formatDocDate(v){
     if(!v) return 'previously';
     const d = new Date(v);
-    return isNaN(d) ? String(v) : d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
+    return isNaN(+d) ? String(v) : d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
   }
   async function fileToDataUrl(file){
     return new Promise((resolve,reject)=>{ const r = new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file); });
@@ -3887,7 +3893,7 @@ export function injectDepsToD5(deps) {
       try { url = await uploadToSupabase(path,file); }
       catch(storageErr){
         console.warn('Supabase Storage upload failed. Falling back to local file preview:', storageErr);
-        url = await fileToDataUrl(file);
+        url = await fileToDataUrl(file) as string;
         storage = 'local-preview';
       }
       store.items[docType] = { label, fileName:file.name, mimeType:file.type, size:file.size, path, url, uploadedAt:nowISO(), uploadedBy:currentDisplay(), storage };
@@ -3948,7 +3954,7 @@ export function injectDepsToD5(deps) {
     if(!t) return;
     const items = docItems(t.type,t.id);
     const rows = [['Document','File name','Uploaded at','Uploaded by','URL']];
-    Object.values(items).forEach(d => rows.push([d.label||'', d.fileName||'', d.uploadedAt||'', d.uploadedBy||'', d.url||'']));
+    Object.values(items).forEach((d: any) => rows.push([d.label||'', d.fileName||'', d.uploadedAt||'', d.uploadedBy||'', d.url||'']));
     const csv = rows.map(r => r.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
     const blob = new Blob([csv], {type:'text/csv'});
     const a = document.createElement('a');
@@ -4013,7 +4019,7 @@ export function injectDepsToD5(deps) {
   }
 
   function closeStackedModals(){
-    const open=[...document.querySelectorAll('.modal-bg.open,.modal-bg.show,.modal-backdrop.open,.modal-backdrop.show')].filter(el=>getComputedStyle(el).display!=='none');
+    const open: any[] =[...document.querySelectorAll('.modal-bg.open,.modal-bg.show,.modal-backdrop.open,.modal-backdrop.show')].filter(el=>getComputedStyle(el).display!=='none');
     if(open.length <= 1) return;
     open.slice(0,-1).forEach(el=>{ el.classList.remove('open','show'); el.style.display='none'; });
     const last=open[open.length-1]; last.style.display='flex'; last.classList.add('open');
@@ -4069,8 +4075,8 @@ export function injectDepsToD5(deps) {
   if (window.__drecoStabilizationPass) return;
   window.__drecoStabilizationPass = true;
 
-  const $ = (sel, root=document) => root.querySelector(sel);
-  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+  const $ = (sel, root=document): any => root.querySelector(sel);
+  const $$ = (sel, root=document): any[] => Array.from(root.querySelectorAll(sel));
   const BACKUP_INDEX_KEY = 'dreco_backup_index_v1';
   const MAX_BACKUPS = 8;
 
@@ -4222,7 +4228,7 @@ export function injectDepsToD5(deps) {
       const opened = records
         .map(r => r.target)
         .filter(el => el instanceof HTMLElement && (el.classList.contains('open') || el.classList.contains('show')))
-        .filter(el => el.matches('.modal-bg,.modal-backdrop,#candidate-profile-modal,#candidate-profile-modal-v4,#v4-command,#command-modal,#quick-country-modal'));
+        .filter((el: any) => el.matches('.modal-bg,.modal-backdrop,#candidate-profile-modal,#candidate-profile-modal-v4,#v4-command,#command-modal,#quick-country-modal'));
       if (!opened.length) {
         document.body.classList.toggle('dreco-modal-open', $$('.modal-bg.open,.modal-backdrop.open,#candidate-profile-modal.open,#candidate-profile-modal-v4.open,#v4-command.open,#command-modal.open,#quick-country-modal.open').length > 0);
         return;
@@ -4260,7 +4266,7 @@ export function injectDepsToD5(deps) {
       if (!heads.length) return;
       table.classList.add('dreco-mobile-table');
       $$('tbody tr', table).forEach(row => {
-        Array.from(row.children).forEach((td, i) => {
+        Array.from(row.children).forEach((td: any, i) => {
           if (!td.getAttribute('data-label')) td.setAttribute('data-label', heads[i] || 'Details');
         });
       });
@@ -4415,7 +4421,7 @@ export function injectDepsToD5(deps) {
     const overlay = document.getElementById('cmd-overlay');
     if (!overlay) return;
     overlay.classList.add('open');
-    const inp = document.getElementById('cmd-input');
+    const inp = document.getElementById('cmd-input') as HTMLInputElement;
     if (inp) { inp.value = ''; inp.focus(); }
     cmdSearch();
   };
@@ -4428,7 +4434,7 @@ export function injectDepsToD5(deps) {
   function cmdEsc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
   window.cmdSearch = function() {
-    const q = (document.getElementById('cmd-input')?.value || '').toLowerCase().trim();
+    const q = ((document.getElementById('cmd-input') as HTMLInputElement)?.value || '').toLowerCase().trim();
     const results = document.getElementById('cmd-results');
     if (!results) return;
     cmdSelectedIdx = 0;
@@ -4469,7 +4475,7 @@ export function injectDepsToD5(deps) {
   };
 
   window.cmdKey = function(e) {
-    const items = document.querySelectorAll('.cmd-item');
+    const items = document.querySelectorAll<HTMLElement>('.cmd-item');
     if (e.key === 'ArrowDown') { e.preventDefault(); cmdSelectedIdx = Math.min(cmdSelectedIdx+1, items.length-1); highlightCmd(); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); cmdSelectedIdx = Math.max(cmdSelectedIdx-1, 0); highlightCmd(); }
     else if (e.key === 'Enter') { e.preventDefault(); items[cmdSelectedIdx]?.click(); }
