@@ -1755,6 +1755,7 @@ function toProDbPayload(rec) {
     ol: rec.ol||null, mol: rec.mol||null, visa: rec.visa||null, travel: rec.travel||null,
     commission: rec.commission, paid: rec.paid,
     paid1: rec.paid1??null, paid2: rec.paid2??null,
+    paid1_date: rec.paid1_date||null, paid2_date: rec.paid2_date||null,
     medical: rec.medical||null,
     airline: rec.airline||null,
     follow_up: rec.followUp||null,
@@ -3391,6 +3392,35 @@ function renderCommissions(){
     return `<tr onclick="editPro(${r.id})"><td class="name-cell">${escHTML(r.name)}</td><td>${escHTML(r.company||'-')}</td><td>${escHTML(r.position||'-')}</td><td>${moneyKES(r.commission)}</td><td>${moneyKES(payment.paid)}</td><td class="${payment.dueNow>0?'balance-owed':''}">${moneyKES(payment.dueNow)}</td><td class="${bal>0?'balance-owed':''}">${moneyKES(bal)}</td><td>${escHTML(getLatestTimelineText('pro',r.id))}</td><td onclick="event.stopPropagation()" style="white-space:nowrap">${actions}</td></tr>`;
   }).join(''):'<tr><td colspan="9"><div class="mini-empty">No commission records yet</div></td></tr>';
 }
+// Record a Pro commission payment of `amount` on `date` into the paid1/paid2
+// slots (each with its own date) and recompute the total. Storing the date is
+// what lets a payment surface in Latest Transactions ordered by when it was
+// actually paid — previously these flows bumped only `paid`, so the entry was
+// dated by the candidate's submission date and never sorted as the latest.
+// Mutates `r` in place and returns the field updates to persist.
+function applyProPayment(r, amount, date) {
+  const d = date || new Date().toISOString().slice(0, 10);
+  const updates: any = {};
+  if (!(Number(r.paid1) > 0)) { updates.paid1 = amount; updates.paid1_date = d; }
+  else if (!(Number(r.paid2) > 0)) { updates.paid2 = amount; updates.paid2_date = d; }
+  else { updates.paid2 = (Number(r.paid2) || 0) + amount; updates.paid2_date = d; }
+  Object.assign(r, updates);
+  const total = (Number(r.paid1) || 0) + (Number(r.paid2) || 0);
+  updates.paid = total; r.paid = total;
+  return updates;
+}
+// Persist a Pro payment update, degrading gracefully when the paid1_date /
+// paid2_date columns have not been migrated yet (retry without them so the
+// amount still saves rather than the whole payment failing).
+async function persistProPaymentUpdate(id, updates) {
+  try { await dbUpdate('pro_candidates', id, updates); }
+  catch (e) {
+    if (isMissingColumnError(e)) {
+      const { paid1_date, paid2_date, ...core } = updates;
+      await dbUpdate('pro_candidates', id, core);
+    } else throw e;
+  }
+}
 function openAddPayment(id) {
   const r = proDB.find(x => x.id === id); if (!r) return;
   const bal = proBalance(r);
@@ -3417,17 +3447,18 @@ async function submitAddPayment() {
   const alreadyPaid = proPaidAmount(r);
   const outstanding = Math.max(commission - alreadyPaid, 0);
   if (commission > 0 && amount > outstanding) return fail(`Amount exceeds outstanding balance of ${moneyKES(outstanding)}.`);
-  const newTotal = alreadyPaid + amount;
-  r.paid = newTotal;
+  const snapshot = { paid1:r.paid1, paid1_date:r.paid1_date, paid2:r.paid2, paid2_date:r.paid2_date, paid:r.paid };
+  const updates = applyProPayment(r, amount, date);
   try {
-    if (useCloud()) await dbUpdate('pro_candidates', id, { paid: newTotal });
+    if (useCloud()) await persistProPaymentUpdate(id, updates);
     else saveLocalStore();
     addTimeline('pro', id, `Payment received: ${moneyKES(amount)} on ${date}`);
     auditAction('Finance', 'Commission payment received', `${r.name} — ${moneyKES(amount)}`);
-  } catch(e) { r.paid = alreadyPaid; return fail(e.message || 'Save failed.'); }
+  } catch(e) { Object.assign(r, snapshot); return fail(e.message || 'Save failed.'); }
   closeModal('ap-modal');
   renderCommissions();
   window.renderDash?.();
+  window.renderFinancePage?.();
   showToast(`${moneyKES(amount)} recorded`, 'success');
 }
 async function markCommissionCleared(id) {
@@ -3435,16 +3466,22 @@ async function markCommissionCleared(id) {
   const commission = Number(r.commission) || 0;
   if (!commission) { showToast('No commission amount set on this candidate.', 'error'); return; }
   if (!confirm(`Mark ${r.name} as fully paid (${moneyKES(commission)})?`)) return;
-  const prev = proPaidAmount(r);
-  r.paid = commission;
+  const snapshot = { paid1:r.paid1, paid1_date:r.paid1_date, paid2:r.paid2, paid2_date:r.paid2_date, paid:r.paid };
+  const today = new Date().toISOString().slice(0, 10);
+  const outstanding = Math.max(commission - proPaidAmount(r), 0);
+  // Record the cleared balance as a dated payment so it appears in Latest
+  // Transactions, then pin the total to the full commission.
+  const updates = outstanding > 0 ? applyProPayment(r, outstanding, today) : {};
+  updates.paid = commission; r.paid = commission;
   try {
-    if (useCloud()) await dbUpdate('pro_candidates', id, { paid: commission });
+    if (useCloud()) await persistProPaymentUpdate(id, updates);
     else saveLocalStore();
     addTimeline('pro', id, `Commission cleared: ${moneyKES(commission)}`);
     auditAction('Finance', 'Commission marked cleared', `${r.name} — ${moneyKES(commission)}`);
-  } catch(e) { r.paid = prev; showToast(e.message || 'Save failed.', 'error'); return; }
+  } catch(e) { Object.assign(r, snapshot); showToast(e.message || 'Save failed.', 'error'); return; }
   renderCommissions();
   window.renderDash?.();
+  window.renderFinancePage?.();
   showToast(`${r.name} marked as cleared`, 'success');
 }
 function renderRepayments(){
@@ -3819,18 +3856,15 @@ async function submitRecordPayment(){
     const commission=Number(r.commission)||0;
     const alreadyPaid=proPaidAmount(r);
     if(commission>0 && amount>(commission-alreadyPaid)) return fail(`Amount exceeds outstanding balance of ${moneyKES(commission-alreadyPaid)}.`);
-    const updates={};
-    if(!r.paid1){ updates.paid1=amount; r.paid1=amount; }
-    else if(!r.paid2){ updates.paid2=amount; r.paid2=amount; }
-    else return fail('Both payment slots are filled. Open the candidate to edit.');
-    updates.paid=Math.max(r.paid||0,(r.paid1||0)+(r.paid2||0));
-    r.paid=updates.paid;
-    try{ if(useCloud()) await dbUpdate('pro_candidates',id,updates); else saveLocalStore(); addTimeline('pro',id,`Commission payment: ${moneyKES(amount)}`); auditAction('Finance','Commission payment recorded',`${r.name} - ${moneyKES(amount)}`); }
-    catch(e){ return fail(e.message||'Save failed.'); }
+    const snapshot={ paid1:r.paid1, paid1_date:r.paid1_date, paid2:r.paid2, paid2_date:r.paid2_date, paid:r.paid };
+    const updates=applyProPayment(r, amount, date);
+    try{ if(useCloud()) await persistProPaymentUpdate(id,updates); else saveLocalStore(); addTimeline('pro',id,`Commission payment: ${moneyKES(amount)}`); auditAction('Finance','Commission payment recorded',`${r.name} - ${moneyKES(amount)}`); }
+    catch(e){ Object.assign(r, snapshot); return fail(e.message||'Save failed.'); }
   }
   closeModal('quick-payment-modal');
   if(type==='repayment') renderRepayments(); else renderCommissions();
   window.renderDash?.();
+  window.renderFinancePage?.();
   showToast('Payment recorded','success');
 }
 // ── Balance card quick payment ──────────────────────────────────────────────
@@ -3891,15 +3925,16 @@ async function submitBalancePayment(){
     } else {
       const r=proDB.find(x=>x.id===id||String(x.id)===String(id));
       if(!r) return fail('Candidate not found.');
-      const prevPaid=proPaidAmount(r);
-      const newTotal=prevPaid+amount;
-      r.paid=newTotal;
-      try{ if(useCloud()) await dbUpdate('pro_candidates',id,{paid:newTotal}); else saveLocalStore(); addTimeline('pro',id,`Commission payment: ${moneyKES(amount)}`); auditAction('Finance','Commission payment recorded',`${r.name} - ${moneyKES(amount)}`); }
-      catch(e){ r.paid=prevPaid; return fail(e.message||'Save failed.'); }
+      const snapshot={ paid1:r.paid1, paid1_date:r.paid1_date, paid2:r.paid2, paid2_date:r.paid2_date, paid:r.paid };
+      const updates=applyProPayment(r, amount, date);
+      try{ if(useCloud()) await persistProPaymentUpdate(id,updates); else saveLocalStore(); addTimeline('pro',id,`Commission payment: ${moneyKES(amount)}`); auditAction('Finance','Commission payment recorded',`${r.name} - ${moneyKES(amount)}`); }
+      catch(e){ Object.assign(r, snapshot); return fail(e.message||'Save failed.'); }
     }
     closeModal('balance-pay-modal');
     window.openCandidateProfile?.(type, id);
+    if(type==='lb') renderRepayments(); else renderCommissions();
     window.renderDash?.();
+    window.renderFinancePage?.();
     showToast('Payment recorded','success');
   } finally {
     release();
@@ -4187,6 +4222,12 @@ async function savePro(){
     paid2:document.getElementById('pf-paid2')?.value?Number(document.getElementById('pf-paid2').value):null,
     paid:(Number(document.getElementById('pf-paid1')?.value)||0)+(Number(document.getElementById('pf-paid2')?.value)||0)||null,
   };
+  // Stamp a payment date so amounts entered/changed here surface in Latest
+  // Transactions by when they were recorded; keep the existing date when the
+  // amount is unchanged.
+  const _today=new Date().toISOString().slice(0,10);
+  rec.paid1_date = rec.paid1!=null ? ((oldRec && Number(oldRec.paid1)===rec.paid1 && oldRec.paid1_date) || _today) : null;
+  rec.paid2_date = rec.paid2!=null ? ((oldRec && Number(oldRec.paid2)===rec.paid2 && oldRec.paid2_date) || _today) : null;
   const validationError=validateProRecord(rec);
   if(validationError){ showToast(validationError,'error'); return; }
   if(editingProId){
@@ -5036,7 +5077,7 @@ Object.assign(window, {
   exportCSV, exportReportPDF,
   deleteExpense, openExpensePrompt, submitQuickExpense,
   openBalancePayment, fillFullBalance, submitBalancePayment,
-  openRecordPaymentPrompt, submitRecordPayment, openAddPayment, submitAddPayment,
+  openRecordPaymentPrompt, submitRecordPayment, openAddPayment, submitAddPayment, markCommissionCleared,
   submitLBRefundPayment, removeLBRefundPayment, openLBRefundPayment,
   setFinancePeriod, setTrendPeriod, updateTrendTooltip, resetTrendTooltip,
   // Calendar / events
