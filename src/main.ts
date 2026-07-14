@@ -1528,6 +1528,15 @@ const DRECO_ACTIONS = {
     const c = el.getAttribute('data-country');
     if (c) { window.settingsGeneralCountry = c; renderSettingsPage?.(); }
   },
+  // Finance page interactions (delegated so the finance render adds no new
+  // inline on*= handlers — keeps the CSP handler ratchet flat).
+  'finance.tab': (el) => window.setFinanceTab?.(el.getAttribute('data-fintab')),
+  'finance.open': (el) => {
+    const t = el.getAttribute('data-type'), id = Number(el.getAttribute('data-id'));
+    if (t === 'pro') window.editPro?.(id); else window.editLB?.(id);
+  },
+  'finance.pay': (el) => window.openBalancePayment?.(el.getAttribute('data-type'), Number(el.getAttribute('data-id'))),
+  'finance.pos': (el) => window.setFinancePosition?.(el.getAttribute('data-pos')),
 };
 window.DRECO_ACTIONS = DRECO_ACTIONS;
 document.addEventListener('click', (e) => {
