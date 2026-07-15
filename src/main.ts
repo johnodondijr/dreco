@@ -1615,11 +1615,21 @@ const DRECO_ACTIONS = {
   // Payments (commission installment ledger) interactions.
   'payments.tab': (el) => window.setPaymentsTab?.(el.getAttribute('data-ptab')),
   'installment.add': (el) => window.openAddPayment?.(Number(el.getAttribute('data-id'))),
-  'installment.remove': (el) => removeCommissionInstallment(Number(el.getAttribute('data-id')), Number(el.getAttribute('data-idx'))),
-  'installment.editamt': (el) => {
-    const id = Number(el.getAttribute('data-id')), idx = Number(el.getAttribute('data-idx'));
-    const v = prompt('Edit installment amount (KES):', el.getAttribute('data-amt') || '');
-    if (v != null && v.trim() !== '') updateInstallmentAmount(id, idx, Number(v));
+  // Installment view/edit popup (the table cell just opens this).
+  'installment.view': (el) => openInstallmentModal(Number(el.getAttribute('data-id')), Number(el.getAttribute('data-idx')), false),
+  'inst.edit': () => { const m = document.getElementById('installment-modal'); if (m) openInstallmentModal(Number(m.dataset.id), Number(m.dataset.idx), true); },
+  'inst.viewmode': () => { const m = document.getElementById('installment-modal'); if (m) openInstallmentModal(Number(m.dataset.id), Number(m.dataset.idx), false); },
+  'inst.save': async () => {
+    const m = document.getElementById('installment-modal'); if (!m) return;
+    const amt = (document.getElementById('inst-e-amount') as HTMLInputElement)?.value;
+    const date = (document.getElementById('inst-e-date') as HTMLInputElement)?.value;
+    if (await saveInstallmentEdit(Number(m.dataset.id), Number(m.dataset.idx), amt, date)) closeModal('installment-modal');
+  },
+  'inst.remove': async () => {
+    const m = document.getElementById('installment-modal'); if (!m) return;
+    const id = Number(m.dataset.id), idx = Number(m.dataset.idx);
+    closeModal('installment-modal');
+    await removeCommissionInstallment(id, idx);
   },
 };
 window.DRECO_ACTIONS = DRECO_ACTIONS;
@@ -3607,6 +3617,67 @@ async function removeCommissionInstallment(id, index) {
   try { if (useCloud()) await persistProPaymentUpdate(id, proCommissionUpdates(r)); else saveLocalStore(); addTimeline('pro', id, 'Installment removed'); }
   catch(e) { _restoreProComm(r, snapshot); showToast(e.message || 'Save failed.', 'error'); return; }
   _afterCommissionChange();
+}
+// Edit an installment's amount and date together (one save) — used by the
+// installment view/edit popup.
+async function saveInstallmentEdit(id, index, amount, date) {
+  const r = proDB.find(x => String(x.id) === String(id)); if (!r || !Array.isArray(r.commissionPayments)) return false;
+  const p = r.commissionPayments[index]; if (!p) return false;
+  const amt = Number(amount) || 0;
+  const errEl = document.getElementById('inst-e-error');
+  const fail = m => { if (errEl) { errEl.textContent = m; errEl.style.display = 'block'; } };
+  if (amt <= 0) { fail('Enter a valid amount.'); return false; }
+  const commission = Number(r.commission) || 0;
+  const others = proPaidAmount(r) - (Number(p.amount) || 0);
+  if (commission > 0 && (others + amt) > commission) { fail(`Total would exceed the commission of ${moneyKES(commission)}.`); return false; }
+  const snapshot = _proCommSnapshot(r);
+  p.amount = amt; p.date = date || '';
+  syncCommissionMirrors(r);
+  try { if (useCloud()) await persistProPaymentUpdate(id, proCommissionUpdates(r)); else saveLocalStore(); auditAction('Finance', 'Installment edited', `${r.name} — ${moneyKES(amt)}`); }
+  catch(e) { _restoreProComm(r, snapshot); fail(e.message || 'Save failed.'); return false; }
+  _afterCommissionChange();
+  return true;
+}
+// Installment view/edit popup. View shows the amount + date; Edit reveals inputs.
+function openInstallmentModal(id, index, edit = false) {
+  const r = proDB.find(x => String(x.id) === String(id));
+  const modal = document.getElementById('installment-modal');
+  const body = document.getElementById('inst-modal-body');
+  if (!r || !modal || !body) return;
+  const p = (r.commissionPayments || [])[index];
+  if (!p) { closeModal('installment-modal'); return; }
+  modal.dataset.id = String(id);
+  modal.dataset.idx = String(index);
+  const title = document.getElementById('inst-modal-title');
+  if (title) title.textContent = `Installment ${Number(index) + 1}`;
+  const dateISO = p.date ? String(p.date).slice(0, 10) : '';
+  if (edit) {
+    body.innerHTML = `
+      <div class="form-grid" style="grid-template-columns:1fr 1fr">
+        <div class="field"><label for="inst-e-amount">Amount (KES)</label><input id="inst-e-amount" type="number" min="1" value="${Number(p.amount) || 0}"></div>
+        <div class="field"><label for="inst-e-date">Date paid</label><input id="inst-e-date" type="date" value="${dateISO}"></div>
+      </div>
+      <div class="login-error" id="inst-e-error" role="alert" style="display:none"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+        <button class="btn" data-action="inst.viewmode">Cancel</button>
+        <button class="btn primary" data-action="inst.save">Save</button>
+      </div>`;
+  } else {
+    body.innerHTML = `
+      <div style="text-align:center;padding:4px 0 6px">
+        <div style="font-size:11px;color:var(--text-2,#71717a);text-transform:uppercase;letter-spacing:.05em">${escHTML(r.name || 'Candidate')}</div>
+        <div style="font-size:32px;font-weight:700;color:#0F7A52;margin-top:10px;line-height:1">${moneyKES(p.amount)}</div>
+        <div style="font-size:13px;color:var(--text-2,#71717a);margin-top:8px;display:inline-flex;align-items:center;gap:6px"><i class="ti ti-calendar-event"></i>Paid ${p.date ? escHTML(fmtDate(dateISO)) : 'date not set'}</div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--border,#EEF0F2)">
+        <button class="btn" data-action="inst.remove" style="color:#dc2626">Remove</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn" data-action="modal.close" data-modal="installment-modal">Close</button>
+          <button class="btn primary" data-action="inst.edit"><i class="ti ti-pencil" style="font-size:14px"></i> Edit</button>
+        </div>
+      </div>`;
+  }
+  modal.classList.add('open');
 }
 function openAddPayment(id) {
   const r = proDB.find(x => x.id === id); if (!r) return;

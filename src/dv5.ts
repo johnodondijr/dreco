@@ -1929,13 +1929,10 @@ export function injectDepsToD5(deps) {
       const p = x.pays[i];
       if (p) {
         return `<td class="pay-inst">
-          <div class="pay-chip">
-            <button class="pay-inst-amt" data-action="installment.editamt" data-id="${x.r.id}" data-idx="${i}" data-amt="${Number(p.amount)||0}" title="Edit amount">${money(p.amount)}</button>
-            <button class="pay-inst-x" data-action="installment.remove" data-id="${x.r.id}" data-idx="${i}" title="Remove">&times;</button>
-          </div>
-          <span class="pay-inst-date">${fmtDate(p.date)}
-            <label class="pay-inst-edit" title="Edit date"><i class="ti ti-calendar-event"></i><input type="date" value="${p.date?String(p.date).slice(0,10):''}" data-change-action="installment.date" data-id="${x.r.id}" data-idx="${i}"></label>
-          </span>
+          <button class="pay-chip" data-action="installment.view" data-id="${x.r.id}" data-idx="${i}" title="View / edit installment">
+            <span class="pay-inst-amt">${money(p.amount)}</span>
+            <i class="ti ti-eye pay-chip-eye"></i>
+          </button>
         </td>`;
       }
       if (!x.complete && i === x.pays.length) {
@@ -3115,11 +3112,11 @@ export function injectDepsToD5(deps) {
 /* Tables */
 .dv5-table-wrap { overflow-x:auto; }
 .dv5-table { width:100%; border-collapse:collapse; font-size:12px; }
-.dv5-table thead th { padding:10px 12px; text-align:left; font-size:11px; font-weight:500; color:var(--text-3,#999); text-transform:uppercase; letter-spacing:.04em; background:#FAFAFA; border-bottom:1px solid var(--border,#E8E8E8); white-space:nowrap; }
-.dv5-table tbody tr { border-bottom:1px solid var(--border,#E8E8E8); transition:background .12s; cursor:pointer; }
+.dv5-table thead th { padding:11px 14px; text-align:left; font-size:10.5px; font-weight:700; color:var(--text-3,#8b93a4); text-transform:uppercase; letter-spacing:.045em; background:var(--surface-2,#F8FAFC); border-bottom:1px solid var(--border,#E8E8E8); white-space:nowrap; }
+.dv5-table tbody tr { border-bottom:1px solid var(--border,#EEF0F2); transition:background .12s; cursor:pointer; }
 .dv5-table tbody tr:last-child { border-bottom:0; }
-.dv5-table tbody tr:hover { background:#FAFAFA; }
-.dv5-table tbody td { padding:0 12px; height:44px; color:var(--text,#18191B); vertical-align:middle; white-space:nowrap; }
+.dv5-table tbody tr:hover { background:var(--surface-2,#F7F9FC); }
+.dv5-table tbody td { padding:0 14px; height:46px; color:var(--text,#18191B); vertical-align:middle; white-space:nowrap; font-variant-numeric:tabular-nums; }
 .dv5-fin-tx { display:flex; align-items:center; gap:10px; padding:11px 18px; border-bottom:1px solid var(--border,#F1F1F1); cursor:pointer; transition:background .1s; }
 .dv5-fin-tx:hover { background:#F9F9F9; }
 .dv5-fin-tx-date { min-width:64px; font-size:11px; color:#9ca3af; flex-shrink:0; display:flex; align-items:center; gap:3px; }

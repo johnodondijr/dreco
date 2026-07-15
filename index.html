@@ -409,17 +409,12 @@
     .pay-badge.cleared{color:#15803D;background:#DCFCE7}
     .pay-badge.cleared i{font-size:14px}
     .pay-badge.owing{color:#B45309;background:#FEF3C7}
-    .pay-inst{min-width:120px}
-    .pay-chip{display:inline-flex;align-items:center;gap:2px;background:#ECFDF5;border:1px solid #C7EFDD;border-radius:9px;padding:3px 4px 3px 9px}
-    .pay-inst-amt{border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:700;color:#0F7A52;cursor:pointer;padding:0;font-variant-numeric:tabular-nums}
-    .pay-inst-amt:hover{text-decoration:underline}
-    .pay-inst-x{border:0;background:transparent;color:#9fd3bd;cursor:pointer;font-size:14px;line-height:1;padding:0 2px}
-    .pay-inst-x:hover{color:#dc2626}
-    .pay-inst-date{display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:10.5px;color:#9aa3b2;margin-top:4px}
-    .pay-inst-edit{position:relative;display:inline-flex;align-items:center;color:#b8c0cd;cursor:pointer}
-    .pay-inst-edit i{font-size:12px;pointer-events:none}
-    .pay-inst-edit:hover{color:#0D9488}
-    .pay-inst-edit input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+    .pay-inst{min-width:110px}
+    .pay-chip{display:inline-flex;align-items:center;gap:7px;background:#ECFDF5;border:1px solid #C7EFDD;border-radius:20px;padding:5px 11px;cursor:pointer;font:inherit;transition:background .12s,border-color .12s}
+    .pay-chip:hover{background:#D6F5E6;border-color:#8FE0BD}
+    .pay-inst-amt{font-size:12.5px;font-weight:700;color:#0F7A52;font-variant-numeric:tabular-nums}
+    .pay-chip-eye{font-size:13px;color:#66C39A}
+    .pay-chip:hover .pay-chip-eye{color:#0F7A52}
     .pay-inst-dash{color:#dfe3ea}
     .pay-add{display:inline-flex;align-items:center;gap:4px;border:1px dashed #0D9488;background:#F0FDFA;color:#0D9488;border-radius:9px;padding:5px 11px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit}
     .pay-add:hover{background:#0D9488;color:#fff}
@@ -8307,6 +8302,14 @@ html body #app .integrity-row.medium{
       <div class="login-error" id="ap-error" role="alert" style="display:none"></div>
     </div>
     <div class="modal-footer"><button class="btn" data-action="modal.close" data-modal="ap-modal">Cancel</button><button class="btn primary" onclick="submitAddPayment()">Save payment</button></div>
+  </div>
+</div>
+
+<!-- INSTALLMENT VIEW / EDIT MODAL -->
+<div class="modal-bg" id="installment-modal">
+  <div class="modal quick-modal" style="max-width:360px">
+    <div class="modal-header"><h3 id="inst-modal-title">Installment</h3><button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="installment-modal">×</button></div>
+    <div class="modal-body" id="inst-modal-body"></div>
   </div>
 </div>
 
