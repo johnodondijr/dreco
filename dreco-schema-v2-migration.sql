@@ -13,6 +13,9 @@ ALTER TABLE pro_candidates ADD COLUMN IF NOT EXISTS travel_notes TEXT;
 -- Payment date columns (v3) — store actual date payment was received
 ALTER TABLE pro_candidates ADD COLUMN IF NOT EXISTS paid1_date TEXT;
 ALTER TABLE pro_candidates ADD COLUMN IF NOT EXISTS paid2_date TEXT;
+-- Unlimited commission installments (Payments tab). Source of truth for how a
+-- candidate paid their commission; paid1/paid2 remain as legacy mirrors.
+ALTER TABLE pro_candidates ADD COLUMN IF NOT EXISTS commission_payments JSONB DEFAULT '[]';
 
 -- ── General Jobs candidates ──────────────────────────────────────────────────
 ALTER TABLE lb_candidates ADD COLUMN IF NOT EXISTS own_passport   BOOLEAN DEFAULT false;

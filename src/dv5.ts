@@ -130,7 +130,7 @@ export function injectDepsToD5(deps) {
   'use strict';
 
   // ── Constants ────────────────────────────────────────────
-  const TABS    = ['dash','pipeline','candidates','finance','documents','reports','jobs','settings'];
+  const TABS    = ['dash','pipeline','candidates','finance','payments','documents','reports','jobs','settings'];
   const ALIASES = {
     pro:'candidates', lb:'candidates',
     kanban:'pipeline', travel:'pipeline', tasks:'pipeline',
@@ -141,12 +141,12 @@ export function injectDepsToD5(deps) {
   };
   const TITLES = {
     dash:'Home', pipeline:'Pipeline', candidates:'Candidates',
-    tasks:'Tasks', finance:'Finance', documents:'Documents',
+    tasks:'Tasks', finance:'Finance', payments:'Payments', documents:'Documents',
     reports:'Reports', jobs:'Employers', settings:'Settings'
   };
   const ICONS = {
     dash:'ti-layout-dashboard', pipeline:'ti-briefcase', candidates:'ti-users',
-    tasks:'ti-checkbox', finance:'ti-wallet', documents:'ti-clipboard-text',
+    tasks:'ti-checkbox', finance:'ti-wallet', payments:'ti-cash', documents:'ti-clipboard-text',
     reports:'ti-chart-line', jobs:'ti-building-skyscraper', settings:'ti-settings'
   };
 
@@ -159,6 +159,7 @@ export function injectDepsToD5(deps) {
     const renderers = {
       dash: window.renderDash, pipeline: window.renderPipelinePage,
       candidates: window.renderCandidatesPage, finance: window.renderFinancePage,
+      payments: window.renderPaymentsPage,
       documents: window.renderDocumentsPage, reports: window.renderReportsPage,
       jobs: window.renderJobsPage,
     };
@@ -965,7 +966,7 @@ export function injectDepsToD5(deps) {
       <div class="nav-section-label" style="font-size:10px;letter-spacing:.08em;font-weight:438;text-transform:uppercase;opacity:.5;margin:12px 0 2px 10px;padding:0">Workspace</div>
       ${['dash','pipeline','candidates'].map(navItem).join('')}
       <div class="nav-section-label" style="font-size:10px;letter-spacing:.08em;font-weight:438;text-transform:uppercase;opacity:.5;margin:12px 0 2px 10px;padding:0">Operations</div>
-      ${['finance','documents','jobs','reports','settings'].map(navItem).join('')}
+      ${['finance','payments','documents','jobs','reports','settings'].map(navItem).join('')}
       <div class="nav-spacer"></div>
       <div class="sidebar-company-name" id="sidebar-company-name">${h(co())}</div>`;
     sidebarBuilt = true;
@@ -1574,6 +1575,12 @@ export function injectDepsToD5(deps) {
   window.setFinanceClientSearch = v => { financeClientSearch = v; renderFinance(); };
   window.setFinanceShowAllTx  = (v: boolean) => { financeShowAllTx = v; renderFinance(); };
 
+  // Payments (commission installment ledger) state
+  let paymentsTab = 'incomplete'; // 'incomplete' | 'complete'
+  let paymentsSearch = '';
+  window.setPaymentsTab    = v => { paymentsTab = v; renderPayments(); };
+  window.setPaymentsSearch = v => { paymentsSearch = v; renderPayments(); };
+
   function renderFinance() {
     const el = document.getElementById('finance-section'); if (!el) return;
     const expenses = (window.drecoExpenses || []);
@@ -1888,6 +1895,95 @@ export function injectDepsToD5(deps) {
       </div>`;
   }
   window.renderFinancePage = renderFinance;
+
+  // ── 5b. PAYMENTS (commission installment ledger) ──────────
+  function renderPayments() {
+    const el = document.getElementById('payments-section'); if (!el) return;
+    const fmtDate = (d) => { const dt = new Date(d||''); return isNaN(+dt) ? '—' : dt.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'}); };
+    const withCalc = (proDB || [])
+      .filter(r => (Number(r.commission)||0) > 0 || (Array.isArray(r.commissionPayments) && r.commissionPayments.length))
+      .map(r => {
+        const pays = Array.isArray(r.commissionPayments) ? r.commissionPayments : [];
+        const paid = pays.reduce((s,p)=>s+(Number(p.amount)||0),0);
+        const commission = Number(r.commission)||0;
+        const balance = Math.max(commission - paid, 0);
+        return { r, pays, paid, commission, balance, complete: commission>0 && balance<=0 };
+      });
+    const complete = withCalc.filter(x => x.complete);
+    const incomplete = withCalc.filter(x => !x.complete);
+    const rows = (paymentsTab === 'complete' ? complete : incomplete).slice();
+    rows.sort((a,b) => paymentsTab === 'complete'
+      ? (+new Date(b.pays[b.pays.length-1]?.date||0) - +new Date(a.pays[a.pays.length-1]?.date||0))
+      : (b.balance - a.balance));
+    const maxInst = rows.reduce((m,x)=>Math.max(m, x.pays.length), 0);
+    const instCols = Math.max(maxInst + (paymentsTab === 'incomplete' ? 1 : 0), 1);
+    const totalCommission = withCalc.reduce((s,x)=>s+x.commission,0);
+    const totalPaid = withCalc.reduce((s,x)=>s+x.paid,0);
+    const totalBal = withCalc.reduce((s,x)=>s+x.balance,0);
+
+    const instCell = (x, i) => {
+      const p = x.pays[i];
+      if (p) {
+        return `<td class="pay-inst">
+          <div class="pay-inst-top">
+            <button class="pay-inst-amt" data-action="installment.editamt" data-id="${x.r.id}" data-idx="${i}" data-amt="${Number(p.amount)||0}" title="Edit amount">${money(p.amount)}</button>
+            <button class="pay-inst-x" data-action="installment.remove" data-id="${x.r.id}" data-idx="${i}" title="Remove">&times;</button>
+          </div>
+          <span class="pay-inst-date">${fmtDate(p.date)}
+            <label class="pay-inst-edit" title="Edit date"><i class="ti ti-calendar-event"></i><input type="date" value="${p.date?String(p.date).slice(0,10):''}" data-change-action="installment.date" data-id="${x.r.id}" data-idx="${i}"></label>
+          </span>
+        </td>`;
+      }
+      if (!x.complete && i === x.pays.length) {
+        return `<td class="pay-inst"><button class="pay-add" data-action="installment.add" data-id="${x.r.id}"><i class="ti ti-plus"></i>Add</button></td>`;
+      }
+      return '<td class="pay-inst"></td>';
+    };
+
+    el.innerHTML = `
+      <div class="dv5-page">
+        <div class="dv5-page-head">
+          <div><h1>Payments</h1><p>Commission installments per candidate — KES.</p></div>
+        </div>
+        <div class="dv5-stat-grid" style="margin:12px 0 18px">
+          ${statCard('ti-receipt',     money(totalCommission), 'Total Commission', `${withCalc.length} candidates`, '#EDE8FB','#4825B8','#fff')}
+          ${statCard('ti-wallet',      money(totalPaid),       'Collected',        `${complete.length} fully paid`, '#DCFCE7','#16A34A','#fff')}
+          ${statCard('ti-file-invoice',money(totalBal),        'Outstanding',      `${incomplete.length} still owing`, '#FEF9C3','#A16207','#fff')}
+        </div>
+        <div class="dv5-card" style="padding:0;overflow:hidden">
+          <div class="dv5-card-head" style="padding:12px 18px 8px">
+            <div style="display:flex;gap:16px;align-items:center">
+              <button class="fin-tab${paymentsTab!=='complete'?' active':''}" data-action="payments.tab" data-ptab="incomplete">Incomplete (${incomplete.length})</button>
+              <button class="fin-tab${paymentsTab==='complete'?' active':''}" data-action="payments.tab" data-ptab="complete">Complete (${complete.length})</button>
+            </div>
+          </div>
+          <div class="dv5-table-wrap" style="border-top:1px solid var(--border,#E8E8E8);overflow-x:auto">
+            <table class="dv5-table pay-table">
+              <thead><tr>
+                <th style="text-align:left">Candidate</th>
+                <th style="text-align:left">Position</th>
+                <th>Commission</th>
+                <th>Paid</th>
+                <th>Balance</th>
+                ${Array.from({length:instCols},(_,i)=>`<th>Inst ${i+1}</th>`).join('')}
+              </tr></thead>
+              <tbody>
+                ${rows.length ? rows.map(x => `
+                  <tr>
+                    <td class="pay-name" style="text-align:left"><strong>${h(x.r.name||'—')}</strong></td>
+                    <td style="text-align:left;color:#7B8496">${h(x.r.position||'—')}</td>
+                    <td>${money(x.commission)}</td>
+                    <td style="color:#16A34A;font-weight:600">${money(x.paid)}</td>
+                    <td>${x.complete ? '<span class="dv5-badge teal">Cleared</span>' : `<span style="color:#A16207;font-weight:700">${money(x.balance)}</span>`}</td>
+                    ${Array.from({length:instCols},(_,i)=>instCell(x,i)).join('')}
+                  </tr>`).join('') : `<tr><td colspan="${5+instCols}"><div class="dv5-empty" style="padding:36px">No ${paymentsTab} commissions.</div></td></tr>`}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>`;
+  }
+  window.renderPaymentsPage = renderPayments;
 
   // ── 6. DOCUMENTS ──────────────────────────────────────────
 

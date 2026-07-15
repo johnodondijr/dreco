@@ -764,10 +764,13 @@ function proStageMatches(row, stages) {
   return [].concat(stages).map(canonicalProStage).includes(stage);
 }
 function proPaidAmount(row = {}) {
+  // The commissionPayments array is the source of truth once present (supports
+  // unlimited installments). Fall back to the legacy paid1/paid2/paid mirrors.
+  if (Array.isArray(row.commissionPayments) && row.commissionPayments.length) {
+    return row.commissionPayments.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+  }
   const splitPaid = (Number(row.paid1) || 0) + (Number(row.paid2) || 0);
   const directPaid = Number(row.paid) || 0;
-  // Use whichever total is larger: handles legacy paid1/paid2 records and new
-  // running-total records where partial payments accumulate into paid directly.
   return Math.max(splitPaid, directPaid);
 }
 function proStageIndex(stage){
@@ -810,6 +813,24 @@ function lbRefundOutstanding(row = {}) {
   if (!['TRAVELLED','REFUND PENDING','REFUND COMPLETE'].includes(lbStageValue(row))) return 0;
   return Math.max(lbRefundPrincipal(row) - lbRefundPaidAmount(row), 0);
 }
+// Unlimited commission installments live in commissionPayments = [{amount,date}].
+// It is the source of truth; paid/paid1/paid2 are kept as mirrors for legacy
+// views and older schemas. Derive it from the legacy fields when a record has
+// no array yet, so existing candidates show their installments with no manual
+// migration.
+function deriveCommissionPayments(r, paid1, paid2) {
+  const raw = r.commissionPayments || r.commission_payments;
+  if (Array.isArray(raw) && raw.length) {
+    return raw
+      .map(p => ({ amount: Number(p.amount) || 0, date: normalizeDateField(p.date) || '' }))
+      .filter(p => p.amount > 0 || p.date);
+  }
+  const out = [];
+  if (paid1 != null && Number(paid1) > 0) out.push({ amount: Number(paid1), date: normalizeDateField(r.paid1_date) || '' });
+  if (paid2 != null && Number(paid2) > 0) out.push({ amount: Number(paid2), date: normalizeDateField(r.paid2_date) || '' });
+  if (!out.length && r.paid != null && Number(r.paid) > 0) out.push({ amount: Number(r.paid), date: normalizeDateField(r.paid_date || r.submitted) || '' });
+  return out;
+}
 function normalizeProRecord(r={}) {
   const paid1 = toNumOrNull(r.paid1);
   const paid2 = toNumOrNull(r.paid2);
@@ -835,6 +856,7 @@ function normalizeProRecord(r={}) {
     paid1_date:normalizeDateField(r.paid1_date),
     paid2_date:normalizeDateField(r.paid2_date),
     paid:toNumOrNull(r.paid),
+    commissionPayments:deriveCommissionPayments(r, paid1, paid2),
     medical:normalizeDateField(r.medical),
     airline:r.airline||'',
     travelTime:r.travelTime||r.travel_time||'',
@@ -1537,12 +1559,32 @@ const DRECO_ACTIONS = {
   },
   'finance.pay': (el) => window.openBalancePayment?.(el.getAttribute('data-type'), Number(el.getAttribute('data-id'))),
   'finance.pos': (el) => window.setFinancePosition?.(el.getAttribute('data-pos')),
+  // Payments (commission installment ledger) interactions.
+  'payments.tab': (el) => window.setPaymentsTab?.(el.getAttribute('data-ptab')),
+  'installment.add': (el) => window.openAddPayment?.(Number(el.getAttribute('data-id'))),
+  'installment.remove': (el) => removeCommissionInstallment(Number(el.getAttribute('data-id')), Number(el.getAttribute('data-idx'))),
+  'installment.editamt': (el) => {
+    const id = Number(el.getAttribute('data-id')), idx = Number(el.getAttribute('data-idx'));
+    const v = prompt('Edit installment amount (KES):', el.getAttribute('data-amt') || '');
+    if (v != null && v.trim() !== '') updateInstallmentAmount(id, idx, Number(v));
+  },
 };
 window.DRECO_ACTIONS = DRECO_ACTIONS;
 document.addEventListener('click', (e) => {
   const el = e.target?.closest?.('[data-action]');
   if (!el) return;
   const fn = DRECO_ACTIONS[el.getAttribute('data-action')];
+  if (fn) fn(el, e);
+});
+// Delegated 'change' dispatcher — lets inputs (e.g. inline installment date
+// pickers) fire actions without inline onchange handlers, keeping the ratchet flat.
+const DRECO_CHANGE_ACTIONS = {
+  'installment.date': (el) => updateInstallmentDate(Number(el.getAttribute('data-id')), Number(el.getAttribute('data-idx')), el.value),
+};
+document.addEventListener('change', (e) => {
+  const el = e.target?.closest?.('[data-change-action]');
+  if (!el) return;
+  const fn = DRECO_CHANGE_ACTIONS[el.getAttribute('data-change-action')];
   if (fn) fn(el, e);
 });
 
@@ -1765,6 +1807,7 @@ function toProDbPayload(rec) {
     commission: rec.commission, paid: rec.paid,
     paid1: rec.paid1??null, paid2: rec.paid2??null,
     paid1_date: rec.paid1_date||null, paid2_date: rec.paid2_date||null,
+    commission_payments: Array.isArray(rec.commissionPayments) ? rec.commissionPayments : null,
     medical: rec.medical||null,
     airline: rec.airline||null,
     follow_up: rec.followUp||null,
@@ -2487,7 +2530,7 @@ function switchTab(tab, _pushHistory = true){
   };
   const DV5_TITLES = {
     dash:'Home', pipeline:'Pipeline', candidates:'Candidates',
-    tasks:'Tasks', finance:'Finance', documents:'Documents', account:'Profile',
+    tasks:'Tasks', finance:'Finance', payments:'Payments', documents:'Documents', account:'Profile',
     reports:'Reports', jobs:'Employers', notifications:'Notifications', settings:'Settings'
   };
 
@@ -2526,6 +2569,7 @@ function switchTab(tab, _pushHistory = true){
     pipeline: ()=> window.renderPipelinePage?.(),
     candidates: ()=> window.renderCandidatesPage?.(),
     finance: ()=> window.renderFinancePage?.(),
+    payments: ()=> window.renderPaymentsPage?.(),
     documents: ()=> window.renderDocumentsPage?.(),
     reports: ()=> window.renderReportsPage?.(),
     jobs: ()=> window.renderJobsPage?.(),
@@ -3407,28 +3451,109 @@ function renderCommissions(){
 // actually paid — previously these flows bumped only `paid`, so the entry was
 // dated by the candidate's submission date and never sorted as the latest.
 // Mutates `r` in place and returns the field updates to persist.
+// Keep the legacy mirrors (paid, paid1/paid2 + dates) in step with the
+// commissionPayments array so balances, the dashboard, and older schemas stay
+// correct. paid = sum of every installment; paid1/paid2 mirror the first two.
+function syncCommissionMirrors(r) {
+  const pays = Array.isArray(r.commissionPayments) ? r.commissionPayments : [];
+  r.paid = pays.reduce((s, p) => s + (Number(p.amount) || 0), 0) || null;
+  r.paid1 = pays[0] ? (Number(pays[0].amount) || 0) : null;
+  r.paid1_date = pays[0]?.date || null;
+  r.paid2 = pays[1] ? (Number(pays[1].amount) || 0) : null;
+  r.paid2_date = pays[1]?.date || null;
+}
+function proCommissionUpdates(r) {
+  return {
+    commission_payments: r.commissionPayments || [],
+    paid1: r.paid1 ?? null, paid1_date: r.paid1_date ?? null,
+    paid2: r.paid2 ?? null, paid2_date: r.paid2_date ?? null,
+    paid: r.paid ?? null,
+  };
+}
+function _proCommSnapshot(r) {
+  return { commissionPayments: JSON.parse(JSON.stringify(r.commissionPayments || [])), paid1:r.paid1, paid1_date:r.paid1_date, paid2:r.paid2, paid2_date:r.paid2_date, paid:r.paid };
+}
+function _restoreProComm(r, s) {
+  r.commissionPayments = s.commissionPayments; r.paid1 = s.paid1; r.paid1_date = s.paid1_date; r.paid2 = s.paid2; r.paid2_date = s.paid2_date; r.paid = s.paid;
+}
+function _afterCommissionChange() {
+  window.renderPaymentsPage?.();
+  renderCommissions();
+  window.renderDash?.();
+  window.renderFinancePage?.();
+}
+// Append a commission installment to the array and return the fields to persist.
 function applyProPayment(r, amount, date) {
   const d = date || new Date().toISOString().slice(0, 10);
-  const updates: any = {};
-  if (!(Number(r.paid1) > 0)) { updates.paid1 = amount; updates.paid1_date = d; }
-  else if (!(Number(r.paid2) > 0)) { updates.paid2 = amount; updates.paid2_date = d; }
-  else { updates.paid2 = (Number(r.paid2) || 0) + amount; updates.paid2_date = d; }
-  Object.assign(r, updates);
-  const total = (Number(r.paid1) || 0) + (Number(r.paid2) || 0);
-  updates.paid = total; r.paid = total;
-  return updates;
+  r.commissionPayments = Array.isArray(r.commissionPayments) ? r.commissionPayments : [];
+  r.commissionPayments.push({ amount: Number(amount) || 0, date: d });
+  syncCommissionMirrors(r);
+  return proCommissionUpdates(r);
 }
-// Persist a Pro payment update, degrading gracefully when the paid1_date /
-// paid2_date columns have not been migrated yet (retry without them so the
-// amount still saves rather than the whole payment failing).
+// Persist a Pro commission update, degrading gracefully when the extended
+// columns (commission_payments / paid1_date …) have not been migrated yet:
+// retry with just the core paid1/paid2/paid so the amount still saves.
 async function persistProPaymentUpdate(id, updates) {
   try { await dbUpdate('pro_candidates', id, updates); }
   catch (e) {
     if (isMissingColumnError(e)) {
-      const { paid1_date, paid2_date, ...core } = updates;
-      await dbUpdate('pro_candidates', id, core);
+      await dbUpdate('pro_candidates', id, { paid1: updates.paid1 ?? null, paid2: updates.paid2 ?? null, paid: updates.paid ?? null });
     } else throw e;
   }
+}
+// ── Commission installment ledger (Payments tab) ─────────────────────────────
+async function addCommissionInstallment(id, amount, date) {
+  const r = proDB.find(x => String(x.id) === String(id)); if (!r) return false;
+  const amt = Number(amount) || 0;
+  if (amt <= 0) { showToast('Enter a valid amount.', 'error'); return false; }
+  const commission = Number(r.commission) || 0;
+  const outstanding = Math.max(commission - proPaidAmount(r), 0);
+  if (commission > 0 && amt > outstanding) { showToast(`Amount exceeds outstanding balance of ${moneyKES(outstanding)}.`, 'error'); return false; }
+  const snapshot = _proCommSnapshot(r);
+  const updates = applyProPayment(r, amt, date || new Date().toISOString().slice(0,10));
+  try {
+    if (useCloud()) await persistProPaymentUpdate(id, updates); else saveLocalStore();
+    addTimeline('pro', id, `Installment ${r.commissionPayments.length}: ${moneyKES(amt)}`);
+    auditAction('Finance', 'Commission installment added', `${r.name} — ${moneyKES(amt)}`);
+  } catch(e) { _restoreProComm(r, snapshot); showToast(e.message || 'Save failed.', 'error'); return false; }
+  _afterCommissionChange();
+  return true;
+}
+async function updateInstallmentDate(id, index, date) {
+  const r = proDB.find(x => String(x.id) === String(id)); if (!r || !Array.isArray(r.commissionPayments)) return;
+  const p = r.commissionPayments[index]; if (!p) return;
+  const snapshot = _proCommSnapshot(r);
+  p.date = date || '';
+  syncCommissionMirrors(r);
+  try { if (useCloud()) await persistProPaymentUpdate(id, proCommissionUpdates(r)); else saveLocalStore(); }
+  catch(e) { _restoreProComm(r, snapshot); showToast(e.message || 'Save failed.', 'error'); return; }
+  _afterCommissionChange();
+}
+async function updateInstallmentAmount(id, index, amount) {
+  const r = proDB.find(x => String(x.id) === String(id)); if (!r || !Array.isArray(r.commissionPayments)) return;
+  const p = r.commissionPayments[index]; if (!p) return;
+  const amt = Number(amount) || 0;
+  if (amt <= 0) { showToast('Enter a valid amount.', 'error'); return; }
+  const commission = Number(r.commission) || 0;
+  const others = proPaidAmount(r) - (Number(p.amount) || 0);
+  if (commission > 0 && (others + amt) > commission) { showToast(`Total would exceed the commission of ${moneyKES(commission)}.`, 'error'); return; }
+  const snapshot = _proCommSnapshot(r);
+  p.amount = amt;
+  syncCommissionMirrors(r);
+  try { if (useCloud()) await persistProPaymentUpdate(id, proCommissionUpdates(r)); else saveLocalStore(); auditAction('Finance', 'Installment amount edited', `${r.name} — ${moneyKES(amt)}`); }
+  catch(e) { _restoreProComm(r, snapshot); showToast(e.message || 'Save failed.', 'error'); return; }
+  _afterCommissionChange();
+}
+async function removeCommissionInstallment(id, index) {
+  const r = proDB.find(x => String(x.id) === String(id)); if (!r || !Array.isArray(r.commissionPayments)) return;
+  if (!r.commissionPayments[index]) return;
+  if (!confirm('Remove this installment?')) return;
+  const snapshot = _proCommSnapshot(r);
+  r.commissionPayments.splice(index, 1);
+  syncCommissionMirrors(r);
+  try { if (useCloud()) await persistProPaymentUpdate(id, proCommissionUpdates(r)); else saveLocalStore(); addTimeline('pro', id, 'Installment removed'); }
+  catch(e) { _restoreProComm(r, snapshot); showToast(e.message || 'Save failed.', 'error'); return; }
+  _afterCommissionChange();
 }
 function openAddPayment(id) {
   const r = proDB.find(x => x.id === id); if (!r) return;
@@ -3468,6 +3593,7 @@ async function submitAddPayment() {
   renderCommissions();
   window.renderDash?.();
   window.renderFinancePage?.();
+  window.renderPaymentsPage?.();
   showToast(`${moneyKES(amount)} recorded`, 'success');
 }
 async function markCommissionCleared(id) {
@@ -3491,6 +3617,7 @@ async function markCommissionCleared(id) {
   renderCommissions();
   window.renderDash?.();
   window.renderFinancePage?.();
+  window.renderPaymentsPage?.();
   showToast(`${r.name} marked as cleared`, 'success');
 }
 function renderRepayments(){
@@ -3874,6 +4001,7 @@ async function submitRecordPayment(){
   if(type==='repayment') renderRepayments(); else renderCommissions();
   window.renderDash?.();
   window.renderFinancePage?.();
+  window.renderPaymentsPage?.();
   showToast('Payment recorded','success');
 }
 // ── Balance card quick payment ──────────────────────────────────────────────
@@ -3944,6 +4072,7 @@ async function submitBalancePayment(){
     if(type==='lb') renderRepayments(); else renderCommissions();
     window.renderDash?.();
     window.renderFinancePage?.();
+    window.renderPaymentsPage?.();
     showToast('Payment recorded','success');
   } finally {
     release();
@@ -4237,6 +4366,15 @@ async function savePro(){
   const _today=new Date().toISOString().slice(0,10);
   rec.paid1_date = rec.paid1!=null ? ((oldRec && Number(oldRec.paid1)===rec.paid1 && oldRec.paid1_date) || _today) : null;
   rec.paid2_date = rec.paid2!=null ? ((oldRec && Number(oldRec.paid2)===rec.paid2 && oldRec.paid2_date) || _today) : null;
+  // Rebuild the installment ledger from the two profile slots, preserving any
+  // 3rd+ installments recorded on the Payments tab. The Payments tab is the
+  // place to manage many installments; the profile keeps the simple 2-slot edit.
+  const _extraInst = (Array.isArray(oldRec?.commissionPayments) ? oldRec.commissionPayments : []).slice(2);
+  const _cp = [];
+  if (rec.paid1 != null && Number(rec.paid1) > 0) _cp.push({ amount: Number(rec.paid1), date: rec.paid1_date || '' });
+  if (rec.paid2 != null && Number(rec.paid2) > 0) _cp.push({ amount: Number(rec.paid2), date: rec.paid2_date || '' });
+  rec.commissionPayments = _cp.concat(_extraInst);
+  rec.paid = rec.commissionPayments.reduce((s,p)=>s+(Number(p.amount)||0),0) || null;
   const validationError=validateProRecord(rec);
   if(validationError){ showToast(validationError,'error'); return; }
   if(editingProId){
