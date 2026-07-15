@@ -1921,11 +1921,15 @@ export function injectDepsToD5(deps) {
     const totalPaid = withCalc.reduce((s,x)=>s+x.paid,0);
     const totalBal = withCalc.reduce((s,x)=>s+x.balance,0);
 
+    const AV_COLORS = [['#EDE8FB','#4825B8'],['#DCFCE7','#0F9D58'],['#FEF3C7','#B45309'],['#DBEAFE','#1D4ED8'],['#FCE7F3','#BE185D'],['#E0E7FF','#4338CA'],['#CCFBF1','#0F766E'],['#FFE4E6','#BE123C']];
+    const initialsOf = (name) => (String(name||'?').replace(/[^a-zA-Z ]/g,'').trim().split(/\s+/).filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase()) || '?';
+    const avColor = (name) => { let n=0; for (const c of String(name||'')) n=(n*31 + c.charCodeAt(0))>>>0; return AV_COLORS[n % AV_COLORS.length]; };
+
     const instCell = (x, i) => {
       const p = x.pays[i];
       if (p) {
         return `<td class="pay-inst">
-          <div class="pay-inst-top">
+          <div class="pay-chip">
             <button class="pay-inst-amt" data-action="installment.editamt" data-id="${x.r.id}" data-idx="${i}" data-amt="${Number(p.amount)||0}" title="Edit amount">${money(p.amount)}</button>
             <button class="pay-inst-x" data-action="installment.remove" data-id="${x.r.id}" data-idx="${i}" title="Remove">&times;</button>
           </div>
@@ -1937,7 +1941,7 @@ export function injectDepsToD5(deps) {
       if (!x.complete && i === x.pays.length) {
         return `<td class="pay-inst"><button class="pay-add" data-action="installment.add" data-id="${x.r.id}"><i class="ti ti-plus"></i>Add</button></td>`;
       }
-      return '<td class="pay-inst"></td>';
+      return '<td class="pay-inst"><span class="pay-inst-dash">–</span></td>';
     };
 
     el.innerHTML = `
@@ -1960,6 +1964,7 @@ export function injectDepsToD5(deps) {
           <div class="dv5-table-wrap" style="border-top:1px solid var(--border,#E8E8E8);overflow-x:auto">
             <table class="dv5-table pay-table">
               <thead><tr>
+                <th class="pay-idx-h">#</th>
                 <th style="text-align:left">Candidate</th>
                 <th style="text-align:left">Position</th>
                 <th>Commission</th>
@@ -1968,15 +1973,28 @@ export function injectDepsToD5(deps) {
                 ${Array.from({length:instCols},(_,i)=>`<th>Inst ${i+1}</th>`).join('')}
               </tr></thead>
               <tbody>
-                ${rows.length ? rows.map(x => `
+                ${rows.length ? rows.map((x, ri) => {
+                  const [avBg, avFg] = avColor(x.r.name);
+                  const pct = x.commission > 0 ? Math.min(Math.round(x.paid / x.commission * 100), 100) : (x.paid > 0 ? 100 : 0);
+                  return `
                   <tr>
-                    <td class="pay-name" style="text-align:left"><strong>${h(x.r.name||'—')}</strong></td>
-                    <td style="text-align:left;color:#7B8496">${h(x.r.position||'—')}</td>
-                    <td>${money(x.commission)}</td>
-                    <td style="color:#16A34A;font-weight:600">${money(x.paid)}</td>
-                    <td>${x.complete ? '<span class="dv5-badge teal">Cleared</span>' : `<span style="color:#A16207;font-weight:700">${money(x.balance)}</span>`}</td>
+                    <td class="pay-idx">${ri + 1}</td>
+                    <td class="pay-name-cell" style="text-align:left">
+                      <div class="pay-cand">
+                        <span class="pay-av" style="background:${avBg};color:${avFg}">${h(initialsOf(x.r.name))}</span>
+                        <div class="pay-cand-txt"><strong>${h(x.r.name||'—')}</strong>${x.r.company||x.r.country?`<span>${h(x.r.company||x.r.country)}</span>`:''}</div>
+                      </div>
+                    </td>
+                    <td style="text-align:left">${x.r.position?`<span class="pay-pos">${h(x.r.position)}</span>`:'<span style="color:#c0c7d2">—</span>'}</td>
+                    <td class="pay-comm">${money(x.commission)}</td>
+                    <td class="pay-paid-cell">
+                      <div class="pay-paid-amt">${money(x.paid)}</div>
+                      <div class="pay-bar" title="${pct}% collected"><span class="${x.complete?'full':''}" style="width:${pct}%"></span></div>
+                    </td>
+                    <td>${x.complete ? '<span class="pay-badge cleared"><i class="ti ti-circle-check"></i>Cleared</span>' : `<span class="pay-badge owing">${money(x.balance)}</span>`}</td>
                     ${Array.from({length:instCols},(_,i)=>instCell(x,i)).join('')}
-                  </tr>`).join('') : `<tr><td colspan="${5+instCols}"><div class="dv5-empty" style="padding:36px">No ${paymentsTab} commissions.</div></td></tr>`}
+                  </tr>`;
+                }).join('') : `<tr><td colspan="${6+instCols}"><div class="dv5-empty" style="padding:36px">No ${paymentsTab} commissions.</div></td></tr>`}
               </tbody>
             </table>
           </div>

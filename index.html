@@ -385,21 +385,43 @@
     .fin-brk-amt{font-size:14px;font-weight:700;color:var(--text,#10172F)}
     .fin-brk-share{font-size:11px;font-weight:700;color:#0D9488;flex-shrink:0}
     /* Payments: commission installment ledger */
-    .pay-table th{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#9aa3b2;font-weight:600;padding:11px 12px;white-space:nowrap;text-align:center}
-    .pay-table td{padding:11px 12px;font-size:13px;text-align:center;border-top:1px solid var(--border,#EEF0F2);vertical-align:top}
-    .pay-name strong{color:var(--text,#10172F);font-weight:600;white-space:nowrap}
-    .pay-inst{min-width:118px}
-    .pay-inst-top{display:flex;align-items:center;justify-content:center;gap:2px}
-    .pay-inst-amt{border:0;background:transparent;font:inherit;font-size:13px;font-weight:700;color:var(--text,#10172F);cursor:pointer;padding:0}
-    .pay-inst-amt:hover{color:#0D9488;text-decoration:underline}
-    .pay-inst-x{border:0;background:transparent;color:#cbd2dc;cursor:pointer;font-size:15px;line-height:1;padding:0 2px}
+    .pay-table{border-collapse:separate;border-spacing:0;width:auto;min-width:100%}
+    .pay-table thead th{position:sticky;top:0;z-index:1;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:#8b93a4;font-weight:700;padding:12px 14px;white-space:nowrap;text-align:center;background:var(--surface-2,#F8FAFC);border-bottom:1px solid var(--border,#E8E8E8)}
+    .pay-table tbody td{padding:12px 14px;font-size:13px;text-align:center;border-top:1px solid var(--border,#EEF0F2);vertical-align:middle}
+    .pay-table tbody tr{transition:background .12s}
+    .pay-table tbody tr:hover{background:var(--surface-2,#F7F9FC)}
+    .pay-idx-h{width:44px}
+    .pay-idx{color:#aeb6c4;font-weight:700;font-size:12px;font-variant-numeric:tabular-nums}
+    .pay-name-cell{min-width:210px;white-space:nowrap}
+    .pay-cand{display:flex;align-items:center;gap:10px}
+    .pay-av{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;letter-spacing:.02em}
+    .pay-cand-txt{display:flex;flex-direction:column;line-height:1.25}
+    .pay-cand-txt strong{color:var(--text,#10172F);font-weight:650;font-size:13px;white-space:nowrap}
+    .pay-cand-txt span{color:#9aa3b2;font-size:11px;white-space:nowrap}
+    .pay-pos{display:inline-block;font-size:11px;font-weight:600;color:#5b6270;background:var(--surface-3,#F0F2F6);border-radius:20px;padding:3px 10px;white-space:nowrap}
+    .pay-comm{font-weight:600;color:var(--text,#10172F);font-variant-numeric:tabular-nums}
+    .pay-paid-cell{min-width:110px}
+    .pay-paid-amt{font-weight:700;color:#0F9D58;font-variant-numeric:tabular-nums}
+    .pay-bar{height:5px;border-radius:20px;background:var(--surface-3,#EDF0F5);margin:5px auto 0;max-width:96px;overflow:hidden}
+    .pay-bar span{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#34D399,#0D9488);transition:width .4s}
+    .pay-bar span.full{background:linear-gradient(90deg,#16A34A,#15803D)}
+    .pay-badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;border-radius:20px;padding:4px 11px;font-variant-numeric:tabular-nums}
+    .pay-badge.cleared{color:#15803D;background:#DCFCE7}
+    .pay-badge.cleared i{font-size:14px}
+    .pay-badge.owing{color:#B45309;background:#FEF3C7}
+    .pay-inst{min-width:120px}
+    .pay-chip{display:inline-flex;align-items:center;gap:2px;background:#ECFDF5;border:1px solid #C7EFDD;border-radius:9px;padding:3px 4px 3px 9px}
+    .pay-inst-amt{border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:700;color:#0F7A52;cursor:pointer;padding:0;font-variant-numeric:tabular-nums}
+    .pay-inst-amt:hover{text-decoration:underline}
+    .pay-inst-x{border:0;background:transparent;color:#9fd3bd;cursor:pointer;font-size:14px;line-height:1;padding:0 2px}
     .pay-inst-x:hover{color:#dc2626}
-    .pay-inst-date{display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:10.5px;color:#9aa3b2;margin-top:3px}
-    .pay-inst-edit{position:relative;display:inline-flex;align-items:center;color:#9aa3b2;cursor:pointer}
+    .pay-inst-date{display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:10.5px;color:#9aa3b2;margin-top:4px}
+    .pay-inst-edit{position:relative;display:inline-flex;align-items:center;color:#b8c0cd;cursor:pointer}
     .pay-inst-edit i{font-size:12px;pointer-events:none}
     .pay-inst-edit:hover{color:#0D9488}
     .pay-inst-edit input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
-    .pay-add{display:inline-flex;align-items:center;gap:4px;border:1px dashed #0D9488;background:#F0FDFA;color:#0D9488;border-radius:8px;padding:5px 10px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit}
+    .pay-inst-dash{color:#dfe3ea}
+    .pay-add{display:inline-flex;align-items:center;gap:4px;border:1px dashed #0D9488;background:#F0FDFA;color:#0D9488;border-radius:9px;padding:5px 11px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit}
     .pay-add:hover{background:#0D9488;color:#fff}
     /* Commission status card */
     .commission-status-card{background:var(--surface-3);border-radius:12px;padding:14px 16px;margin-bottom:4px;border:1px solid var(--border)}
