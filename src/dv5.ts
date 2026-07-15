@@ -721,27 +721,42 @@ export function injectDepsToD5(deps) {
     </div>`;
   }
 
-  // Readiness Breakdown — one labelled, colour-coded, clickable bar per dimension
-  // (replaces the composite gauge so the weak area is obvious and actionable).
-  function readinessBreakdown(scoreData, collectionRate, travelReadiness) {
-    const p = scoreData?.parts || {};
-    const bar = (label, val, tab) => {
-      const v = Math.max(0, Math.min(100, Math.round(Number(val) || 0)));
-      const tone = v >= 85 ? 'ok' : v >= 65 ? 'warn' : 'bad';
-      return `<button class="rd-row rd-${tone}" data-action="tab.switch" data-tab="${tab}">
-        <div class="rd-top"><span class="rd-label">${label}</span><span class="rd-val">${v}%</span></div>
-        <div class="rd-track"><span style="width:${v}%"></span></div>
-      </button>`;
-    };
-    return `<div class="rd-list">
-      ${bar('Profiles', p.profiles, 'candidates')}
-      ${bar('Documents', p.documents, 'documents')}
-      ${bar('Finance', p.finance, 'finance')}
-      ${bar('Workflow', p.workflow, 'pipeline')}
-      <div class="rd-divider"></div>
-      ${bar('Collection Rate', collectionRate, 'finance')}
-      ${bar('Travel Readiness', travelReadiness, 'pipeline')}
-      ${scoreData?.note ? `<div class="rd-note"><i class="ti ti-alert-triangle"></i>${h(scoreData.note)}</div>` : ''}
+  // Commission collected in the current calendar month (from real payment dates).
+  function collectedThisMonth(isPro) {
+    const now = new Date();
+    const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const inMonth = d => String(d || '').slice(0, 7) === ym;
+    let sum = 0;
+    if (isPro) {
+      (proDB || []).forEach(r => (Array.isArray(r.commissionPayments) ? r.commissionPayments : []).forEach(p => { if (inMonth(p.date)) sum += Number(p.amount) || 0; }));
+    } else {
+      (lbDB || []).forEach(r => {
+        if (inMonth(r.r1Date || r.r1_date)) sum += Number(r.r1Amt || r.r1_amt) || 0;
+        if (inMonth(r.r2Date || r.r2_date)) sum += Number(r.r2Amt || r.r2_amt) || 0;
+      });
+    }
+    return sum;
+  }
+  // Money Snapshot — the financial picture at a glance (billed / collected /
+  // outstanding + this month), replacing the readiness widget.
+  function moneySnapshot(billed, collected, monthCollected, isPro) {
+    const M = isPro ? money : moneyUSD;
+    const outstanding = Math.max((billed || 0) - (collected || 0), 0);
+    const rate = billed > 0 ? Math.min(100, Math.round(collected / billed * 100)) : 0;
+    const row = (icon, label, value, tab, color) => `<button class="ms-row" data-action="tab.switch" data-tab="${tab}">
+      <span class="ms-row-l"><i class="ti ${icon}"${color ? ` style="color:${color}"` : ''}></i>${label}</span>
+      <span class="ms-row-v"${color ? ` style="color:${color}"` : ''}>${M(value)}</span>
+    </button>`;
+    return `<div class="ms-panel">
+      <div class="ms-hero">
+        <div class="ms-hero-label">Collected</div>
+        <div class="ms-hero-val">${M(collected)}</div>
+        <div class="ms-hero-rate">${rate}% of ${M(billed)} billed</div>
+        <div class="ms-bar"><span style="width:${rate}%"></span></div>
+      </div>
+      ${row('ti-file-invoice', 'Total billed', billed, 'finance', '')}
+      ${row('ti-alert-circle', 'Outstanding', outstanding, 'finance', '#B45309')}
+      ${row('ti-calendar-dollar', 'Collected this month', monthCollected, 'payments', '#0F9D58')}
     </div>`;
   }
 
@@ -1105,7 +1120,8 @@ export function injectDepsToD5(deps) {
     const totalExpected = Math.max(1, normRows.reduce((s,r)=>s+(Number(r.commission)||Number(r.toRefund)||r.balance+r.paid||0),0));
     const collectionRate = Math.min(100, Math.round((totalPaid / totalExpected) * 100));
     const travelReadiness = Math.min(100, Math.round(((tickets + travelled) / Math.max(normRows.length,1)) * 100));
-    const readiness = operationsScore(normRows);
+    const billedTotal = normRows.reduce((s,r)=>s+(Number(r.commission)||Number(r.toRefund)||0),0);
+    const monthCollected = collectedThisMonth(isPro);
     const actionRows = [];
 
     el.innerHTML = `
@@ -1175,11 +1191,11 @@ export function injectDepsToD5(deps) {
           <div class="dv5-card" style="margin-bottom:0">
             <div class="dv5-card-head">
               <div>
-                <span class="dv5-card-title">Operations Readiness</span>
-                <div class="dv5-card-sub">${isPro?'Professional':'General'} — tap a bar to fix the weak area</div>
+                <span class="dv5-card-title">Money Snapshot</span>
+                <div class="dv5-card-sub">${isPro?'Professional commissions — KES':'General Jobs refunds — USD'}</div>
               </div>
             </div>
-            ${readinessBreakdown(readiness, collectionRate, travelReadiness)}
+            ${moneySnapshot(billedTotal, totalPaid, monthCollected, isPro)}
           </div>
         </div>
 
