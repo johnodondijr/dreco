@@ -214,9 +214,16 @@ export function injectDepsToD5(deps) {
     if (!type || id === undefined || id === null || id === '') return '';
     return readCandidateAvatars()[candidateAvatarKey(type, id)] || '';
   };
+  // Shared visual helpers so every table speaks the same language: a
+  // deterministic avatar tint from a name, and a mini progress bar.
+  const DRECO_AV_TINTS = [['#EDE8FB','#4825B8'],['#DCFCE7','#0F9D58'],['#FEF3C7','#B45309'],['#DBEAFE','#1D4ED8'],['#FCE7F3','#BE185D'],['#E0E7FF','#4338CA'],['#CCFBF1','#0F766E'],['#FFE4E6','#BE123C']];
+  const drecoTint = (name) => { let n = 0; for (const c of String(name || '')) n = (n * 31 + c.charCodeAt(0)) >>> 0; return DRECO_AV_TINTS[n % DRECO_AV_TINTS.length]; };
+  const miniBar = (pct, full = false) => { const w = Math.max(0, Math.min(100, Math.round(pct || 0))); return `<div class="mini-bar"><span class="${full ? 'full' : ''}" style="width:${w}%"></span></div>`; };
   const candidateAvatar = (name, type='', id='', cls='dv5-avatar') => {
     const src = candidateAvatarSrc(type, id);
-    return `<div class="${cls}" data-candidate-avatar="${h(candidateAvatarKey(type, id))}">
+    const [bg, fg] = drecoTint(name);
+    const tint = src ? '' : `background:${bg};color:${fg};`;
+    return `<div class="${cls}" data-candidate-avatar="${h(candidateAvatarKey(type, id))}" style="${tint}">
       ${src ? `<img src="${h(src)}" alt="${h(name)}">` : h(ini(name))}
     </div>`;
   };
@@ -1402,11 +1409,12 @@ export function injectDepsToD5(deps) {
             <table class="dv5-table">
               <thead><tr>
                 <th style="width:36px"><input type="checkbox" id="cand-select-all" ${allSel?'checked':''} onchange="toggleSelectAll(this.checked)"></th>
+                <th class="rich-idx-h">#</th>
                 <th>Name</th><th>${isPro?'Job Title':'Destination'}</th>${isPro?'<th>Company</th>':''}
                 <th>Stage</th>${!isPro?'<th>Passport</th>':''}<th>Next Action</th><th>Readiness</th>${isPro?'<th>Submitted</th>':''}<th></th>
               </tr></thead>
               <tbody>
-                ${list.length ? list.map(r => {
+                ${list.length ? list.map((r, ri) => {
                   const key = r.type+'_'+r.id;
                   const sel = selectedCandidates.has(key);
                   const ppStatus = r.ppStatus||'NOT APPLIED';
@@ -1419,6 +1427,7 @@ export function injectDepsToD5(deps) {
                     <td onclick="event.stopPropagation()">
                       <input type="checkbox" ${sel?'checked':''} onchange="toggleCandSelect('${key}',this.checked)">
                     </td>
+                    <td class="rich-idx">${ri+1}</td>
                     <td><div class="dv5-name-cell">
                       ${avatar(r.name, r.type, r.id)}
                       <div>
@@ -1442,7 +1451,7 @@ export function injectDepsToD5(deps) {
                       </button>
                     </td>
                   </tr>`;
-                }).join('') : `<tr><td colspan="9"><div class="dv5-empty">No candidates found.</div></td></tr>`}
+                }).join('') : `<tr><td colspan="10"><div class="dv5-empty">No candidates found.</div></td></tr>`}
               </tbody>
             </table>
           </div>
@@ -2258,10 +2267,12 @@ export function injectDepsToD5(deps) {
             <table class="dv5-table">
               <thead><tr><th>#</th><th>Position</th><th>Candidates</th><th>Travelled</th><th>Success Rate</th><th>Commission</th></tr></thead>
               <tbody>
-                ${topJobs.length ? topJobs.map(([pos,d],i)=>`<tr>
-                  <td>${i+1}</td><td>${h(pos)}</td><td>${d.count}</td><td>${d.travelled}</td>
-                  <td>${d.count?Math.round(d.travelled/d.count*100)+'%':'—'}</td><td>${money(d.commission)}</td>
-                </tr>`).join('') : '<tr><td colspan="6"><div class="dv5-empty">No job data yet.</div></td></tr>'}
+                ${topJobs.length ? topJobs.map(([pos,d],i)=>{
+                  const rate = d.count?Math.round(d.travelled/d.count*100):0;
+                  return `<tr>
+                  <td class="rich-idx">${i+1}</td><td><span class="chip-pill">${h(pos)}</span></td><td>${d.count}</td><td>${d.travelled}</td>
+                  <td><div class="rate-cell"><span>${d.count?rate+'%':'—'}</span>${d.count?miniBar(rate, rate>=100):''}</div></td><td>${money(d.commission)}</td>
+                </tr>`;}).join('') : '<tr><td colspan="6"><div class="dv5-empty">No job data yet.</div></td></tr>'}
               </tbody>
             </table>
           </div>
@@ -2428,17 +2439,19 @@ export function injectDepsToD5(deps) {
         <div class="dv5-table-card" style="margin-top:16px">
           <div class="dv5-table-wrap">
             <table class="dv5-table">
-              <thead><tr><th></th><th>Employer</th><th>Country</th><th>Contact</th><th>Job Orders</th><th>Candidates</th><th></th></tr></thead>
+              <thead><tr><th></th><th class="rich-idx-h">#</th><th>Employer</th><th>Country</th><th>Contact</th><th>Job Orders</th><th>Candidates</th><th></th></tr></thead>
               <tbody>
-                ${employerRows.length ? employerRows.map(emp => {
+                ${employerRows.length ? employerRows.map((emp, ei) => {
                   const isOpen = expandedEmployer === emp.id;
                   const jobs = empJobs(emp.id);
                   const cands = empCandidates(emp.id);
+                  const [empBg, empFg] = drecoTint(emp.name);
                   return `
                   <tr class="dv5-client-row${isOpen?' dv5-client-open':''}" onclick="window._toggleEmployer(${JSON.stringify(emp.id)})" style="cursor:pointer">
                     <td style="width:28px"><i class="ti ${isOpen?'ti-chevron-down':'ti-chevron-right'}" style="font-size:12px;color:#9ca3af"></i></td>
+                    <td class="rich-idx">${ei+1}</td>
                     <td><div class="dv5-name-cell">
-                      <div class="dv5-avatar" style="background:#E4E1D6;color:#76746B"><i class="ti ti-building" style="font-size:13px"></i></div>
+                      <div class="dv5-avatar" style="background:${empBg};color:${empFg}"><i class="ti ti-building" style="font-size:13px"></i></div>
                       <div><div class="dv5-name">${h(emp.name)}</div><div class="dv5-sub">${h(emp.notes||'—')}</div></div>
                     </div></td>
                     <td>${h(emp.country||'—')}</td>
@@ -2453,7 +2466,7 @@ export function injectDepsToD5(deps) {
                            <button class="dv5-action-btn" style="color:#b91c1c" onclick="if(confirm('Delete ${h(emp.name).replace(/'/g,"\\'")} and all its job orders?'))deleteEmployer(${emp.id})">Del</button>`}
                     </td>
                   </tr>
-                  ${isOpen ? `<tr class="dv5-expand-row"><td colspan="7" style="padding:0 0 8px 40px;background:#f8fafc">
+                  ${isOpen ? `<tr class="dv5-expand-row"><td colspan="8" style="padding:0 0 8px 40px;background:#f8fafc">
                     ${jobs.length ? `<table class="dv5-table" style="min-width:0;border:0;box-shadow:none">
                       <thead><tr><th>Job Title</th><th>Positions</th><th>Deadline</th><th>Notes</th><th></th></tr></thead>
                       <tbody>${jobs.map(j=>`<tr>
@@ -2468,7 +2481,7 @@ export function injectDepsToD5(deps) {
                     </table>` : `<div class="dv5-empty" style="padding:10px 0">${emp.inferred ? 'Register this employer before adding job orders.' : 'No job orders yet. <button class="dv5-action-btn" onclick="openJobOrderForm('+emp.id+')">+ Add job order</button>'}</div>`}
                     ${cands.length ? `<div style="padding:8px 0 0;font-size:11px;color:var(--text-3)">${cands.length} candidate${cands.length!==1?'s':''} matched by company name: ${cands.slice(0,5).map(r=>h(r.name)).join(', ')}${cands.length>5?'…':''}</div>` : ''}
                   </td></tr>` : ''}`;
-                }).join('') : '<tr><td colspan="7"><div class="dv5-empty">No employers yet. Add your first employer to track job orders.</div></td></tr>'}
+                }).join('') : '<tr><td colspan="8"><div class="dv5-empty">No employers yet. Add your first employer to track job orders.</div></td></tr>'}
               </tbody>
             </table>
           </div>
@@ -3117,6 +3130,9 @@ export function injectDepsToD5(deps) {
 .dv5-table tbody tr:last-child { border-bottom:0; }
 .dv5-table tbody tr:hover { background:var(--surface-2,#F7F9FC); }
 .dv5-table tbody td { padding:0 14px; height:46px; color:var(--text,#18191B); vertical-align:middle; white-space:nowrap; font-variant-numeric:tabular-nums; }
+/* Wrapped data tables size to content and scroll sideways instead of squeezing
+   (so long names/positions show in full). Nested expand-row tables are unaffected. */
+.dv5-table-wrap > .dv5-table { width:auto; min-width:100%; }
 .dv5-fin-tx { display:flex; align-items:center; gap:10px; padding:11px 18px; border-bottom:1px solid var(--border,#F1F1F1); cursor:pointer; transition:background .1s; }
 .dv5-fin-tx:hover { background:#F9F9F9; }
 .dv5-fin-tx-date { min-width:64px; font-size:11px; color:#9ca3af; flex-shrink:0; display:flex; align-items:center; gap:3px; }
@@ -3145,8 +3161,10 @@ export function injectDepsToD5(deps) {
 }
 
 /* Name cells */
-.dv5-name-cell { display:flex; align-items:center; gap:10px; }
-.dv5-name { font-size:12px; font-weight:438; color:var(--text,#18191B); white-space:nowrap; }
+.dv5-name-cell { display:flex; align-items:center; gap:10px; min-width:150px; }
+.dv5-name-cell > div { min-width:0; }
+/* Names show in full — wrap to a second line rather than truncate (rows grow). */
+.dv5-name { font-size:12px; font-weight:438; color:var(--text,#18191B); white-space:normal; overflow-wrap:anywhere; line-height:1.3; }
 .dv5-sub { font-size:11px; color:var(--text-3,#999); margin-top:1px; white-space:nowrap; }
 .dv5-next-action { font-size:11px; font-weight:438; color:var(--dreco-ink,#1A1C2E); }
 

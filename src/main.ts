@@ -2582,7 +2582,7 @@ let _currentTab = 'dash';
 function switchTab(tab, _pushHistory = true){
   if (window.innerWidth <= 860) closeMobileSidebar();
   // DV5 unified tab router — handles both legacy and new tabs
-  const DV5_TABS = ['dash','pipeline','candidates','finance','documents','reports','jobs','notifications','settings'];
+  const DV5_TABS = ['dash','pipeline','candidates','finance','payments','documents','reports','jobs','notifications','settings'];
   const DV5_ALIASES = {
     pro:'candidates', lb:'candidates',
     kanban:'pipeline', travel:'pipeline', tasks:'pipeline',
