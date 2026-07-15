@@ -426,6 +426,35 @@
     .mini-bar span{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#34D399,#0D9488)}
     .mini-bar span.full{background:linear-gradient(90deg,#16A34A,#15803D)}
     .rate-cell{display:inline-flex;flex-direction:column;align-items:flex-start;gap:0;font-weight:600;font-variant-numeric:tabular-nums}
+    /* Dashboard: Monthly Activity bars */
+    .act-chart{padding:6px 4px 2px}
+    .act-legend{display:flex;gap:18px;margin-bottom:12px;font-size:12px;color:var(--text-2,#71717a)}
+    .act-legend b{color:var(--text,#18191B);font-weight:700;margin-left:3px}
+    .act-dot{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;vertical-align:middle}
+    .act-dot.added{background:#8B7CF6}.act-dot.trav{background:#0D9488}
+    .act-bars{display:flex;align-items:flex-end;gap:14px;height:170px}
+    .act-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
+    .act-pair{display:flex;align-items:flex-end;justify-content:center;gap:5px;height:100%;width:100%}
+    .act-bar{flex:1;max-width:26px;border-radius:6px 6px 3px 3px;min-height:3px;position:relative;transition:height .4s;display:flex;align-items:flex-start;justify-content:center}
+    .act-bar.added{background:linear-gradient(180deg,#A78BFA,#7C6CF0)}
+    .act-bar.trav{background:linear-gradient(180deg,#2DD4BF,#0D9488)}
+    .act-bar span{position:absolute;top:-17px;font-size:10.5px;font-weight:700;color:var(--text,#18191B);font-variant-numeric:tabular-nums}
+    .act-label{margin-top:8px;font-size:11px;color:#9aa3b2;font-weight:500}
+    /* Dashboard: Readiness Breakdown bars */
+    .rd-list{display:flex;flex-direction:column;gap:11px;padding:6px 2px 2px}
+    .rd-row{display:block;width:100%;text-align:left;border:0;background:transparent;cursor:pointer;padding:2px;font:inherit;border-radius:8px;transition:background .12s}
+    .rd-row:hover{background:var(--surface-2,#F7F9FC)}
+    .rd-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+    .rd-label{font-size:12.5px;font-weight:600;color:var(--text,#18191B)}
+    .rd-val{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
+    .rd-track{height:7px;border-radius:20px;background:var(--surface-3,#EDF0F5);overflow:hidden}
+    .rd-track span{display:block;height:100%;border-radius:20px;transition:width .4s}
+    .rd-ok .rd-val{color:#15803D}.rd-ok .rd-track span{background:linear-gradient(90deg,#34D399,#16A34A)}
+    .rd-warn .rd-val{color:#B45309}.rd-warn .rd-track span{background:linear-gradient(90deg,#FBBF24,#D97706)}
+    .rd-bad .rd-val{color:#DC2626}.rd-bad .rd-track span{background:linear-gradient(90deg,#F87171,#DC2626)}
+    .rd-divider{height:1px;background:var(--border,#EEF0F2);margin:4px 0}
+    .rd-note{display:flex;align-items:center;gap:7px;margin-top:2px;font-size:12px;font-weight:600;color:#B45309;background:#FFFBEB;border:1px solid #FDE68A;border-radius:9px;padding:8px 11px}
+    .rd-note i{font-size:15px}
     /* Commission status card */
     .commission-status-card{background:var(--surface-3);border-radius:12px;padding:14px 16px;margin-bottom:4px;border:1px solid var(--border)}
     .cs-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12.5px;color:var(--text-2)}

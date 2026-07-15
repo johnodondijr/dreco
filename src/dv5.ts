@@ -683,7 +683,66 @@ export function injectDepsToD5(deps) {
       label: score >= 85 ? 'Ready' : score >= 65 ? 'Needs cleanup' : 'At risk',
       note: `${weak[0]} needs the most attention`,
       detail: `${profile}% profiles · ${docs}% docs · ${finance}% finance · ${workflow}% workflow`,
+      parts: { profiles: profile, documents: docs, finance, workflow },
     };
+  }
+
+  // Monthly Activity — honest bars of candidates Added vs Travelled per month.
+  function buildMonthlyActivity(rows, isPro) {
+    const now = new Date();
+    const months = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
+      return { label: d.toLocaleString('default', { month: 'short' }), key: `${d.getFullYear()}-${d.getMonth()}`, added: 0, travelled: 0 };
+    });
+    const idx = Object.fromEntries(months.map((s, i) => [s.key, i]));
+    const bucket = (d) => { const dt = new Date(d || ''); return isNaN(+dt) ? -1 : (idx[`${dt.getFullYear()}-${dt.getMonth()}`] ?? -1); };
+    rows.forEach(r => {
+      const a = bucket(r.submitted || r.submitted_date || r.created_at);
+      if (a >= 0) months[a].added++;
+      const stage = String(r.stage || '').toUpperCase();
+      const isTrav = stage === 'TRAVELLED' || stage === 'REFUND PENDING' || stage === 'REFUND COMPLETE';
+      if (isTrav) { const t = bucket(isPro ? (r.raw?.travel || r.travel) : (r.travelDate || r.travel_date)); if (t >= 0) months[t].travelled++; }
+    });
+    const max = Math.max(1, ...months.map(s => Math.max(s.added, s.travelled)));
+    const totAdded = months.reduce((s, x) => s + x.added, 0);
+    const totTrav = months.reduce((s, x) => s + x.travelled, 0);
+    const bar = (v, cls) => `<div class="act-bar ${cls}" style="height:${Math.round(v / max * 100)}%">${v ? `<span>${v}</span>` : ''}</div>`;
+    return `<div class="act-chart">
+      <div class="act-legend">
+        <span><i class="act-dot added"></i>Added <b>${totAdded}</b></span>
+        <span><i class="act-dot trav"></i>Travelled <b>${totTrav}</b></span>
+      </div>
+      <div class="act-bars">
+        ${months.map(s => `<div class="act-col" title="${s.label}: ${s.added} added · ${s.travelled} travelled">
+          <div class="act-pair">${bar(s.added, 'added')}${bar(s.travelled, 'trav')}</div>
+          <div class="act-label">${s.label}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  // Readiness Breakdown — one labelled, colour-coded, clickable bar per dimension
+  // (replaces the composite gauge so the weak area is obvious and actionable).
+  function readinessBreakdown(scoreData, collectionRate, travelReadiness) {
+    const p = scoreData?.parts || {};
+    const bar = (label, val, tab) => {
+      const v = Math.max(0, Math.min(100, Math.round(Number(val) || 0)));
+      const tone = v >= 85 ? 'ok' : v >= 65 ? 'warn' : 'bad';
+      return `<button class="rd-row rd-${tone}" data-action="tab.switch" data-tab="${tab}">
+        <div class="rd-top"><span class="rd-label">${label}</span><span class="rd-val">${v}%</span></div>
+        <div class="rd-track"><span style="width:${v}%"></span></div>
+      </button>`;
+    };
+    return `<div class="rd-list">
+      ${bar('Profiles', p.profiles, 'candidates')}
+      ${bar('Documents', p.documents, 'documents')}
+      ${bar('Finance', p.finance, 'finance')}
+      ${bar('Workflow', p.workflow, 'pipeline')}
+      <div class="rd-divider"></div>
+      ${bar('Collection Rate', collectionRate, 'finance')}
+      ${bar('Travel Readiness', travelReadiness, 'pipeline')}
+      ${scoreData?.note ? `<div class="rd-note"><i class="ti ti-alert-triangle"></i>${h(scoreData.note)}</div>` : ''}
+    </div>`;
   }
 
   function readinessGauge(scoreData, action = "switchTab('notifications')") {
@@ -1105,26 +1164,22 @@ export function injectDepsToD5(deps) {
           <div class="dv5-card dv5-line-card" style="margin-bottom:0">
             <div class="dv5-card-head">
               <div>
-                <span class="dv5-card-title">Candidate Movement</span>
-                <div class="dv5-card-sub">${isPro?'Professional':'General'} — new candidates added per week</div>
+                <span class="dv5-card-title">Monthly Activity</span>
+                <div class="dv5-card-sub">${isPro?'Professional':'General'} — candidates added vs travelled, last 6 months</div>
               </div>
               <button class="dv5-link" style="color:rgba(190,18,60,.7)" data-action="tab.switch" data-tab="candidates">All →</button>
             </div>
-            ${buildLineChart(normRows, candMovMonth || new Date().toISOString().slice(0,7))}
+            ${buildMonthlyActivity(normRows, isPro)}
           </div>
 
           <div class="dv5-card" style="margin-bottom:0">
             <div class="dv5-card-head">
               <div>
                 <span class="dv5-card-title">Operations Readiness</span>
-                <div class="dv5-card-sub">${isPro?'Professional':'General'} records Dreco can trust</div>
+                <div class="dv5-card-sub">${isPro?'Professional':'General'} — tap a bar to fix the weak area</div>
               </div>
             </div>
-            ${readinessGauge(readiness)}
-            <div class="dv5-ring-card">
-              ${ringStat('Collection Rate', collectionRate, '#1A1C2E')}
-              ${ringStat('Travel Readiness', travelReadiness, '#DDF56C')}
-            </div>
+            ${readinessBreakdown(readiness, collectionRate, travelReadiness)}
           </div>
         </div>
 
