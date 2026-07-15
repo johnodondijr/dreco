@@ -818,6 +818,46 @@ function lbRefundOutstanding(row = {}) {
 // views and older schemas. Derive it from the legacy fields when a record has
 // no array yet, so existing candidates show their installments with no manual
 // migration.
+// The date a payment-rule stage happened, for reconstructing legacy installments.
+function stageMilestoneDate(r, stage) {
+  const s = String(stage || '').toUpperCase();
+  const map = {
+    'INTERVIEW': r.interview,
+    'OFFER LETTER': r.ol, 'PENDING OFFER LETTER': r.ol,
+    'MEDICAL & ATTESTATION': r.medical, 'MEDICAL': r.medical,
+    'WORK PERMIT': r.mol,
+    'VISA': r.visa,
+    'TICKET BOOKED': r.travel, 'TRAVELLED': r.travel,
+  };
+  return normalizeDateField(map[s]) || '';
+}
+// Split a lump commission total into installments using the workspace payment
+// rule (e.g. 50% at offer letter, 50% at visa), each dated by that stage's
+// milestone, capped at the amount actually paid. This reconstructs the real
+// "half after offer, half after visa" flow for records that were saved as a
+// single running total before installment tracking existed.
+function reconstructInstallments(r, paidTotal) {
+  const commission = Number(r.commission) || 0;
+  const rules = (paymentRules?.proRules || []).slice().sort((a, b) => (Number(a.percent) || 0) - (Number(b.percent) || 0));
+  if (!commission || !rules.length) {
+    return [{ amount: paidTotal, date: stageMilestoneDate(r, r.stage) || normalizeDateField(r.submitted) || '' }];
+  }
+  const out = [];
+  let prevCum = 0, remaining = paidTotal;
+  for (const rule of rules) {
+    if (remaining <= 0.5) break;
+    const cum = Math.round(commission * (Number(rule.percent) || 0) / 100);
+    const slice = Math.max(cum - prevCum, 0);
+    prevCum = cum;
+    if (slice <= 0) continue;
+    const amt = Math.min(slice, remaining);
+    out.push({ amount: amt, date: stageMilestoneDate(r, rule.stage) || normalizeDateField(r.submitted) || '' });
+    remaining -= amt;
+  }
+  // Anything paid beyond the rule breakpoints (overpayment) → a final installment.
+  if (remaining > 0.5) out.push({ amount: remaining, date: stageMilestoneDate(r, r.stage) || normalizeDateField(r.submitted) || '' });
+  return out.length ? out : [{ amount: paidTotal, date: normalizeDateField(r.submitted) || '' }];
+}
 function deriveCommissionPayments(r, paid1, paid2) {
   const raw = r.commissionPayments || r.commission_payments;
   if (Array.isArray(raw) && raw.length) {
@@ -826,10 +866,23 @@ function deriveCommissionPayments(r, paid1, paid2) {
       .filter(p => p.amount > 0 || p.date);
   }
   const out = [];
-  if (paid1 != null && Number(paid1) > 0) out.push({ amount: Number(paid1), date: normalizeDateField(r.paid1_date) || '' });
-  if (paid2 != null && Number(paid2) > 0) out.push({ amount: Number(paid2), date: normalizeDateField(r.paid2_date) || '' });
-  if (!out.length && r.paid != null && Number(r.paid) > 0) out.push({ amount: Number(r.paid), date: normalizeDateField(r.paid_date || r.submitted) || '' });
-  return out;
+  // Explicit 1st/2nd amounts → keep them, dating missing ones by the offer-letter
+  // (1st) and visa (2nd) milestones so "half after offer, half after visa" reads right.
+  if (paid1 != null && Number(paid1) > 0) out.push({ amount: Number(paid1), date: normalizeDateField(r.paid1_date) || stageMilestoneDate(r, 'OFFER LETTER') || '' });
+  if (paid2 != null && Number(paid2) > 0) out.push({ amount: Number(paid2), date: normalizeDateField(r.paid2_date) || stageMilestoneDate(r, 'VISA') || '' });
+  const paidTotal = Number(r.paid) || 0;
+  if (out.length) {
+    // If the running total exceeds the recorded slots, the rest was paid as a
+    // lump — add it as the visa-stage installment so the total stays correct.
+    const fromSlots = out.reduce((s, p) => s + p.amount, 0);
+    if (paidTotal > fromSlots + 0.5) {
+      out.push({ amount: paidTotal - fromSlots, date: stageMilestoneDate(r, 'VISA') || stageMilestoneDate(r, r.stage) || normalizeDateField(r.submitted) || '' });
+    }
+    return out;
+  }
+  // No split recorded at all — reconstruct from the payment rule + milestone dates.
+  if (paidTotal > 0) return reconstructInstallments(r, paidTotal);
+  return [];
 }
 function normalizeProRecord(r={}) {
   const paid1 = toNumOrNull(r.paid1);
