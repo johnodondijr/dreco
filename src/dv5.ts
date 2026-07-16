@@ -102,15 +102,6 @@ function safeLocalGet(key) {
 function safeLocalSet(key, value) {
   try { localStorage.setItem(key, value); } catch { /* storage may be blocked */ }
 }
-function safeSessionGet(key) {
-  try { return sessionStorage.getItem(key); } catch { return null; }
-}
-function safeSessionSet(key, value) {
-  try { sessionStorage.setItem(key, value); } catch { /* storage may be blocked */ }
-}
-function safeSessionRemove(key) {
-  try { sessionStorage.removeItem(key); } catch { /* storage may be blocked */ }
-}
 
 /** Called by main.ts immediately after its own function declarations to wire deps. */
 export function injectDepsToD5(deps) {
@@ -131,14 +122,6 @@ export function injectDepsToD5(deps) {
 
   // ── Constants ────────────────────────────────────────────
   const TABS    = ['dash','pipeline','candidates','finance','payments','documents','reports','jobs','settings'];
-  const ALIASES = {
-    pro:'candidates', lb:'candidates',
-    kanban:'pipeline', travel:'pipeline', tasks:'pipeline',
-    calendar:'pipeline',
-    commissions:'finance', repayments:'finance', expenses:'finance',
-    clients:'jobs', employers:'jobs',
-    team:'settings', help:'settings'
-  };
   const TITLES = {
     dash:'Home', pipeline:'Pipeline', candidates:'Candidates',
     tasks:'Tasks', finance:'Finance', payments:'Payments', documents:'Documents',
@@ -195,8 +178,6 @@ export function injectDepsToD5(deps) {
   }
 
   // ── Micro-helpers ─────────────────────────────────────────
-  const $ = (s, root=document): any => root.querySelector(s);
-  const $$ = (s, root=document): any[] => Array.from(root.querySelectorAll(s));
   const h = (v='') => String(v ?? '').replace(/[&<>"']/g, m =>
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
   const js = (v='') => String(v ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ');
@@ -233,7 +214,6 @@ export function injectDepsToD5(deps) {
   const co  = () => (typeof getCompanyName === 'function' ? getCompanyName() : DEFAULT_COMPANY.name);
   const fname = () => String(currentUser?.display || 'John').split(' ')[0] || 'John';
   const avatar = (name, type='', id='') => candidateAvatar(name, type, id, 'dv5-avatar');
-  const hasDoc  = r => typeof window.hasDocs === 'function' ? window.hasDocs(r.type, r.id) : false;
   const safeCall = (fn, fallback, ...args) => {
     try { return typeof fn === 'function' ? fn(...args) : fallback; }
     catch (error) { console.warn('Dreco row helper failed', error); return fallback; }
@@ -343,24 +323,6 @@ export function injectDepsToD5(deps) {
     return [...pro, ...lb];
   }
 
-  // ── Client aggregation from existing candidate data ───────
-  function buildClients() {
-    const map = new Map();
-    allRows().forEach(r => {
-      const name = r.company || 'Unassigned';
-      const c = map.get(name) || {
-        name, country: r.country||'—', active:0, total:0,
-        due:0, paid:0, manager: currentUser?.display||'Team'
-      };
-      c.total++;
-      if (r.stage !== 'TRAVELLED' && r.stage !== 'NOT YET') c.active++;
-      c.due   += r.balance;
-      c.paid  += r.paid;
-      map.set(name, c);
-    });
-    return [...map.values()].sort((a,b) => b.total - a.total);
-  }
-
   // ── Auto task builder from real data ──────────────────────
   let dismissedAutoTasks = new Set(JSON.parse(localStorage.getItem('dreco_dismissed_tasks')||'[]'));
   let manualTasks = JSON.parse(localStorage.getItem('dreco_manual_tasks')||'[]');
@@ -381,7 +343,6 @@ export function injectDepsToD5(deps) {
     const auto = [];
     allRows().forEach(r => {
       const edit = r.type==='pro' ? `editPro(${r.id})` : `editLB(${r.id})`;
-      const docs = `openDocs('${r.type}',${JSON.stringify(r.id)},'${js(r.name)}')`;
       const balStr = r.currency==='USD' ? moneyUSD(r.balance) : money(r.balance);
       const meta = `${r.company||r.country||'—'}`;
       auto.push(...[
@@ -538,155 +499,6 @@ export function injectDepsToD5(deps) {
     };
   }
 
-  // ── Chart helpers ─────────────────────────────────────────
-  function buildBarChart(rows) {
-    const now = new Date();
-    const months = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      months.push({ label: d.toLocaleString('default',{month:'short'}), key:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`, count:0 });
-    }
-    rows.forEach(r => {
-      if (String(r.stage).toUpperCase() !== 'TRAVELLED') return;
-      // use travel date (normalized field); fall back to submitted date
-      const rawDate = r.travel || r.travelDate || r.submitted;
-      const d = rawDate ? new Date(rawDate) : null; if (!d || isNaN(d.getTime())) return;
-      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-      const m = months.find(x => x.key === key); if (m) m.count++;
-    });
-    const max = Math.max(...months.map(m => m.count), 1);
-    return `<div style="display:flex;align-items:flex-end;gap:6px;height:140px;padding:0 0 4px">
-      ${months.map(b => {
-        const pct = Math.max(Math.round((b.count/max)*100), b.count>0?6:2);
-        return `<div class="dv5-bar-col" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;position:relative">
-          <div class="dv5-bar-tip" style="position:absolute;bottom:calc(${pct}% + 10px);left:50%;transform:translateX(-50%);background:#1F2133;color:#DDF56C;font-size:10px;font-weight:500;padding:3px 7px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;z-index:10">${b.count} placed</div>
-          <div style="width:100%;border-radius:5px 5px 3px 3px;background:linear-gradient(180deg,#5347CE,#6A5CF0);height:${pct}%;min-height:3px;transition:height .4s cubic-bezier(.4,0,.2,1),opacity .12s;cursor:default" onmouseenter="this.previousElementSibling.style.opacity=1;this.style.background='linear-gradient(180deg,#DDF56C,#D7F266)'" onmouseleave="this.previousElementSibling.style.opacity=0;this.style.background='linear-gradient(180deg,#5347CE,#6A5CF0)'"></div>
-          <span style="font-size:10px;color:var(--text-3,#999);font-weight:438;white-space:nowrap">${h(b.label)}</span>
-        </div>`;
-      }).join('')}
-    </div>`;
-  }
-
-  function buildLineChart(rows: any[], selectedMonth: string) {
-    // Auto-detect most recent month with data if the selected month has none
-    const getDate = (r: any) => r.raw?.created_at || r.raw?.createdAt || r.raw?.intake || r.submitted || r.raw?.submitted_date || r.raw?.submitted;
-    const rowDates = rows.map(r => { const ds = getDate(r); if (!ds) return null; const d = new Date(ds); return isNaN(d as any) ? null : d; }).filter(Boolean) as Date[];
-    if (rowDates.length) {
-      const selMs = new Date(selectedMonth + '-01').getTime();
-      const hasDataInSel = rowDates.some(d => d.getFullYear() === new Date(selMs).getFullYear() && d.getMonth() === new Date(selMs).getMonth());
-      if (!hasDataInSel) {
-        const latest = rowDates.reduce((a,b) => b > a ? b : a);
-        selectedMonth = `${latest.getFullYear()}-${String(latest.getMonth()+1).padStart(2,'0')}`;
-      }
-    }
-    const [selYear, selMonthNum] = selectedMonth.split('-').map(Number);
-    const selMonthIdx = selMonthNum - 1; // 0-indexed
-    const prevYear = selMonthNum === 1 ? selYear - 1 : selYear;
-    const prevMonthIdx = selMonthNum === 1 ? 11 : selMonthIdx - 1;
-    const daysInSel = new Date(selYear, selMonthIdx + 1, 0).getDate();
-    const daysInPrev = new Date(prevYear, prevMonthIdx + 1, 0).getDate();
-    const selWeeks = [0, 0, 0, 0];
-    const prevWeeks = [0, 0, 0, 0];
-    rows.forEach(r => {
-      const ds = r.raw?.created_at || r.raw?.createdAt || r.raw?.intake || r.submitted || r.raw?.submitted_date || r.raw?.submitted;
-      if (!ds) return;
-      const d = new Date(ds); if (isNaN(d as any)) return;
-      const y = d.getFullYear(), m = d.getMonth(), day = d.getDate();
-      const wk = day <= 7 ? 0 : day <= 14 ? 1 : day <= 21 ? 2 : 3;
-      if (y === selYear && m === selMonthIdx) selWeeks[wk]++;
-      else if (y === prevYear && m === prevMonthIdx) prevWeeks[wk]++;
-    });
-    const inProcess = rows.filter(r=>String(r.stage||'').toUpperCase()!=='TRAVELLED').length;
-    const travelledCount = rows.filter(r=>String(r.stage||'').toUpperCase()==='TRAVELLED').length;
-    const selTotal = selWeeks.reduce((s,v)=>s+v,0);
-    const prevTotal = prevWeeks.reduce((s,v)=>s+v,0);
-    const diff = selTotal - prevTotal;
-    const selMonthName = new Date(selYear, selMonthIdx, 1).toLocaleString('default',{month:'short'});
-    const prevMonthName = new Date(prevYear, prevMonthIdx, 1).toLocaleString('default',{month:'short'});
-    const diffLabel = diff===0?`same as ${prevMonthName}`:diff>0?`+${diff} vs ${prevMonthName}`:`${diff} vs ${prevMonthName}`;
-    const maxVal = Math.max(...selWeeks, ...prevWeeks, 1);
-    const W=680, H=200, PX=24, PY=16;
-    const xStep = (W - PX*2) / 3;
-    const pts = (data: number[]) => data.map((v,i)=>[PX+i*xStep, H-PY-(v/maxVal)*(H-PY*2)] as [number,number]);
-    const curve = (data: number[]) => {
-      const p = pts(data);
-      let d = `M${p[0][0].toFixed(1)},${p[0][1].toFixed(1)}`;
-      for (let i=0;i<p.length-1;i++) { const cx=(p[i][0]+p[i+1][0])/2; d+=` C${cx.toFixed(1)},${p[i][1].toFixed(1)} ${cx.toFixed(1)},${p[i+1][1].toFixed(1)} ${p[i+1][0].toFixed(1)},${p[i+1][1].toFixed(1)}`; }
-      return d;
-    };
-    const twPath = curve(selWeeks), lwPath = curve(prevWeeks);
-    const twPts = pts(selWeeks), lwPts = pts(prevWeeks);
-    const areaD = `${twPath} L${(PX+3*xStep).toFixed(1)},${H-PY} L${PX},${H-PY} Z`;
-    const now = new Date();
-    const monthOptions = Array.from({length:12},(_,i)=>{
-      const d = new Date(now.getFullYear(), now.getMonth()-11+i, 1);
-      const val = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-      const label = d.toLocaleString('default',{month:'long',year:'numeric'});
-      return `<option value="${val}"${val===selectedMonth?' selected':''}>${label}</option>`;
-    }).join('');
-    return `<div class="dv5-line-chart">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px">
-        <div class="dv5-line-legend"><span><b></b>${selMonthName} (${selTotal})</span><span><b></b>${prevMonthName} (${prevTotal})</span></div>
-        <select class="dv5-select" style="font-size:11px;padding:3px 8px;height:26px;border-radius:7px;min-width:0;width:auto;flex-shrink:0" onchange="window.setCandMovMonth(this.value)">${monthOptions}</select>
-      </div>
-      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
-        <defs><linearGradient id="dv5LineFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#AE9CF0" stop-opacity=".28"/><stop offset="1" stop-color="#AE9CF0" stop-opacity=".02"/></linearGradient></defs>
-        <path d="${areaD}" fill="url(#dv5LineFill)"/>
-        <path d="${twPath}" fill="none" stroke="#AE9CF0" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="${lwPath}" fill="none" stroke="#1A1C2E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6,4"/>
-        ${twPts.map(([x,y],i)=>selWeeks[i]>0?`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" fill="#AE9CF0" stroke="#fff" stroke-width="2.5"/>`:``).join('')}
-        ${lwPts.map(([x,y],i)=>prevWeeks[i]>0?`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="#1A1C2E" stroke="#fff" stroke-width="2"/>`:``).join('')}
-      </svg>
-      <div class="dv5-line-axis"><span>Week 1</span><span>Week 2</span><span>Week 3</span><span>Week 4</span></div>
-      <div class="dv5-line-summary"><span>${inProcess} in process</span><span>${travelledCount} travelled</span><span style="font-size:10px;color:#7E7C8C">${diffLabel}</span></div>
-    </div>`;
-  }
-
-  function ringStat(label, value, color) {
-    const pct = Math.max(0, Math.min(100, Number(value)||0));
-    return `<div class="dv5-ring-stat">
-      <span class="dv5-ring" style="background:conic-gradient(${color} 0 ${pct}%,#EEF0EA ${pct}% 100%)"></span>
-      <div><small>${h(label)}</small><strong>${pct}%</strong></div>
-    </div>`;
-  }
-
-  function operationsScore(rows: any[]) {
-    const list = Array.isArray(rows) ? rows : [];
-    if (!list.length) {
-      return {
-        score: 0,
-        label: 'No records',
-        note: 'Add candidates to start measuring readiness.',
-        detail: '0 records',
-      };
-    }
-    const health = list.map(r => candidateRecordHealth(r));
-    const profile = Math.round(health.reduce((s,x)=>s+(Number(x.profileScore)||0),0) / Math.max(health.length, 1));
-    const docs = Math.round(health.reduce((s,x)=>s+(Number(x.docScore)||0),0) / Math.max(health.length, 1));
-    const financeRows = list.filter(r => Number(r.commission) > 0);
-    const billed = financeRows.reduce((s,r)=>s+(Number(r.commission)||0),0);
-    const paid = financeRows.reduce((s,r)=>s+(Number(r.paid)||0),0);
-    const finance = billed ? Math.round(Math.min(100, paid / billed * 100)) : 100;
-    const active = list.filter(r=>String(r.stage||'').toUpperCase()!=='TRAVELLED');
-    const workflow = active.length
-      ? Math.round(active.reduce((s,r)=>s+checklistPct(r),0) / active.length)
-      : 100;
-    const score = Math.round((profile * .32) + (docs * .24) + (finance * .24) + (workflow * .20));
-    const weak = [
-      ['Profiles', profile],
-      ['Documents', docs],
-      ['Finance', finance],
-      ['Workflow', workflow],
-    ].sort((a,b)=>Number(a[1])-Number(b[1]))[0];
-    return {
-      score,
-      label: score >= 85 ? 'Ready' : score >= 65 ? 'Needs cleanup' : 'At risk',
-      note: `${weak[0]} needs the most attention`,
-      detail: `${profile}% profiles · ${docs}% docs · ${finance}% finance · ${workflow}% workflow`,
-      parts: { profiles: profile, documents: docs, finance, workflow },
-    };
-  }
-
   // Monthly Activity — honest bars of candidates Added vs Travelled per month.
   function buildMonthlyActivity(rows, isPro) {
     const now = new Date();
@@ -827,70 +639,6 @@ export function injectDepsToD5(deps) {
     </div>`;
   }
 
-  function buildFinanceDonut(entries: any[], isPro: boolean) {
-    const byPos: Record<string,number> = {};
-    entries.forEach(e => { const pos = e.r?.position || 'Other'; byPos[pos] = (byPos[pos]||0) + (Number(e.amt)||0); });
-    const sorted = Object.entries(byPos).sort((a,b)=>b[1]-a[1]);
-    const topN: [string,number][] = sorted.slice(0,6) as any;
-    const otherAmt = sorted.slice(6).reduce((s:number,_:[string,number])=>s+_[1], 0);
-    if (otherAmt > 0) topN.push(['Other', otherAmt]);
-    if (!topN.length) return `<div style="text-align:center;padding:24px;font-size:12px;color:#9ca3af">No collections data for this period.</div>`;
-    const totalAmt = topN.reduce((s,_)=>s+_[1], 0) || 1;
-    const colors = ['#AE9CF0','#F9B3AA','#C5C7F0','#C9F035','#EDFAA8','#1A1C2E','#E5E3F8'];
-    const CX=130, CY=130, R=118, RI=74;
-    let angle = -Math.PI/2;
-    const GAP = topN.length > 1 ? 0.04 : 0;
-    const paths = topN.map(([,amt],i) => {
-      const sweep = (amt/totalAmt)*2*Math.PI;
-      const a0=angle+GAP/2, a1=angle+sweep-GAP/2; angle+=sweep;
-      const ox1=CX+R*Math.cos(a0),oy1=CY+R*Math.sin(a0);
-      const ox2=CX+R*Math.cos(a1),oy2=CY+R*Math.sin(a1);
-      const ix1=CX+RI*Math.cos(a0),iy1=CY+RI*Math.sin(a0);
-      const ix2=CX+RI*Math.cos(a1),iy2=CY+RI*Math.sin(a1);
-      const large=sweep>Math.PI?1:0; const color=colors[i%colors.length];
-      if(topN.length===1) return `<circle cx="${CX}" cy="${CY}" r="${R}" fill="${color}"/><circle cx="${CX}" cy="${CY}" r="${RI}" fill="var(--edu-bg,#fff)" />` ;
-      return `<path d="M${ox1.toFixed(1)},${oy1.toFixed(1)} A${R},${R} 0 ${large},1 ${ox2.toFixed(1)},${oy2.toFixed(1)} L${ix2.toFixed(1)},${iy2.toFixed(1)} A${RI},${RI} 0 ${large},0 ${ix1.toFixed(1)},${iy1.toFixed(1)} Z" fill="${color}" stroke="var(--edu-bg,#fff)" stroke-width="2.5"/>`;
-    }).join('');
-    const compact = (n: number) => n>=1e6 ? (n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M' : n>=1e3 ? (n/1e3).toFixed(1).replace(/\.?0+$/,'')+'K' : String(n);
-    const centerTotal = isPro ? `KES ${compact(totalAmt)}` : `$${compact(totalAmt)}`;
-    const legend = topN.map(([name,amt],i) => {
-      const color=colors[i%colors.length];
-      return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #F3F3F3">
-        <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></span>
-        <span style="font-size:11px;flex:1;color:#374151;min-width:0;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${h(name)}">${h(name)}</span>
-        <span style="font-size:11px;font-weight:500;color:#18191B;flex-shrink:0;padding-left:8px">${isPro?money(amt):moneyUSD(amt)}</span>
-      </div>`;
-    }).join('');
-    return `<div class="dv5-fin-donut">
-      <svg viewBox="0 0 260 260" class="dv5-fin-donut-svg">
-        ${paths}
-        <text x="${CX}" y="${CY-12}" text-anchor="middle" font-size="11" fill="#9ca3af" font-family="inherit" letter-spacing=".07em">COLLECTED</text>
-        <text x="${CX}" y="${CY+14}" text-anchor="middle" font-size="21" font-weight="700" fill="#1A1C2E" font-family="inherit">${centerTotal}</text>
-      </svg>
-      <div class="dv5-fin-donut-legend">${legend}</div>
-    </div>`;
-  }
-
-  // ── KPI card helper ───────────────────────────────────────
-  function kpi(label, value, note, icon, action='', color='purple', trend='') {
-    const click = action ? `onclick="${action}"` : '';
-    const clickable = action ? 'style="cursor:pointer"' : '';
-    let trendHtml = '';
-    if (trend) {
-      const up = trend.startsWith('+');
-      const trendColor = up ? '#059669' : '#E11D48';
-      const trendBg = up ? '#ECFDF5' : '#FFF1F2';
-      const trendIcon = up ? 'ti-trending-up' : 'ti-trending-down';
-      trendHtml = `<span class="dv5-kpi-trend" style="display:inline-flex;align-items:center;gap:3px;margin-top:6px;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:500;background:${trendBg};color:${trendColor}"><i class="ti ${trendIcon}" style="font-size:10px"></i>${h(trend)}</span>`;
-    }
-    return `<div class="dv5-kpi" ${click} ${clickable}>
-      <div class="dv5-kpi-icon ${color||'purple'}"><i class="ti ${h(icon)}"></i></div>
-      <div class="dv5-kpi-val">${h(String(value))}</div>
-      <div class="dv5-kpi-label">${h(label)}</div>
-      <div class="dv5-kpi-note">${h(note)}</div>
-      ${trendHtml}
-    </div>`;
-  }
 
   // ── Colored stat card (shadcn hotel style) ───────────────
   // bgColor: CSS color string for card background
@@ -962,50 +710,6 @@ export function injectDepsToD5(deps) {
     </div>`;
   }
 
-  // ── Trend bar chart (cash flow visual) ───────────────────
-  function cashFlowBars() {
-    // Use real paid data per month if available; otherwise use stored trend
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const now = new Date();
-    const bars = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
-      const monthLabel = months[d.getMonth()];
-      // Try to find any paid amounts from this month's timelines
-      const monthStr = d.toISOString().slice(0,7);
-      let paid = 0;
-      (Array.isArray(proDB)?proDB:[]).forEach(r => {
-        // Use timeline entries to approximate - fallback to 0
-        (allTimelines?.[`pro_${r.id}`]||[]).forEach(e => {
-          if (String(e.ts||'').startsWith(monthStr) && String(e.action||'').toLowerCase().includes('paid')) {
-            paid += Number(r.paid)||0;
-          }
-        });
-      });
-      bars.push({label:monthLabel, height:paid>0 ? Math.min(Math.round(paid/1000),100) : 0});
-    }
-    return bars.map(b => `<div class="dv5-bar-wrap"><div class="dv5-bar" style="height:${b.height}%"></div><span>${h(b.label)}</span></div>`).join('');
-  }
-
-  // ── Recent activity from timelines ───────────────────────
-  function recentActivity(limit=6) {
-    const entries = Object.entries(allTimelines||{})
-      .flatMap(([key,arr]) => (arr||[]).map(e => ({...e, key})))
-      .filter(e => e.ts || e.at)
-      .sort((a,b) => +new Date(b.ts||b.at||0) - +new Date(a.ts||a.at||0))
-      .slice(0, limit);
-    if (!entries.length)
-      return `<div class="dv5-empty">Activity appears here as candidates are updated, paid, and moved through stages.</div>`;
-    return entries.map(e => `
-      <div class="dv5-activity-item">
-        <div class="dv5-activity-icon"><i class="ti ti-history"></i></div>
-        <div>
-          <div class="dv5-activity-title">${h(e.action||e.text||'Candidate updated')}</div>
-          <div class="dv5-activity-meta">by ${h(e.user||'Dreco')} · ${h(fmt(e.ts||e.at||''))}</div>
-        </div>
-      </div>`).join('');
-  }
-
   // ── Ensure section divs exist in content area ─────────────
   function ensureSections() {
     const area = document.querySelector('.content-area');
@@ -1053,13 +757,6 @@ export function injectDepsToD5(deps) {
     sidebarBuilt = true;
   }
 
-  function markActive(t) {
-    $$('#app .nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById(`nav-${t}`)?.classList.add('active');
-    const title = document.getElementById('topbar-title');
-    if (title) title.textContent = TITLES[t] || 'Dreco';
-  }
-
   // switchTab is now handled by the base function declaration.
   // window.renderXPage aliases are set below so the base router can call them.
 
@@ -1072,9 +769,6 @@ export function injectDepsToD5(deps) {
     ensureSections(); buildSidebar();
     const el = document.getElementById('dash-section'); if (!el) return;
     const isPro = jobTypeTab === 'pro';
-    const proRows = proDB || [];
-    const lbFiltered = lbCountryFilter ? (lbDB||[]).filter(r=>(r.country||'')=== lbCountryFilter) : (lbDB||[]);
-    const rows = isPro ? proRows : lbFiltered;
 
     // Use normalised allRows for accurate computed fields (balance, hasDoc)
     const allNorm = allRows();
@@ -1095,7 +789,6 @@ export function injectDepsToD5(deps) {
     const lbPassportApplied = lbNorm.filter(r=>['APPLIED','PUSHED'].includes(r.ppStatus||'')&&!r.own_passport).length;
     const unpaidLB        = lbNorm.filter(r=>r.balance>0&&!r.own_passport).length;
 
-    const travelled = normRows.filter(r=>String(r.stage).toUpperCase()==='TRAVELLED').length;
     const totalPaidPro = proNorm.reduce((s,r)=>s+r.paid,0);
     const totalPaidLB  = lbNorm.reduce((s,r)=>s+r.paid,0);
 
@@ -1117,12 +810,8 @@ export function injectDepsToD5(deps) {
     const flowSteps = isPro ? proFlowSteps : lbFlowSteps;
     const tasks = buildTasks().slice(0,5);
     const totalPaid = isPro ? totalPaidPro : totalPaidLB;
-    const totalExpected = Math.max(1, normRows.reduce((s,r)=>s+(Number(r.commission)||Number(r.toRefund)||r.balance+r.paid||0),0));
-    const collectionRate = Math.min(100, Math.round((totalPaid / totalExpected) * 100));
-    const travelReadiness = Math.min(100, Math.round(((tickets + travelled) / Math.max(normRows.length,1)) * 100));
     const billedTotal = normRows.reduce((s,r)=>s+(Number(r.commission)||Number(r.toRefund)||0),0);
     const monthCollected = collectedThisMonth(isPro);
-    const actionRows = [];
 
     el.innerHTML = `
       <div class="dv5-page">
@@ -1310,7 +999,6 @@ export function injectDepsToD5(deps) {
 
   // ── 3. CANDIDATES ─────────────────────────────────────────
   let candidateSearch = '';
-  let candidateTypeFilter = '';
   let candidateStageFilter = '';
   let candidateViewFilter = 'all';
   let selectedCandidates = new Set(); // 'type_id' strings
@@ -1642,8 +1330,6 @@ export function injectDepsToD5(deps) {
 
   // ── 5. FINANCE ────────────────────────────────────────────
   let financePositionFilter = '';
-  let candMovMonth = new Date().toISOString().slice(0,7); // "YYYY-MM"
-  window.setCandMovMonth = (v: string) => { candMovMonth = v; renderDash(); };
 
   let financeTab = 'latest'; // 'latest' | 'upcoming'
   let financeDatePreset = 'all'; // 'all','this_month','last_month','this_quarter','this_year'
@@ -1657,9 +1343,7 @@ export function injectDepsToD5(deps) {
 
   // Payments (commission installment ledger) state
   let paymentsTab = 'incomplete'; // 'incomplete' | 'complete'
-  let paymentsSearch = '';
   window.setPaymentsTab    = v => { paymentsTab = v; renderPayments(); };
-  window.setPaymentsSearch = v => { paymentsSearch = v; renderPayments(); };
 
   function renderFinance() {
     const el = document.getElementById('finance-section'); if (!el) return;
@@ -1692,26 +1376,11 @@ export function injectDepsToD5(deps) {
     const lbPaidAmt = lbFin.reduce((s,r)=>s+r.paid,0);            // all refunds received
     const lbBal     = lbTravelled.reduce((s,r)=>s+r.balance,0);   // outstanding only for travelled
     const lbExpected = lbPreTravel.reduce((s,r)=>s+r.commission,0); // pre-travel expected
-    const lbOwnPP   = lbFin.filter(r=>r.own_passport).length;
     const lbPipeline = lbPreTravel.length; // pre-travel, expected future refunds
-    const total = rows.reduce((s,r)=>s+r.commission,0);
     const paid  = rows.reduce((s,r)=>s+r.paid,0);
     const bal   = rows.reduce((s,r)=>s+r.balance,0);
-    const rate  = proRate;
 
-    // Monthly breakdown (last 6 months, by r.submitted or created_at)
     const now = new Date();
-    const months = Array.from({length:6},(_,i)=>{
-      const d = new Date(now.getFullYear(), now.getMonth()-5+i, 1);
-      return { label: d.toLocaleString('default',{month:'short'})+' '+d.getFullYear().toString().slice(2), y: d.getFullYear(), m: d.getMonth() };
-    });
-    const monthly = months.map(({label,y,m}) => {
-      const mrs = rows.filter(r=>{
-        const d = new Date(r.submitted||r.created_at||'');
-        return !isNaN(+d) && d.getFullYear()===y && d.getMonth()===m;
-      });
-      return { label, invoiced: mrs.reduce((s,r)=>s+r.commission,0), paid: mrs.reduce((s,r)=>s+r.paid,0) };
-    });
 
     // Outstanding by company
     const byPosition: Record<string, any> = {};
@@ -1784,7 +1453,6 @@ export function injectDepsToD5(deps) {
     const searchQ = financeClientSearch.trim().toLowerCase();
     const filteredPayments = searchQ ? paymentEntries.filter(e => e.label.toLowerCase().includes(searchQ) || (e.r.company||'').toLowerCase().includes(searchQ)) : paymentEntries;
     const filteredUpcoming = searchQ ? upcomingRows.filter(r => (r.name||'').toLowerCase().includes(searchQ) || (r.company||'').toLowerCase().includes(searchQ)) : upcomingRows;
-    const txRows = financeTab === 'latest' ? filteredPayments : filteredUpcoming;
     const presets = [
       ['all','All Time'],['this_month','This Month'],['last_month','Last Month'],
       ['this_quarter','This Quarter'],['this_year','This Year']
@@ -1979,7 +1647,6 @@ export function injectDepsToD5(deps) {
   // ── 5b. PAYMENTS (commission installment ledger) ──────────
   function renderPayments() {
     const el = document.getElementById('payments-section'); if (!el) return;
-    const fmtDate = (d) => { const dt = new Date(d||''); return isNaN(+dt) ? '—' : dt.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'}); };
     const withCalc = (proDB || [])
       .filter(r => (Number(r.commission)||0) > 0 || (Array.isArray(r.commissionPayments) && r.commissionPayments.length))
       .map(r => {
@@ -2565,10 +2232,6 @@ export function injectDepsToD5(deps) {
   };
   window.renderJobsPage = renderJobs;
 
-  // ── 10. SETTINGS (pass-through to existing) ────────────────
-  function renderSettings() {
-    if (typeof renderSettingsPage === 'function') renderSettingsPage();
-  }
 
   // ── CANDIDATE PROFILE PAGE ────────────────────────────────
   window.openCandidateProfile = function(type, id) {
@@ -4007,7 +3670,6 @@ export function injectDepsToD5(deps) {
   }
   function refreshDocsUI(type,id){
     try { window.drecoRenderDocsModal(type,id); } catch {}
-    const active = sessionStorage.getItem('dreco_active_tab') || '';
     try { if(typeof renderDocumentsV4 === 'function') renderDocumentsV4(); } catch {}
     // Keep the candidate profile's Record Health / gauge counter in sync.
     try { window.renderDocumentsPage?.(); } catch {}

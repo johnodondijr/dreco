@@ -1639,17 +1639,6 @@ document.addEventListener('click', (e) => {
   const fn = DRECO_ACTIONS[el.getAttribute('data-action')];
   if (fn) fn(el, e);
 });
-// Delegated 'change' dispatcher — lets inputs (e.g. inline installment date
-// pickers) fire actions without inline onchange handlers, keeping the ratchet flat.
-const DRECO_CHANGE_ACTIONS = {
-  'installment.date': (el) => updateInstallmentDate(Number(el.getAttribute('data-id')), Number(el.getAttribute('data-idx')), el.value),
-};
-document.addEventListener('change', (e) => {
-  const el = e.target?.closest?.('[data-change-action]');
-  if (!el) return;
-  const fn = DRECO_CHANGE_ACTIONS[el.getAttribute('data-change-action')];
-  if (fn) fn(el, e);
-});
 
 window.addEventListener('DOMContentLoaded', async () => {
   await loadRuntimeConfig();
@@ -3581,31 +3570,6 @@ async function addCommissionInstallment(id, amount, date) {
   } catch(e) { _restoreProComm(r, snapshot); showToast(e.message || 'Save failed.', 'error'); return false; }
   _afterCommissionChange();
   return true;
-}
-async function updateInstallmentDate(id, index, date) {
-  const r = proDB.find(x => String(x.id) === String(id)); if (!r || !Array.isArray(r.commissionPayments)) return;
-  const p = r.commissionPayments[index]; if (!p) return;
-  const snapshot = _proCommSnapshot(r);
-  p.date = date || '';
-  syncCommissionMirrors(r);
-  try { if (useCloud()) await persistProPaymentUpdate(id, proCommissionUpdates(r)); else saveLocalStore(); }
-  catch(e) { _restoreProComm(r, snapshot); showToast(e.message || 'Save failed.', 'error'); return; }
-  _afterCommissionChange();
-}
-async function updateInstallmentAmount(id, index, amount) {
-  const r = proDB.find(x => String(x.id) === String(id)); if (!r || !Array.isArray(r.commissionPayments)) return;
-  const p = r.commissionPayments[index]; if (!p) return;
-  const amt = Number(amount) || 0;
-  if (amt <= 0) { showToast('Enter a valid amount.', 'error'); return; }
-  const commission = Number(r.commission) || 0;
-  const others = proPaidAmount(r) - (Number(p.amount) || 0);
-  if (commission > 0 && (others + amt) > commission) { showToast(`Total would exceed the commission of ${moneyKES(commission)}.`, 'error'); return; }
-  const snapshot = _proCommSnapshot(r);
-  p.amount = amt;
-  syncCommissionMirrors(r);
-  try { if (useCloud()) await persistProPaymentUpdate(id, proCommissionUpdates(r)); else saveLocalStore(); auditAction('Finance', 'Installment amount edited', `${r.name} — ${moneyKES(amt)}`); }
-  catch(e) { _restoreProComm(r, snapshot); showToast(e.message || 'Save failed.', 'error'); return; }
-  _afterCommissionChange();
 }
 async function removeCommissionInstallment(id, index) {
   const r = proDB.find(x => String(x.id) === String(id)); if (!r || !Array.isArray(r.commissionPayments)) return;
