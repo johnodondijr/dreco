@@ -40,6 +40,15 @@ const PRO_PROFILE_LABELS = {
   'TICKET BOOKED': 'Ticket Booked',
   'TRAVELLED': 'Travelled',
 };
+const PRO_MILESTONE_DEFS = [
+  { stage:'INTERVIEW', label:'Interview done', timelineLabel:'Interview', field:'interview' },
+  { stage:'OFFER LETTER', label:'Offer letter received', timelineLabel:'Offer Letter', field:'ol' },
+  { stage:'MEDICAL & ATTESTATION', label:'Medical & attestation done', timelineLabel:'Medical & Attestation', field:'medical' },
+  { stage:'WORK PERMIT', label:'Work permit received', timelineLabel:'Work Permit', field:'mol' },
+  { stage:'VISA', label:'Visa stamped', timelineLabel:'Visa', field:'visa' },
+  { stage:'TICKET BOOKED', label:'Ticket booked', timelineLabel:'Ticket Booked', field:null },
+  { stage:'TRAVELLED', label:'Candidate travelled', timelineLabel:'Candidate Travelled', field:'travel' },
+];
 function cleanStageLocal(value) {
   return String(value || '').trim().toUpperCase();
 }
@@ -83,6 +92,25 @@ function resolveProProcessStage(row: any = {}) {
   if (hasMilestone(raw.travel || row.travel)) milestoneStage = 'TRAVELLED';
 
   return (order[stage] ?? 0) >= (order[milestoneStage] ?? 0) ? stage : milestoneStage;
+}
+function buildProMilestones(row: any = {}) {
+  const raw = row.raw || row;
+  const stage = resolveProProcessStage(row);
+  const stageIdx = Math.max(0, PRO_PROFILE_PROCESS.indexOf(stage));
+  return PRO_MILESTONE_DEFS.map((def, index) => {
+    const date = def.field ? (raw[def.field] || row[def.field] || '') : '';
+    const reached = index <= stageIdx;
+    const current = index === stageIdx;
+    return {
+      ...def,
+      index,
+      date,
+      done: reached,
+      current,
+      pending: !reached,
+      status: date ? 'dated' : current ? 'current' : reached ? 'complete' : 'pending',
+    };
+  });
 }
 
 // Functions injected by main.ts after all declarations are hoisted
@@ -454,17 +482,14 @@ export function injectDepsToD5(deps) {
         {label:'Travelled',         done: ['TRAVELLED','REFUND PENDING','REFUND COMPLETE'].includes(s), action:'stage'},
       ];
     }
-    const processStage = resolveProProcessStage(r);
-    const idx = PRO_PROFILE_PROCESS.indexOf(processStage);
-    return [
-      {label:'Interview done',              done: !!r.raw?.interview || idx >= PRO_PROFILE_PROCESS.indexOf('INTERVIEW'), action:'stage'},
-      {label:'Offer letter received',       done: !!r.raw?.ol || idx >= PRO_PROFILE_PROCESS.indexOf('OFFER LETTER'), action:'stage'},
-      {label:'Medical & attestation done',  done: !!r.raw?.medical || idx >= PRO_PROFILE_PROCESS.indexOf('MEDICAL & ATTESTATION'), action:'stage'},
-      {label:'Work permit received',        done: !!r.raw?.mol || idx >= PRO_PROFILE_PROCESS.indexOf('WORK PERMIT'), action:'stage'},
-      {label:'Visa stamped',                done: !!r.raw?.visa || idx >= PRO_PROFILE_PROCESS.indexOf('VISA'), action:'stage'},
-      {label:'Ticket booked',               done: idx >= PRO_PROFILE_PROCESS.indexOf('TICKET BOOKED'), action:'stage'},
-      {label:'Candidate travelled',         done: !!r.travel || idx >= PRO_PROFILE_PROCESS.indexOf('TRAVELLED'), action:'stage'},
-    ];
+    return buildProMilestones(r).map(m => ({
+      label: m.label,
+      done: m.done,
+      action: 'stage',
+      stage: m.stage,
+      current: m.current,
+      date: m.date,
+    }));
   }
   function checklistPct(r) {
     const s = r.type === 'pro' ? resolveProProcessStage(r) : String(r.pipelineStage || r.stage || '').toUpperCase();
@@ -2486,27 +2511,26 @@ export function injectDepsToD5(deps) {
             <span class="dv5-card-sub">${h(r.company||r.country||'—')}</span>
           </div>
           ${(() => {
-            const milestones = type === 'pro'
-              ? [
-                  { key:'INTERVIEW', label:'Interview', date:r.raw?.interview || r.interview },
-                  { key:'OFFER LETTER', label:'Offer Letter', date:r.raw?.ol || r.ol },
-                  { key:'MEDICAL & ATTESTATION', label:'Medical & Attestation', date:r.raw?.medical || r.medical },
-                  { key:'WORK PERMIT', label:'Work Permit', date:r.raw?.mol || r.mol },
-                  { key:'VISA', label:'Visa', date:r.raw?.visa || r.visa },
-                  { key:'TICKET BOOKED', label:'Ticket Booked', date:null },
-                  { key:'TRAVELLED', label:'Candidate Travelled', date:r.travel || r.raw?.travel },
-                ]
+            const milestones: any[] = type === 'pro'
+              ? buildProMilestones(r).map(m => ({
+                  key:m.stage,
+                  label:m.timelineLabel,
+                  date:m.date,
+                  done:m.done,
+                  active:m.current,
+                  status:m.status,
+                }))
               : [
                   { key:'SUBMITTED', label:'Submitted', date:r.submitted || r.raw?.submitted_date || r.raw?.submitted },
                   { key:'TRAVELLED', label:'Travel', date:r.travel || r.raw?.travel },
                 ];
-            const currentIdx = type === 'pro'
-              ? Math.max(0, PRO_PROFILE_PROCESS.indexOf(resolveProProcessStage(r)))
+            const currentIdx: number = type === 'pro'
+              ? Math.max(0, milestones.findIndex(m => m.active))
               : milestones.reduce((acc,m,i)=>m.date?i:acc, -1);
             return `<div style="display:flex;flex-direction:column;gap:0;padding:4px 0">
               ${milestones.map((m,i) => {
-                const isDone = type === 'pro' ? i <= currentIdx : !!m.date;
-                const isActive = type === 'pro' ? i === currentIdx : (!isDone && i === currentIdx+1);
+                const isDone = type === 'pro' ? !!m.done : !!m.date;
+                const isActive = type === 'pro' ? !!m.active : (!isDone && i === currentIdx+1);
                 const dot = isDone
                   ? `<div style="width:28px;height:28px;border-radius:50%;background:#C9F035;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1"><i class="ti ti-check" style="font-size:14px;color:#1A1C2E"></i></div>`
                   : isActive
@@ -2520,7 +2544,7 @@ export function injectDepsToD5(deps) {
                     ${dot}
                     <div style="flex:1;min-width:0">
                       <div style="font-size:12px;font-weight:500;color:${isDone?'#1A1C2E':isActive?'#5A3EAD':'#9A96B0'}">${h(m.label)}</div>
-                      <div style="font-size:11px;color:${isDone?'#6A8018':isActive?'#7B65CC':'#B0AAC0'};margin-top:1px">${m.date?h(fmt(m.date)):(isDone?'Completed':isActive?'In Progress':'Pending')}</div>
+                       <div style="font-size:11px;color:${isDone?'#6A8018':isActive?'#7B65CC':'#B0AAC0'};margin-top:1px">${m.date?h(fmt(m.date)):(isActive?'Current stage':isDone?'Completed':'Pending')}</div>
                     </div>
                   </div>
                   ${connector}
@@ -2580,15 +2604,9 @@ export function injectDepsToD5(deps) {
   }
 
   // Map checklist label → {field to set today, stage to advance to}
-  const PRO_CHECKLIST_MAP = {
-    'Interview done':             { field:'interview', stage:'INTERVIEW' },
-    'Offer letter received':      { field:'ol',        stage:'OFFER LETTER' },
-    'Medical & attestation done': { field:'medical',   stage:'MEDICAL & ATTESTATION' },
-    'Work permit received':       { field:'mol',       stage:'WORK PERMIT' },
-    'Visa stamped':               { field:'visa',      stage:'VISA' },
-    'Ticket booked':              { field:null,        stage:'TICKET BOOKED' },
-    'Candidate travelled':        { field:'travel',    stage:'TRAVELLED' },
-  };
+  const PRO_CHECKLIST_MAP = Object.fromEntries(
+    PRO_MILESTONE_DEFS.map(m => [m.label, { field:m.field, stage:m.stage }])
+  );
   const LB_CHECKLIST_STAGE_MAP = {
     'Profile Sent':    'PROFILE SENT',
     'Selected':        'SELECTED',
@@ -2602,6 +2620,7 @@ export function injectDepsToD5(deps) {
     const db = type === 'pro' ? proDB : lbDB;
     const rec = db.find(r => String(r.id) === String(id));
     if (!rec) return;
+    const before = { ...rec };
 
     let updates: any = {};
 
@@ -2616,7 +2635,9 @@ export function injectDepsToD5(deps) {
       const newStage = LB_CHECKLIST_STAGE_MAP[label];
       if (newStage) {
         updates.stage = newStage;
+        updates.travelStatus = newStage;
         rec.stage = newStage;
+        rec.travelStatus = newStage;
         if (newStage === 'TRAVELLED') { updates.travelDate = today; rec.travelDate = today; }
       } else {
         // doc tick
@@ -2629,14 +2650,22 @@ export function injectDepsToD5(deps) {
 
     // Optimistic UI update
     openCandidateProfile(type, id);
-    showToast(`✓ ${label}`, 'success');
 
     // Save to Supabase
     try {
       const table = type === 'pro' ? 'pro_candidates' : 'lb_candidates';
-      await dbUpdate(table, id, updates);
+      if (typeof useCloud === 'function' && useCloud() && typeof dbUpdate === 'function') {
+        await dbUpdate(table, id, updates);
+      } else if (typeof saveLocalStore === 'function') {
+        saveLocalStore();
+      }
       addTimeline(type, id, `Checked: ${label}`);
+      if (typeof saveTimeline === 'function') await saveTimeline(`${type}_${id}`);
+      showToast(`Checked: ${label}`, 'success');
     } catch(e) {
+      Object.assign(rec, before);
+      openCandidateProfile(type, id);
+      showToast('Checklist update failed. Please try again.', 'error');
       console.warn('checklistTick save error', e);
     }
 
@@ -2648,6 +2677,7 @@ export function injectDepsToD5(deps) {
     const db = type === 'pro' ? proDB : lbDB;
     const rec = db.find(r => String(r.id) === String(id));
     if (!rec) return;
+    const before = { ...rec };
 
     // LB doc ticks (localStorage only)
     const tickKey = `lb_${id}_${label}`;
@@ -2667,12 +2697,23 @@ export function injectDepsToD5(deps) {
       const prevStage = idx > 0 ? proStageList[idx - 1] : proStageList[0];
       if (map.field) rec[map.field] = null;
       rec.stage = prevStage;
-      showToast(`Reverted: ${label}`, 'info');
       openCandidateProfile(type, id);
       try {
-        await dbUpdate('pro_candidates', id, map.field ? { [map.field]: null, stage: prevStage } : { stage: prevStage });
+        const updates = map.field ? { [map.field]: null, stage: prevStage } : { stage: prevStage };
+        if (typeof useCloud === 'function' && useCloud() && typeof dbUpdate === 'function') {
+          await dbUpdate('pro_candidates', id, updates);
+        } else if (typeof saveLocalStore === 'function') {
+          saveLocalStore();
+        }
         addTimeline(type, id, `Reverted: ${label}`);
-      } catch(e) { console.warn('checklistUntick error', e); }
+        if (typeof saveTimeline === 'function') await saveTimeline(`${type}_${id}`);
+        showToast(`Reverted: ${label}`, 'info');
+      } catch(e) {
+        Object.assign(rec, before);
+        openCandidateProfile(type, id);
+        showToast('Checklist revert failed. Please try again.', 'error');
+        console.warn('checklistUntick error', e);
+      }
     } else {
       const targetStage = LB_CHECKLIST_STAGE_MAP[label];
       if (!targetStage) return;
@@ -2680,12 +2721,24 @@ export function injectDepsToD5(deps) {
       const idx = lbStageList.indexOf(targetStage);
       const prevStage = idx > 0 ? lbStageList[idx - 1] : lbStageList[0];
       rec.stage = prevStage;
-      showToast(`Reverted: ${label}`, 'info');
+      rec.travelStatus = prevStage;
       openCandidateProfile(type, id);
       try {
-        await dbUpdate('lb_candidates', id, { stage: prevStage });
+        const updates: any = { stage: prevStage, travelStatus: prevStage };
+        if (typeof useCloud === 'function' && useCloud() && typeof dbUpdate === 'function') {
+          await dbUpdate('lb_candidates', id, updates);
+        } else if (typeof saveLocalStore === 'function') {
+          saveLocalStore();
+        }
         addTimeline(type, id, `Reverted: ${label}`);
-      } catch(e) { console.warn('checklistUntick error', e); }
+        if (typeof saveTimeline === 'function') await saveTimeline(`${type}_${id}`);
+        showToast(`Reverted: ${label}`, 'info');
+      } catch(e) {
+        Object.assign(rec, before);
+        openCandidateProfile(type, id);
+        showToast('Checklist revert failed. Please try again.', 'error');
+        console.warn('checklistUntick error', e);
+      }
     }
     rerenderPage();
   };
