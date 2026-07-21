@@ -1,7 +1,7 @@
 {
   "name": "Dreco",
   "short_name": "Dreco",
-  "description": "Recruitment management platform",
+  "description": "Recruitment agency workspace for candidate records, documents, payments, visa workflows, travel, and team activity.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1F2133",
