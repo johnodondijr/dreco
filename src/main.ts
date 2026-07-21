@@ -78,7 +78,7 @@ function cleanupLegacyDestinyUsers() {
     const account = STAFF_ACCOUNTS[username];
     const isDefaultCompany = account && (account.companyId || DEFAULT_COMPANY.id) === DEFAULT_COMPANY.id;
     const isBlockedAdminAlias = BLOCKED_ADMIN_ALIASES.includes(username);
-    if (isDefaultCompany && (username !== DEFAULT_ADMIN_USERNAME || isBlockedAdminAlias)) delete STAFF_ACCOUNTS[username];
+    if (isDefaultCompany && (RETIRED_USERNAMES.includes(username) || isBlockedAdminAlias)) delete STAFF_ACCOUNTS[username];
   });
   if (STAFF_ACCOUNTS[DEFAULT_ADMIN_USERNAME]) {
     STAFF_ACCOUNTS[DEFAULT_ADMIN_USERNAME] = normalizeAccount(DEFAULT_ADMIN_USERNAME, {

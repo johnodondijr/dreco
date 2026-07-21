@@ -62,6 +62,13 @@ if (!has(dv5, /confirm\(`Delete \$\{rows\.length\} selected candidate/)) {
   pass('bulk delete confirmation remains in place');
 }
 
+if (has(main, /username !== DEFAULT_ADMIN_USERNAME/) ||
+    !has(main, /RETIRED_USERNAMES\.includes\(username\) \|\| isBlockedAdminAlias/)) {
+  fail('Staff cleanup must not delete normal team users in the default workspace.');
+} else {
+  pass('staff cleanup preserves normal team users');
+}
+
 if (!has(dv5, /for \(const r of rows\) \{[\s\S]*?dbDelete[\s\S]*?\}[\s\S]*?setProDB\(proDB\.filter/) ||
     !has(dv5, /for \(const r of rows\) \{[\s\S]*?dbDelete[\s\S]*?\}[\s\S]*?setLbDB\(lbDB\.filter/)) {
   fail('Bulk delete should remove rows from the UI only after artifact/cloud deletion completes.');
