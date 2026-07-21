@@ -457,6 +457,17 @@
     .commission-status-card{background:var(--surface-3);border-radius:12px;padding:14px 16px;margin-bottom:4px;border:1px solid var(--border)}
     .cs-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12.5px;color:var(--text-2)}
     .cs-row strong{font-weight:500;color:var(--text)}
+    .commission-installments-card{background:var(--surface-3);border-radius:12px;padding:14px 16px;margin-top:12px;border:1px solid var(--border)}
+    .commission-installments-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+    .commission-installments-head strong{font-size:12px;color:var(--text);font-weight:625}
+    .commission-installments-head small{display:block;color:var(--text-3);font-size:11px;margin-top:2px}
+    .commission-installment-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--border);font-size:12px}
+    .commission-installment-row:first-of-type{border-top:0}
+    .commission-installment-index{width:26px;height:26px;border-radius:9px;background:var(--accent-light,#F3FCCB);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:625;color:var(--ink)}
+    .commission-installment-meta strong{display:block;font-size:12px;color:var(--text);font-weight:562}
+    .commission-installment-meta span{display:block;font-size:11px;color:var(--text-3);margin-top:2px}
+    .commission-installment-amount{font-size:12px;font-weight:625;color:#16a34a;white-space:nowrap}
+    .commission-installments-empty{font-size:12px;color:var(--text-3);padding:8px 0;border-top:1px solid var(--border)}
 
     /* Modal */
     .modal-bg{display:none;position:fixed;inset:0;background:rgba(24,25,27,.45);backdrop-filter:blur(6px);z-index:200;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto}
@@ -8526,10 +8537,9 @@ html body #app .integrity-row.medium{
         <div id="pro-commission-status"></div>
         <div class="form-grid" style="margin-top:12px">
           <div class="field form-full"><label for="pf-comm">Total Commission (KES)</label><input type="number" id="pf-comm" placeholder="e.g. 130000"></div>
-          <div class="field"><label for="pf-paid1">Paid at Offer Letter (KES)</label><input type="number" id="pf-paid1" placeholder="e.g. 65000"></div>
-          <div class="field"><label for="pf-paid2">Paid at Visa (KES)</label><input type="number" id="pf-paid2" placeholder="e.g. 65000"></div>
           <input type="hidden" id="pf-paid">
         </div>
+        <div id="pro-installments-section"></div>
         <div id="pro-pl-section"></div>
       </div>
       <div id="pro-tab-timeline" style="display:none">

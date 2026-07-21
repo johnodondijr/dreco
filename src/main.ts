@@ -2154,6 +2154,53 @@ function renderCommissionStatus(r) {
 }
 
 // ── Per-Candidate P&L ─────────────────────────────────────────────────────────
+function renderCandidateCommissionInstallments(r) {
+  const el = document.getElementById('pro-installments-section'); if (!el) return;
+  if (!r?.id) {
+    el.innerHTML = `<div class="commission-installments-card">
+      <div class="commission-installments-head">
+        <div><strong>Commission installments</strong><small>Save the candidate first, then record payments here.</small></div>
+      </div>
+      <div class="commission-installments-empty">No candidate selected.</div>
+    </div>`;
+    return;
+  }
+  const payments = Array.isArray(r.commissionPayments) ? r.commissionPayments : [];
+  const paid = proPaidAmount(r);
+  const outstanding = proBalance(r);
+  el.innerHTML = `<div class="commission-installments-card">
+    <div class="commission-installments-head">
+      <div>
+        <strong>Commission installments</strong>
+        <small>${moneyKES(paid)} received · ${moneyKES(outstanding)} outstanding</small>
+      </div>
+      <button class="dv5-action-btn" data-action="installment.add" data-id="${r.id}"><i class="ti ti-plus"></i>Add installment</button>
+    </div>
+    ${payments.length ? payments.map((p,i)=>`
+      <div class="commission-installment-row">
+        <span class="commission-installment-index">${i + 1}</span>
+        <span class="commission-installment-meta">
+          <strong>${escHTML(i === 0 ? 'First installment' : i === 1 ? 'Second installment' : `Installment ${i + 1}`)}</strong>
+          <span>${p.date ? `Paid ${escHTML(fmtDate(String(p.date).slice(0,10)))}` : 'Payment date not set'}</span>
+        </span>
+        <strong class="commission-installment-amount">${moneyKES(p.amount)}</strong>
+        <button class="dv5-action-btn" data-action="installment.view" data-id="${r.id}" data-idx="${i}"><i class="ti ti-pencil"></i>Edit</button>
+      </div>`).join('') : '<div class="commission-installments-empty">No installments recorded yet.</div>'}
+  </div>`;
+}
+
+function refreshOpenProCommissionTab() {
+  if (!editingProId) return;
+  const modal = document.getElementById('pro-modal');
+  const tab = document.getElementById('pro-tab-commission');
+  if (!modal?.classList.contains('open') || !tab || tab.style.display === 'none') return;
+  const r = proDB.find(x=>x.id==editingProId);
+  if (!r) return;
+  renderCommissionStatus(r);
+  renderCandidateCommissionInstallments(r);
+  renderCandidatePL('pro', editingProId);
+}
+
 function getCandidateExpenses(type, id) {
   return Array.isArray(allDocs[`expenses_${type}_${id}`]) ? allDocs[`expenses_${type}_${id}`] : [];
 }
@@ -3123,7 +3170,7 @@ function switchModalTab(modal,tab,btn){
   }
   if (tab==='commission' && modal==='pro' && editingProId) {
     const r = proDB.find(x=>x.id==editingProId);
-    if(r) { renderCommissionStatus(r); renderCandidatePL('pro', editingProId); }
+    if(r) { renderCommissionStatus(r); renderCandidateCommissionInstallments(r); renderCandidatePL('pro', editingProId); }
   }
 }
 function closeModal(id){ const el=document.getElementById(id); if(el) el.classList.remove('open'); }
@@ -3210,6 +3257,7 @@ function renderLBSummary(r){
   </div>`;
 }
 function readProFormSummary(){
+  const existing = editingProId ? proDB.find(x=>x.id==editingProId) : null;
   return {
     name:document.getElementById('pf-name')?.value||'New professional candidate',
     pp:document.getElementById('pf-pp')?.value||'',
@@ -3217,7 +3265,7 @@ function readProFormSummary(){
     company:document.getElementById('pf-company')?.value||'',
     stage:document.getElementById('pf-stage')?.value||proStages[0],
     commission:Number(document.getElementById('pf-comm')?.value)||0,
-    paid:(Number(document.getElementById('pf-paid1')?.value)||0)+(Number(document.getElementById('pf-paid2')?.value)||0),
+    paid:existing ? proPaidAmount(existing) : 0,
   };
 }
 function readLBFormSummary(){
@@ -3232,7 +3280,7 @@ function readLBFormSummary(){
   };
 }
 function bindModalSummaries(){
-  ['pf-name','pf-pp','pf-position','pf-company','pf-stage','pf-comm','pf-paid1','pf-paid2'].forEach(id=>{
+  ['pf-name','pf-pp','pf-position','pf-company','pf-stage','pf-comm'].forEach(id=>{
     const el=document.getElementById(id); if(el){ el.addEventListener('input',()=>renderProSummary(readProFormSummary())); el.addEventListener('change',()=>renderProSummary(readProFormSummary())); }
   });
   ['lf-name','lf-phone','lf-pp','lf-stage','lf-travel','lf-torefund','lf-r1amt','lf-r2amt'].forEach(id=>{
@@ -3540,6 +3588,7 @@ function _afterCommissionChange() {
   renderCommissions();
   window.renderDash?.();
   window.renderFinancePage?.();
+  refreshOpenProCommissionTab();
 }
 // Append a commission installment to the array and return the fields to persist.
 function applyProPayment(r, amount, date) {
@@ -3676,19 +3725,16 @@ async function submitAddPayment() {
   const alreadyPaid = proPaidAmount(r);
   const outstanding = Math.max(commission - alreadyPaid, 0);
   if (commission > 0 && amount > outstanding) return fail(`Amount exceeds outstanding balance of ${moneyKES(outstanding)}.`);
-  const snapshot = { paid1:r.paid1, paid1_date:r.paid1_date, paid2:r.paid2, paid2_date:r.paid2_date, paid:r.paid };
+  const snapshot = _proCommSnapshot(r);
   const updates = applyProPayment(r, amount, date);
   try {
     if (useCloud()) await persistProPaymentUpdate(id, updates);
     else saveLocalStore();
     addTimeline('pro', id, `Payment received: ${moneyKES(amount)} on ${date}`);
     auditAction('Finance', 'Commission payment received', `${r.name} — ${moneyKES(amount)}`);
-  } catch(e) { Object.assign(r, snapshot); return fail(e.message || 'Save failed.'); }
+  } catch(e) { _restoreProComm(r, snapshot); return fail(e.message || 'Save failed.'); }
   closeModal('ap-modal');
-  renderCommissions();
-  window.renderDash?.();
-  window.renderFinancePage?.();
-  window.renderPaymentsPage?.();
+  _afterCommissionChange();
   showToast(`${moneyKES(amount)} recorded`, 'success');
 }
 async function markCommissionCleared(id) {
@@ -3696,7 +3742,7 @@ async function markCommissionCleared(id) {
   const commission = Number(r.commission) || 0;
   if (!commission) { showToast('No commission amount set on this candidate.', 'error'); return; }
   if (!confirm(`Mark ${r.name} as fully paid (${moneyKES(commission)})?`)) return;
-  const snapshot = { paid1:r.paid1, paid1_date:r.paid1_date, paid2:r.paid2, paid2_date:r.paid2_date, paid:r.paid };
+  const snapshot = _proCommSnapshot(r);
   const today = new Date().toISOString().slice(0, 10);
   const outstanding = Math.max(commission - proPaidAmount(r), 0);
   // Record the cleared balance as a dated payment so it appears in Latest
@@ -3708,11 +3754,8 @@ async function markCommissionCleared(id) {
     else saveLocalStore();
     addTimeline('pro', id, `Commission cleared: ${moneyKES(commission)}`);
     auditAction('Finance', 'Commission marked cleared', `${r.name} — ${moneyKES(commission)}`);
-  } catch(e) { Object.assign(r, snapshot); showToast(e.message || 'Save failed.', 'error'); return; }
-  renderCommissions();
-  window.renderDash?.();
-  window.renderFinancePage?.();
-  window.renderPaymentsPage?.();
+  } catch(e) { _restoreProComm(r, snapshot); showToast(e.message || 'Save failed.', 'error'); return; }
+  _afterCommissionChange();
   showToast(`${r.name} marked as cleared`, 'success');
 }
 function renderRepayments(){
@@ -4128,16 +4171,20 @@ async function submitRecordPayment(){
     const commission=Number(r.commission)||0;
     const alreadyPaid=proPaidAmount(r);
     if(commission>0 && amount>(commission-alreadyPaid)) return fail(`Amount exceeds outstanding balance of ${moneyKES(commission-alreadyPaid)}.`);
-    const snapshot={ paid1:r.paid1, paid1_date:r.paid1_date, paid2:r.paid2, paid2_date:r.paid2_date, paid:r.paid };
+    const snapshot=_proCommSnapshot(r);
     const updates=applyProPayment(r, amount, date);
     try{ if(useCloud()) await persistProPaymentUpdate(id,updates); else saveLocalStore(); addTimeline('pro',id,`Commission payment: ${moneyKES(amount)}`); auditAction('Finance','Commission payment recorded',`${r.name} - ${moneyKES(amount)}`); }
-    catch(e){ Object.assign(r, snapshot); return fail(e.message||'Save failed.'); }
+    catch(e){ _restoreProComm(r, snapshot); return fail(e.message||'Save failed.'); }
   }
   closeModal('quick-payment-modal');
-  if(type==='repayment') renderRepayments(); else renderCommissions();
-  window.renderDash?.();
-  window.renderFinancePage?.();
-  window.renderPaymentsPage?.();
+  if(type==='repayment') {
+    renderRepayments();
+    window.renderDash?.();
+    window.renderFinancePage?.();
+    window.renderPaymentsPage?.();
+  } else {
+    _afterCommissionChange();
+  }
   showToast('Payment recorded','success');
 }
 // ── Balance card quick payment ──────────────────────────────────────────────
@@ -4198,17 +4245,21 @@ async function submitBalancePayment(){
     } else {
       const r=proDB.find(x=>x.id===id||String(x.id)===String(id));
       if(!r) return fail('Candidate not found.');
-      const snapshot={ paid1:r.paid1, paid1_date:r.paid1_date, paid2:r.paid2, paid2_date:r.paid2_date, paid:r.paid };
+      const snapshot=_proCommSnapshot(r);
       const updates=applyProPayment(r, amount, date);
       try{ if(useCloud()) await persistProPaymentUpdate(id,updates); else saveLocalStore(); addTimeline('pro',id,`Commission payment: ${moneyKES(amount)}`); auditAction('Finance','Commission payment recorded',`${r.name} - ${moneyKES(amount)}`); }
-      catch(e){ Object.assign(r, snapshot); return fail(e.message||'Save failed.'); }
+      catch(e){ _restoreProComm(r, snapshot); return fail(e.message||'Save failed.'); }
     }
     closeModal('balance-pay-modal');
     window.openCandidateProfile?.(type, id);
-    if(type==='lb') renderRepayments(); else renderCommissions();
-    window.renderDash?.();
-    window.renderFinancePage?.();
-    window.renderPaymentsPage?.();
+    if(type==='lb') {
+      renderRepayments();
+      window.renderDash?.();
+      window.renderFinancePage?.();
+      window.renderPaymentsPage?.();
+    } else {
+      _afterCommissionChange();
+    }
     showToast('Payment recorded','success');
   } finally {
     release();
@@ -4436,10 +4487,13 @@ function renderPro(){
 function openProForm(){
   editingProId=null;
   document.getElementById('pro-modal-title').textContent='Add professional candidate';
-  ['pf-name','pf-pp','pf-phone','pf-position','pf-company','pf-country','pf-submitted','pf-interview','pf-ol','pf-medical','pf-mol','pf-visa','pf-travel','pf-comm','pf-paid','pf-paid1','pf-paid2']
+  ['pf-name','pf-pp','pf-phone','pf-position','pf-company','pf-country','pf-submitted','pf-interview','pf-ol','pf-medical','pf-mol','pf-visa','pf-travel','pf-comm','pf-paid']
     .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   const stEl=document.getElementById('pf-stage'); if(stEl){ stEl.value=proStages[0]||'SUBMITTED'; stEl.dataset.prev=stEl.value; }
   renderProSummary(null);
+  const instEl = document.getElementById('pro-installments-section'); if (instEl) instEl.innerHTML = '';
+  const statusEl = document.getElementById('pro-commission-status'); if (statusEl) statusEl.innerHTML = '';
+  const plEl = document.getElementById('pro-pl-section'); if (plEl) plEl.innerHTML = '';
   document.getElementById('pro-form-timeline').innerHTML='<div class="tl-empty">Save candidate first to see timeline.</div>';
   document.getElementById('pro-tab-details').style.display='';
   ['pipeline','commission','timeline','docs'].forEach(t=>{ const el=document.getElementById(`pro-tab-${t}`); if(el) el.style.display='none'; });
@@ -4455,12 +4509,7 @@ function editPro(id){
   document.getElementById('pf-company').value=r.company||''; document.getElementById('pf-country').value=r.country||'';
   const stEl=document.getElementById('pf-stage'); if(stEl){ stEl.value=r.stage; stEl.dataset.prev=r.stage; }
   document.getElementById('pf-comm').value=r.commission||'';
-  // Split paid: use paid1/paid2 if present, else treat old r.paid as paid1
-  const p1=r.paid1!=null?r.paid1:(r.paid!=null&&r.paid2==null?r.paid:0);
-  const p2=r.paid2!=null?r.paid2:0;
-  const pfp1=document.getElementById('pf-paid1'); if(pfp1) pfp1.value=p1||'';
-  const pfp2=document.getElementById('pf-paid2'); if(pfp2) pfp2.value=p2||'';
-  const pfp=document.getElementById('pf-paid'); if(pfp) pfp.value=(Number(p1)||0)+(Number(p2)||0)||'';
+  const pfp=document.getElementById('pf-paid'); if(pfp) pfp.value=proPaidAmount(r)||'';
   document.getElementById('pf-submitted').value=toInput(r.submitted); document.getElementById('pf-interview').value=toInput(r.interview);
   document.getElementById('pf-ol').value=toInput(r.ol);
   const pfMed=document.getElementById('pf-medical'); if(pfMed) pfMed.value=toInput(r.medical);
@@ -4468,6 +4517,7 @@ function editPro(id){
   document.getElementById('pf-visa').value=toInput(r.visa); document.getElementById('pf-travel').value=toInput(r.travel);
   const pfFollowup=document.getElementById('pf-followup'); if(pfFollowup) pfFollowup.value=toInput(r.followUp||r.follow_up);
   renderProSummary(r);
+  renderCandidateCommissionInstallments(r);
   document.getElementById('pro-form-timeline').innerHTML=renderTimelineHTML('pro',id);
   document.getElementById('pro-tab-details').style.display='';
   ['pipeline','commission','timeline','docs'].forEach(t=>{ const el=document.getElementById(`pro-tab-${t}`); if(el) el.style.display='none'; });
@@ -4492,25 +4542,9 @@ async function savePro(){
     travel:document.getElementById('pf-travel').value||null,
     followUp:document.getElementById('pf-followup')?.value||null,
     commission:document.getElementById('pf-comm').value?Number(document.getElementById('pf-comm').value):null,
-    paid1:document.getElementById('pf-paid1')?.value?Number(document.getElementById('pf-paid1').value):null,
-    paid2:document.getElementById('pf-paid2')?.value?Number(document.getElementById('pf-paid2').value):null,
-    paid:(Number(document.getElementById('pf-paid1')?.value)||0)+(Number(document.getElementById('pf-paid2')?.value)||0)||null,
+    commissionPayments:Array.isArray(oldRec?.commissionPayments) ? JSON.parse(JSON.stringify(oldRec.commissionPayments)) : [],
   };
-  // Stamp a payment date so amounts entered/changed here surface in Latest
-  // Transactions by when they were recorded; keep the existing date when the
-  // amount is unchanged.
-  const _today=new Date().toISOString().slice(0,10);
-  rec.paid1_date = rec.paid1!=null ? ((oldRec && Number(oldRec.paid1)===rec.paid1 && oldRec.paid1_date) || _today) : null;
-  rec.paid2_date = rec.paid2!=null ? ((oldRec && Number(oldRec.paid2)===rec.paid2 && oldRec.paid2_date) || _today) : null;
-  // Rebuild the installment ledger from the two profile slots, preserving any
-  // 3rd+ installments recorded on the Payments tab. The Payments tab is the
-  // place to manage many installments; the profile keeps the simple 2-slot edit.
-  const _extraInst = (Array.isArray(oldRec?.commissionPayments) ? oldRec.commissionPayments : []).slice(2);
-  const _cp = [];
-  if (rec.paid1 != null && Number(rec.paid1) > 0) _cp.push({ amount: Number(rec.paid1), date: rec.paid1_date || '' });
-  if (rec.paid2 != null && Number(rec.paid2) > 0) _cp.push({ amount: Number(rec.paid2), date: rec.paid2_date || '' });
-  rec.commissionPayments = _cp.concat(_extraInst);
-  rec.paid = rec.commissionPayments.reduce((s,p)=>s+(Number(p.amount)||0),0) || null;
+  syncCommissionMirrors(rec);
   const validationError=validateProRecord(rec);
   if(validationError){ showToast(validationError,'error'); return; }
   if(editingProId){
