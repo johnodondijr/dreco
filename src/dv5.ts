@@ -179,6 +179,69 @@ export function injectDepsToD5(deps) {
       if (el && el.style.display !== 'none' && typeof fn === 'function') { fn(); break; }
     }
   }
+
+  function motionAllowed() {
+    return !window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  function animateCountElement(el: Element) {
+    const node = el as HTMLElement;
+    if (!motionAllowed() || node.dataset.dv5Counted === '1') return;
+    const original = (node.textContent || '').trim();
+    const match = original.match(/-?\d[\d,]*(?:\.\d+)?/);
+    if (!match) return;
+    const end = Number(match[0].replace(/,/g, ''));
+    if (!Number.isFinite(end)) return;
+
+    node.dataset.dv5Counted = '1';
+    node.classList.add('dv5-counting');
+    const prefix = original.slice(0, match.index || 0);
+    const suffix = original.slice((match.index || 0) + match[0].length);
+    const decimalPart = match[0].split('.')[1] || '';
+    const decimals = decimalPart.length;
+    const useGrouping = match[0].includes(',') || Math.abs(end) >= 1000;
+    const duration = Math.min(1100, Math.max(520, 520 + Math.log10(Math.abs(end) + 1) * 170));
+    const startTime = performance.now();
+
+    const format = (value: number) => value.toLocaleString('en-US', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+      useGrouping
+    });
+
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - startTime) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      node.textContent = prefix + format(end * eased) + suffix;
+      if (t < 1) requestAnimationFrame(tick);
+      else node.textContent = original;
+    };
+    node.textContent = prefix + format(0) + suffix;
+    requestAnimationFrame(tick);
+  }
+
+  function queuePageMotion(root: ParentNode = document) {
+    if (!motionAllowed()) return;
+    requestAnimationFrame(() => {
+      const page = (root as Element).querySelector?.('.dv5-page') || (root as any);
+      if (page?.classList) {
+        page.classList.remove('dv5-enter');
+        void (page as HTMLElement).offsetWidth;
+        page.classList.add('dv5-enter');
+      }
+      const selectors = [
+        '.dv5-stat-val',
+        '.dv5-kpi-val',
+        '.dv5-priority strong',
+        '.dv5-flow-step strong',
+        '.dv5-gauge-score strong',
+        '.dv5-status-summary strong',
+        '.dv5-ring-stat strong'
+      ].join(',');
+      (root as ParentNode).querySelectorAll?.(selectors).forEach(animateCountElement);
+    });
+  }
+  (window as any).drecoQueuePageMotion = queuePageMotion;
   window.setJobTypeTab = v => { jobTypeTab = v; candidateStageFilter = ''; lbCountryFilter = ''; rerenderPage(); };
   window.setLbCountry  = v => { lbCountryFilter = v; rerenderPage(); };
 
@@ -659,9 +722,9 @@ export function injectDepsToD5(deps) {
       const ix2=CX+RI*Math.cos(a1),iy2=CY+RI*Math.sin(a1);
       const large=sweep>Math.PI?1:0;
       const color=colorMap[s]||fallback[i%fallback.length];
-      if(entries.length===1) return `<circle cx="${CX}" cy="${CY}" r="${R}" fill="${color}"/><circle cx="${CX}" cy="${CY}" r="${RI}" fill="#fff"/>`;
+      if(entries.length===1) return `<circle class="dv5-donut-slice" cx="${CX}" cy="${CY}" r="${R}" fill="${color}"/><circle cx="${CX}" cy="${CY}" r="${RI}" fill="#fff"/>`;
       const d=`M${ox1.toFixed(1)},${oy1.toFixed(1)} A${R},${R} 0 ${large},1 ${ox2.toFixed(1)},${oy2.toFixed(1)} L${ix2.toFixed(1)},${iy2.toFixed(1)} A${RI},${RI} 0 ${large},0 ${ix1.toFixed(1)},${iy1.toFixed(1)} Z`;
-      return `<path d="${d}" fill="${color}" stroke="#fff" stroke-width="2.5"/>`;
+      return `<path class="dv5-donut-slice" d="${d}" fill="${color}" stroke="#fff" stroke-width="2.5"/>`;
     }).join('');
     const legend = entries.slice(0,7).map(([s,n],i)=>{
       const color=colorMap[s]||fallback[i%fallback.length];
@@ -672,7 +735,7 @@ export function injectDepsToD5(deps) {
         <span style="font-size:10px;color:#999;flex-shrink:0;min-width:26px;text-align:right">${Math.round(n/total*100)}%</span>
       </div>`;
     }).join('');
-    return `<div style="display:flex;align-items:center;gap:16px;padding:4px 0">
+    return `<div class="dv5-stage-donut" style="display:flex;align-items:center;gap:16px;padding:4px 0">
       <svg width="180" height="180" viewBox="0 0 180 180" style="flex-shrink:0;display:block">
         ${paths}
         <text x="${CX}" y="${CY+3}" text-anchor="middle" dominant-baseline="middle" font-size="28" font-weight="700" fill="#1A1C2E" font-family="inherit">${total}</text>
@@ -1626,7 +1689,7 @@ export function injectDepsToD5(deps) {
                 const pct = s.total>0 ? Math.max(Math.round(s.total/chartMax*100),6) : 2;
                 return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:7px;min-width:34px">
                   <div style="font-size:10px;font-weight:600;color:#0D9488;white-space:nowrap">${s.total>0?(isPro?money(s.total):moneyUSD(s.total)):''}</div>
-                  <div title="${s.label}: ${isPro?money(s.total):moneyUSD(s.total)}" style="width:100%;max-width:48px;border-radius:7px 7px 3px 3px;background:${s.total>0?'linear-gradient(180deg,#14B8A6,#0D9488)':'#EEF0F2'};height:${pct}%;min-height:3px;transition:height .3s"></div>
+                  <div class="dv5-animated-bar" title="${s.label}: ${isPro?money(s.total):moneyUSD(s.total)}" style="width:100%;max-width:48px;border-radius:7px 7px 3px 3px;background:${s.total>0?'linear-gradient(180deg,#14B8A6,#0D9488)':'#EEF0F2'};height:${pct}%;min-height:3px;transition:height .3s"></div>
                   <span style="font-size:11px;color:#9ca3af;font-weight:500">${s.label}</span>
                 </div>`;
               }).join('')}
@@ -3641,6 +3704,70 @@ export function injectDepsToD5(deps) {
   border-radius:18px!important;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .dv5-enter { animation:dv5-page-enter .34s cubic-bezier(.2,.8,.2,1) both; }
+  .dv5-enter .dv5-kpi,
+  .dv5-enter .dv5-stat-card,
+  .dv5-enter .dv5-priority,
+  .dv5-enter .dv5-card,
+  .dv5-enter .dv5-file-card,
+  .dv5-enter .dv5-pipe-card { animation:dv5-card-lift .48s cubic-bezier(.2,.8,.2,1) both; }
+  .dv5-enter .dv5-kpi:nth-child(2),
+  .dv5-enter .dv5-stat-card:nth-child(2),
+  .dv5-enter .dv5-priority:nth-child(2) { animation-delay:.04s; }
+  .dv5-enter .dv5-kpi:nth-child(3),
+  .dv5-enter .dv5-stat-card:nth-child(3),
+  .dv5-enter .dv5-priority:nth-child(3) { animation-delay:.08s; }
+  .dv5-enter .dv5-kpi:nth-child(4),
+  .dv5-enter .dv5-stat-card:nth-child(4),
+  .dv5-enter .dv5-priority:nth-child(4) { animation-delay:.12s; }
+  .dv5-enter .dv5-kpi:nth-child(5),
+  .dv5-enter .dv5-stat-card:nth-child(5),
+  .dv5-enter .dv5-priority:nth-child(5) { animation-delay:.16s; }
+  .dv5-card-pipeline { position:relative; overflow:hidden; isolation:isolate; }
+  .dv5-card-pipeline::before {
+    content:'';
+    position:absolute;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background:linear-gradient(105deg,transparent 0%,transparent 32%,rgba(221,245,108,.18) 46%,rgba(83,71,206,.08) 54%,transparent 70%,transparent 100%);
+    transform:translateX(-120%);
+    animation:dv5-pipeline-sweep 5.6s ease-in-out infinite;
+  }
+  .dv5-card-pipeline > * { position:relative; z-index:1; }
+  .dv5-flow-fill,
+  .dv5-file-bar,
+  .dv5-workflow-bar i {
+    transform-origin:left center;
+    animation:dv5-width-reveal .84s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .dv5-flow-arrow i { display:inline-block; animation:dv5-arrow-nudge 1.9s ease-in-out infinite; }
+  .act-bar,
+  .dv5-animated-bar,
+  .dv5-mp-bar { animation:dv5-chart-reveal .84s cubic-bezier(.2,.8,.2,1) both; }
+  .dv5-stage-donut svg { animation:dv5-donut-pop .52s cubic-bezier(.2,.8,.2,1) both; }
+  .dv5-donut-slice {
+    transform-box:fill-box;
+    transform-origin:center;
+    animation:dv5-donut-slice-in .72s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .dv5-counting { font-variant-numeric:tabular-nums; }
+}
+@keyframes dv5-page-enter { from { opacity:.72; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes dv5-card-lift { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes dv5-pipeline-sweep {
+  0%,18% { transform:translateX(-120%); opacity:0; }
+  34% { opacity:1; }
+  62% { opacity:.85; }
+  86%,100% { transform:translateX(120%); opacity:0; }
+}
+@keyframes dv5-width-reveal { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+@keyframes dv5-chart-reveal { from { clip-path:inset(100% 0 0 0); opacity:.55; } to { clip-path:inset(0); opacity:1; } }
+@keyframes dv5-donut-pop { from { opacity:0; transform:scale(.96); } to { opacity:1; transform:scale(1); } }
+@keyframes dv5-donut-slice-in { from { opacity:0; transform:scale(.9) rotate(-6deg); } to { opacity:1; transform:scale(1) rotate(0); } }
+@keyframes dv5-arrow-nudge { 0%,100% { transform:translateX(0); opacity:.55; } 50% { transform:translateX(3px); opacity:1; } }
+
 /* ── Responsive ─────────────────────────────────────────────────────────────
    Breakpoints (match index.html):
      ≥ 1100px  full desktop  — sidebar 224px, 3-col grids, 6-step progress
@@ -4142,10 +4269,17 @@ export function injectDepsToD5(deps) {
     window.switchTab.__mobileWrapped = true;
   }
 
-  ['renderDash','renderCandidates','renderPipeline','renderFinance','renderReports','renderDocuments','renderClients'].forEach(name=>{
+  ['renderDash','renderCandidates','renderPipeline','renderFinance','renderPayments','renderReports','renderDocuments','renderClients','renderJobs'].forEach(name=>{
     const fn=window[name];
     if(typeof fn === 'function' && !fn.__mobileWrapped){
-      window[name]=function(){ const out=fn.apply(this,arguments); setTimeout(tuneMobile,40); return out; };
+      window[name]=function(){
+        const out=fn.apply(this,arguments);
+        const activeSection = document.querySelector('.dv5-section[style*="block"], .dv5-section:not([style*="none"])') || document.getElementById('app') || document.body;
+        const runMotion = (window as any).drecoQueuePageMotion;
+        if (typeof runMotion === 'function') setTimeout(() => runMotion(activeSection as ParentNode), 30);
+        setTimeout(tuneMobile,40);
+        return out;
+      };
       window[name].__mobileWrapped=true;
     }
   });
@@ -4156,6 +4290,8 @@ export function injectDepsToD5(deps) {
   });
   document.addEventListener('DOMContentLoaded',()=>{
     tuneMobile();
+    const runMotion = (window as any).drecoQueuePageMotion;
+    if (typeof runMotion === 'function') setTimeout(() => runMotion(document), 80);
     const app=document.getElementById('app') || document.body;
     mo.observe(app,{childList:true,subtree:true,attributes:true,attributeFilter:['class','style']});
   });
