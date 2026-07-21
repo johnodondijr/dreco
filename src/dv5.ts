@@ -766,6 +766,28 @@ export function injectDepsToD5(deps) {
         area.appendChild(div);
       }
     });
+    if (!document.getElementById('dv5-travel-date-modal')) {
+      const modal = document.createElement('div');
+      modal.id = 'dv5-travel-date-modal';
+      modal.className = 'dv5-modal-overlay';
+      modal.innerHTML = `
+        <div class="dv5-mini-modal" role="dialog" aria-modal="true" aria-labelledby="dv5-travel-date-title">
+          <button class="dv5-mini-close" type="button" data-action="traveldate.close" aria-label="Close"><i class="ti ti-x"></i></button>
+          <div class="dv5-mini-icon"><i class="ti ti-plane-departure"></i></div>
+          <h3 id="dv5-travel-date-title">Record travel date</h3>
+          <p id="dv5-travel-date-name">Candidate</p>
+          <input id="dv5-travel-date-type" type="hidden">
+          <input id="dv5-travel-date-id" type="hidden">
+          <label class="dv5-mini-label" for="dv5-travel-date-input">Date of travel</label>
+          <input id="dv5-travel-date-input" class="dv5-mini-input" type="date">
+          <div id="dv5-travel-date-error" class="dv5-mini-error" style="display:none"></div>
+          <div class="dv5-mini-actions">
+            <button class="dv5-btn" type="button" data-action="traveldate.close">Cancel</button>
+            <button class="dv5-btn primary" type="button" data-action="traveldate.save"><i class="ti ti-check"></i>Save travel date</button>
+          </div>
+        </div>`;
+      document.body.appendChild(modal);
+    }
   }
 
   // ── Sidebar rebuild ───────────────────────────────────────
@@ -1273,31 +1295,80 @@ export function injectDepsToD5(deps) {
     'TRAVELLED':'TRAVELLED',
   };
 
-  async function _applyStageChange(type, id, targetPipelineStage) {
+  function getTravelDateFor(type, rec, extraUpdates: any = {}) {
+    if (type === 'pro') return extraUpdates.travel || rec.travel || rec.raw?.travel || '';
+    return extraUpdates.travelDate || extraUpdates.travel_date || rec.travelDate || rec.travel_date || rec.raw?.travelDate || rec.raw?.travel_date || '';
+  }
+
+  window.closeTravelDatePrompt = function() {
+    document.getElementById('dv5-travel-date-modal')?.classList.remove('open');
+  };
+
+  window.openTravelDatePrompt = function(type, id) {
+    ensureSections();
+    const rec = (type === 'pro' ? proDB : lbDB).find(r => String(r.id) === String(id));
+    if (!rec) return;
+    const modal = document.getElementById('dv5-travel-date-modal');
+    const input: any = document.getElementById('dv5-travel-date-input');
+    const err: any = document.getElementById('dv5-travel-date-error');
+    const name = document.getElementById('dv5-travel-date-name');
+    const typeInput: any = document.getElementById('dv5-travel-date-type');
+    const idInput: any = document.getElementById('dv5-travel-date-id');
+    if (!modal || !input || !typeInput || !idInput) return;
+    typeInput.value = type;
+    idInput.value = String(id);
+    input.value = getTravelDateFor(type, rec) || new Date().toISOString().slice(0,10);
+    if (name) name.textContent = rec.name || 'Candidate';
+    if (err) { err.textContent = ''; err.style.display = 'none'; }
+    modal.classList.add('open');
+    setTimeout(() => input.focus(), 40);
+  };
+
+  window.submitTravelDatePrompt = async function() {
+    const type = (document.getElementById('dv5-travel-date-type') as HTMLInputElement)?.value;
+    const id = (document.getElementById('dv5-travel-date-id') as HTMLInputElement)?.value;
+    const date = (document.getElementById('dv5-travel-date-input') as HTMLInputElement)?.value;
+    const err: any = document.getElementById('dv5-travel-date-error');
+    const fail = msg => { if (err) { err.textContent = msg; err.style.display = 'block'; } else showToast(msg, 'error'); };
+    if (!type || !id) return fail('Candidate not found.');
+    if (!date) return fail('Choose the date of travel.');
+    const extra = type === 'pro' ? { travel: date } : { travelDate: date };
+    const saved = await _applyStageChange(type, id, 'TRAVELLED', extra);
+    if (saved) window.closeTravelDatePrompt();
+  };
+
+  async function _applyStageChange(type, id, targetPipelineStage, extraUpdates: any = {}) {
     const db = type === 'pro' ? proDB : lbDB;
     const rec = db.find(r => r.id == id);
-    if (!rec) return;
+    if (!rec) return false;
     const targetDbStage = type === 'pro' ? (PRO_PIPELINE_TO_DB[targetPipelineStage] || targetPipelineStage) : targetPipelineStage;
-    if (type === 'pro' && targetPipelineStage === 'TRAVELLED' && !rec.travel) {
-      showToast('Set a travel date before marking as Travelled.','error'); return;
-    }
-    if (type === 'lb' && targetPipelineStage === 'TRAVELLED' && !rec.travelDate) {
-      showToast('Set a travel date before marking as Travelled.','error'); return;
+    if (targetPipelineStage === 'TRAVELLED' && !getTravelDateFor(type, rec, extraUpdates)) {
+      window.openTravelDatePrompt(type, id);
+      return false;
     }
     const prevStage = type === 'pro' ? rec.stage : (rec.travelStatus || rec.stage);
-    if (type === 'pro') rec.stage = targetDbStage;
-    else { rec.travelStatus = targetDbStage; rec.stage = targetDbStage; }
+    const before = { ...rec };
+    if (type === 'pro') Object.assign(rec, extraUpdates, { stage: targetDbStage });
+    else { Object.assign(rec, extraUpdates, { travelStatus: targetDbStage, stage: targetDbStage }); }
     renderCandidates();
     window.renderDash?.();
     window.openCandidateProfile?.(type, id);
     try {
       const table = type === 'pro' ? 'pro_candidates' : 'lb_candidates';
-      const updateField = type === 'pro' ? { stage: targetDbStage } : { stage: targetDbStage, travelStatus: targetDbStage };
-      await dbUpdate(table, id, updateField);
+      const updateField = type === 'pro'
+        ? { stage: targetDbStage, ...extraUpdates }
+        : { stage: targetDbStage, travelStatus: targetDbStage, ...extraUpdates };
+      if (typeof useCloud === 'function' && useCloud() && typeof dbUpdate === 'function') {
+        await dbUpdate(table, id, updateField);
+      } else if (typeof saveLocalStore === 'function') {
+        saveLocalStore();
+      }
       addTimeline(type, id, `Stage set to ${targetPipelineStage}`);
       await saveTimeline(`${type}_${id}`);
       showToast(`Moved to ${targetPipelineStage}`, 'success');
+      return true;
     } catch(e) {
+      Object.assign(rec, before);
       if (type === 'pro') rec.stage = prevStage;
       else { rec.travelStatus = prevStage; rec.stage = prevStage; }
       renderCandidates();
@@ -1305,6 +1376,7 @@ export function injectDepsToD5(deps) {
       showToast('Stage change failed — please try again', 'error');
       saveLocalStore?.();
       console.warn('stage save error', e);
+      return false;
     }
   }
 
@@ -2627,6 +2699,10 @@ export function injectDepsToD5(deps) {
     if (type === 'pro') {
       const map = PRO_CHECKLIST_MAP[label];
       if (!map) return;
+      if (map.stage === 'TRAVELLED' && !rec.travel) {
+        window.openTravelDatePrompt(type, id);
+        return;
+      }
       if (map.field) updates[map.field] = today;
       updates.stage = map.stage;
       if (map.field) rec[map.field] = today;
@@ -2634,6 +2710,10 @@ export function injectDepsToD5(deps) {
     } else {
       const newStage = LB_CHECKLIST_STAGE_MAP[label];
       if (newStage) {
+        if (newStage === 'TRAVELLED' && !getTravelDateFor(type, rec)) {
+          window.openTravelDatePrompt(type, id);
+          return;
+        }
         updates.stage = newStage;
         updates.travelStatus = newStage;
         rec.stage = newStage;
@@ -3064,6 +3144,17 @@ export function injectDepsToD5(deps) {
 
 /* Candidate Profile Modal */
 .dv5-modal-overlay { position:fixed; inset:0; background:rgba(15,23,42,.48); z-index:9999; display:none; align-items:flex-start; justify-content:center; padding:28px 16px; overflow-y:auto; }
+.dv5-modal-overlay.open { display:flex; }
+.dv5-mini-modal { width:min(380px,calc(100vw - 32px)); position:relative; background:var(--dreco-surface,#fff); border:1px solid var(--dreco-line,#E4E1D6); border-radius:20px; box-shadow:0 24px 70px rgba(23,23,21,.18); padding:22px; margin:auto; }
+.dv5-mini-close { position:absolute; top:12px; right:12px; width:30px; height:30px; border-radius:999px; border:0; background:#F4F4EC; color:#171715; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.dv5-mini-icon { width:44px; height:44px; border-radius:14px; background:#EDFAA8; color:#171715; display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:14px; }
+.dv5-mini-modal h3 { margin:0; font-size:20px; line-height:1.2; font-weight:625; color:#171715; }
+.dv5-mini-modal p { margin:6px 0 18px; font-size:13px; color:#76746B; font-weight:406; }
+.dv5-mini-label { display:block; font-size:12px; font-weight:562; color:#171715; margin-bottom:7px; }
+.dv5-mini-input { width:100%; box-sizing:border-box; height:42px; border:1px solid var(--dreco-line,#E4E1D6); border-radius:12px; background:#fff; color:#171715; padding:0 12px; font-size:14px; outline:none; }
+.dv5-mini-input:focus { border-color:#252677; box-shadow:0 0 0 3px rgba(37,38,119,.12); }
+.dv5-mini-error { margin-top:9px; font-size:12px; color:#DC2626; background:#FEF2F2; border-radius:10px; padding:8px 10px; }
+.dv5-mini-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:18px; }
 .dv5-profile-panel { width:min(1100px,98vw); background:var(--dreco-surface,#fff); border-radius:20px; border:1px solid var(--dreco-line,#E4E1D6); box-shadow:0 30px 90px rgba(23,23,21,.16); padding:20px; margin:auto; }
 .dv5-profile-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
 .dv5-profile-id { font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:.06em; color:#7B8496; }

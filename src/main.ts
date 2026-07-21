@@ -1600,6 +1600,8 @@ const DRECO_ACTIONS = {
   },
   'account.email.request': () => requestAccountEmailVerification(),
   'account.email.verify': () => verifyAccountEmail(),
+  'traveldate.close': () => window.closeTravelDatePrompt?.(),
+  'traveldate.save': () => window.submitTravelDatePrompt?.(),
   'settings.general.country': (el) => {
     const c = el.getAttribute('data-country');
     if (c) { window.settingsGeneralCountry = c; renderSettingsPage?.(); }
