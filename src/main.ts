@@ -2968,6 +2968,37 @@ function getCompanyUsers() {
   }
   return rows;
 }
+async function createWorkspaceUserAccount({ display, username, role, password }) {
+  const baseAccount = {
+    role,
+    display,
+    companyId: getCompanyId(),
+    companyName: getCompanyName(),
+    generalJobsCountries: getGeneralCountries(),
+  };
+  if (db?.auth) {
+    try {
+      const token = await authToken();
+      if (token) {
+        const authResult = await postAuthAction({ action:'create_user', display, username, password, role }, token);
+        STAFF_ACCOUNTS[username] = normalizeAccount(username, { ...(authResult.account || {}), ...baseAccount, authUserId: authResult.account?.authUserId || authResult.account?.auth_user_id || '' });
+        await saveStaffAccounts();
+        return { authBacked: true };
+      }
+    } catch (err) {
+      console.warn('Supabase Auth user creation unavailable; using local account registry:', err);
+    }
+  }
+  STAFF_ACCOUNTS[username] = normalizeAccount(username, baseAccount);
+  try {
+    await setAccountPassword(STAFF_ACCOUNTS[username], password);
+    await saveStaffAccounts();
+    return { authBacked: false };
+  } catch (err) {
+    delete STAFF_ACCOUNTS[username];
+    throw err;
+  }
+}
 function renderCompanyUsers() {
   const card = document.getElementById('settings-users-card');
   const list = document.getElementById('settings-users-list');
@@ -3002,39 +3033,9 @@ async function createCompanyUser() {
   if (!/^[a-z0-9._-]{3,32}$/.test(username)) return fail('Username must be 3-32 letters, numbers, dots, underscores, or hyphens.');
   if (STAFF_ACCOUNTS[username]) return fail('That username is already taken.');
   if (password.length < 8) return fail('Temporary password must be at least 8 characters.');
-  if (db?.auth) {
-    try {
-      const { data: sessionData } = await db.auth.getSession();
-      const token = sessionData?.session?.access_token;
-      if (token) {
-        const authResult = await postAuthAction({ action:'create_user', display, username, password, role }, token);
-        STAFF_ACCOUNTS[username] = normalizeAccount(username, authResult.account);
-        await saveStaffAccounts();
-        ['new-user-display','new-user-username','new-user-password'].forEach(id => {
-          const el = document.getElementById(id); if (el) el.value = '';
-        });
-        const roleEl = document.getElementById('new-user-role'); if (roleEl) roleEl.value = 'staff';
-        if (errEl) { errEl.textContent = ''; errEl.style.display = 'none'; }
-        renderCompanyUsers();
-        showToast('User added','success');
-        return;
-      }
-    } catch (err) {
-      console.warn('Supabase Auth user creation unavailable; using local account registry:', err);
-    }
-  }
-  STAFF_ACCOUNTS[username] = normalizeAccount(username, {
-    role,
-    display,
-    companyId: getCompanyId(),
-    companyName: getCompanyName(),
-    generalJobsCountries: getGeneralCountries(),
-  });
   try {
-    await setAccountPassword(STAFF_ACCOUNTS[username], password);
-    await saveStaffAccounts();
+    await createWorkspaceUserAccount({ display, username, role, password });
   } catch (err) {
-    delete STAFF_ACCOUNTS[username];
     return fail(err.message || 'User could not be created.');
   }
   ['new-user-display','new-user-username','new-user-password'].forEach(id => {
@@ -4045,9 +4046,8 @@ async function submitQuickUser(){
   if(!/^[a-z0-9._-]{3,32}$/.test(username)) return fail('Username must be 3-32 letters, numbers, dots, underscores, or hyphens.');
   if(STAFF_ACCOUNTS[username]) return fail('That username is already taken.');
   if(password.length<8) return fail('Temporary password must be at least 8 characters.');
-  STAFF_ACCOUNTS[username]=normalizeAccount(username,{role,display,companyId:getCompanyId(),companyName:getCompanyName(),generalJobsCountries:getGeneralCountries()});
-  try{ await setAccountPassword(STAFF_ACCOUNTS[username],password); await saveStaffAccounts(); }
-  catch(e){ delete STAFF_ACCOUNTS[username]; return fail(e.message||'User could not be created.'); }
+  try{ await createWorkspaceUserAccount({ display, username, role, password }); }
+  catch(e){ return fail(e.message||'User could not be created.'); }
   closeModal('quick-user-modal'); renderTeam(); renderCompanyUsers(); showToast('User added','success');
 }
 function openEditTeamMember(username: string){
