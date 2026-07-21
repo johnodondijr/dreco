@@ -161,6 +161,12 @@ async function updateCloudAccount(username, patch) {
   return accounts[username];
 }
 
+async function deleteCloudAccount(username) {
+  const accounts = await loadCloudAccounts();
+  delete accounts[username];
+  await saveAppSetting('dreco_accounts_v2', accounts);
+}
+
 async function sendEmail({ to, subject, html, text }) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) throw new Error('Email delivery is not configured. Set RESEND_API_KEY in Vercel.');
@@ -222,6 +228,16 @@ async function createAuthUser({ username, password, display, role, companyId, co
     }),
   });
   return accountFromUser(user);
+}
+
+async function deleteAuthUser(username) {
+  const existing = await findAuthUserByUsername(username);
+  if (!existing?.id) return false;
+  await supabaseAdminFetch(`/auth/v1/admin/users/${existing.id}`, {
+    method: 'DELETE',
+    headers: { 'content-type': undefined },
+  });
+  return true;
 }
 
 async function resetAuthPassword({ username, password, display }) {
@@ -373,6 +389,22 @@ module.exports = async function handler(req, res) {
         generalJobsCountries: Array.isArray(meta.general_jobs_countries) ? meta.general_jobs_countries : getDefaultCompany().generalJobsCountries,
       });
       return res.status(200).json({ account });
+    }
+
+    if (action === 'delete_user') {
+      const caller = await getCallerUser(req);
+      const meta = caller?.app_metadata || {};
+      if (!caller || meta.role !== 'admin' || !meta.company_id) throw new Error('Only authenticated company admins can remove users.');
+      if (!username) throw new Error('Username is required.');
+      if (username === cleanUsername(meta.username)) throw new Error('You cannot remove your own account.');
+      const target = await loadCloudAccount(username);
+      const existing = await findAuthUserByUsername(username);
+      const targetMeta = existing?.app_metadata || {};
+      const targetCompany = target?.companyId || target?.company_id || targetMeta.company_id;
+      if (targetCompany && targetCompany !== meta.company_id) throw new Error('You can only remove users in your own company.');
+      await deleteAuthUser(username);
+      await deleteCloudAccount(username);
+      return res.status(200).json({ ok: true });
     }
 
     if (action === 'request_email_verification') {

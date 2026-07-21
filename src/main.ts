@@ -1602,6 +1602,8 @@ const DRECO_ACTIONS = {
   'account.email.verify': () => verifyAccountEmail(),
   'traveldate.close': () => window.closeTravelDatePrompt?.(),
   'traveldate.save': () => window.submitTravelDatePrompt?.(),
+  'team.edit': (el) => window.openEditTeamMember?.(el.getAttribute('data-username')),
+  'team.remove': (el) => window.removeTeamMember?.(el.getAttribute('data-username') || (document.getElementById('edit-team-username') as HTMLInputElement)?.value),
   'settings.general.country': (el) => {
     const c = el.getAttribute('data-country');
     if (c) { window.settingsGeneralCountry = c; renderSettingsPage?.(); }
@@ -3734,7 +3736,21 @@ function renderTeam(){
   const fallback=currentUser?[{username:currentUser.username||'user',...currentUser}]:[{display:DEFAULT_ADMIN_USERNAME,role:'admin',username:DEFAULT_ADMIN_USERNAME}];
   const list=users.length?users:fallback;
   const isAdmin=currentUser?.role==='admin';
-  grid.innerHTML=list.map(u=>`<div class="team-card" onclick="${isAdmin?`openEditTeamMember('${u.username.replace(/'/g,"\\'")}')`:''}" style="${isAdmin?'cursor:pointer':''}"><div class="team-card-head"><div class="team-avatar">${escHTML((u.display||u.username||'U').slice(0,2).toUpperCase())}</div><div><div class="team-name">${escHTML(u.display||u.username||'User')}</div><div class="team-role">${u.role==='admin'?'Administrator':'Staff'} @${escHTML(u.username||'user')}</div></div></div><div class="team-perms"><span>Dashboard</span><span>Professional Jobs</span><span>General Jobs</span><span>Finance</span><span>Reports</span></div>${isAdmin?`<div style="margin-top:10px;text-align:right"><button class="btn" style="font-size:12px;padding:4px 12px" onclick="event.stopPropagation();openEditTeamMember('${u.username.replace(/'/g,"\\'")}')"><i class="ti ti-pencil" style="font-size:11px;margin-right:4px"></i>Edit</button></div>`:''}</div>`).join('');
+  grid.innerHTML=list.map(u=>{
+    const username = escHTML(u.username || 'user');
+    const removable = isAdmin && username !== currentUser?.username;
+    return `<div class="team-card" ${isAdmin?`data-action="team.edit" data-username="${username}"`:''} style="${isAdmin?'cursor:pointer':''}">
+      <div class="team-card-head">
+        <div class="team-avatar">${escHTML((u.display||u.username||'U').slice(0,2).toUpperCase())}</div>
+        <div><div class="team-name">${escHTML(u.display||u.username||'User')}</div><div class="team-role">${u.role==='admin'?'Administrator':'Staff'} @${username}</div></div>
+      </div>
+      <div class="team-perms"><span>Dashboard</span><span>Professional Jobs</span><span>General Jobs</span><span>Finance</span><span>Reports</span></div>
+      ${isAdmin?`<div class="team-actions">
+        <button class="btn" type="button" data-action="team.edit" data-username="${username}"><i class="ti ti-pencil"></i>Edit</button>
+        ${removable?`<button class="btn danger" type="button" data-action="team.remove" data-username="${username}"><i class="ti ti-trash"></i>Remove</button>`:''}
+      </div>`:''}
+    </div>`;
+  }).join('');
 }
 function getCurrentUserInitials(){
   const display=currentUser?.display||currentUser?.username||'User';
@@ -4018,6 +4034,33 @@ async function submitEditTeamMember(){
   try{ await saveStaffAccounts(); }
   catch(e:any){ return fail(e.message||'Could not save changes.'); }
   closeModal('edit-team-modal'); renderTeam(); renderCompanyUsers(); showToast('User updated','success');
+}
+async function removeTeamMember(username: string){
+  if(currentUser?.role!=='admin'){ showToast('Only admins can remove users','error'); return; }
+  username=String(username||'').trim().toLowerCase();
+  if(!username || !STAFF_ACCOUNTS[username]){ showToast('User not found','error'); return; }
+  if(username===String(currentUser?.username||'').toLowerCase()){ showToast('You cannot remove your own account','error'); return; }
+  const companyUsers=(typeof getCompanyUsers==='function'?getCompanyUsers():[]).filter(([u])=>STAFF_ACCOUNTS[u]);
+  const admins=companyUsers.filter(([,account])=>account?.role==='admin').map(([u])=>u);
+  if(STAFF_ACCOUNTS[username]?.role==='admin' && admins.length<=1){ showToast('Keep at least one admin in the workspace','error'); return; }
+  const label=STAFF_ACCOUNTS[username].display || username;
+  if(!confirm(`Remove ${label} from this workspace? They will no longer appear in Team & Permissions.`)) return;
+  const backup=STAFF_ACCOUNTS[username];
+  delete STAFF_ACCOUNTS[username];
+  try{
+    const token=await authToken();
+    if(token){
+      try{ await postAuthAction({action:'delete_user',username},token); }
+      catch(err){ console.warn('Supabase Auth user removal unavailable; removing local/cloud registry entry only:',err); }
+    }
+    await saveStaffAccounts();
+  }catch(e:any){
+    STAFF_ACCOUNTS[username]=backup;
+    showToast(e.message||'User could not be removed','error');
+    return;
+  }
+  if((document.getElementById('edit-team-username') as HTMLInputElement)?.value===username) closeModal('edit-team-modal');
+  renderTeam(); renderCompanyUsers(); showToast('User removed','success');
 }
 function openRecordPaymentPrompt(type='commission'){
   if(!requireFinanceAction('Recording payments')) return;
@@ -5340,7 +5383,7 @@ Object.assign(window, {
   addGeneralCountry, setGeneralCountry, submitQuickCountry,
   saveWorkspaceSettings, saveStages, updateCompanyName: typeof updateCompanyName !== 'undefined' ? updateCompanyName : null,
   downloadBackup, restoreBackupFromFile, exportBackup: typeof exportBackup !== 'undefined' ? exportBackup : null,
-  createStaffAccount, createCompanyUser, submitQuickUser, openEditTeamMember, submitEditTeamMember,
+  createStaffAccount, createCompanyUser, submitQuickUser, openEditTeamMember, submitEditTeamMember, removeTeamMember,
   clearLBDates, clearProDates,
   // Modals & UI helpers
   closeModal, switchModalTab, togglePassword,

@@ -7526,6 +7526,40 @@ html body #app .integrity-row.medium{
   .candidate-kpi{ flex:1!important; width:auto!important; }
   .cs-avatar{ width:44px!important; height:44px!important; min-width:44px!important; font-size:15px!important; border-radius:13px!important; }
 }
+
+/* Final button contrast guard */
+#app .btn.primary,
+#app .btn.primary:hover,
+#app .dv5-btn.primary,
+#app .dv5-btn.primary:hover,
+#app .dreco-btn.primary,
+#app .dreco-btn.primary:hover,
+#app .modal-footer .btn.primary,
+#app .modal-footer .btn.primary:hover{
+  background:#C9F035!important;
+  border-color:#A8CC1A!important;
+  color:#1A1C2E!important;
+}
+#app .btn.primary *,
+#app .btn.primary:hover *,
+#app .dv5-btn.primary *,
+#app .dv5-btn.primary:hover *,
+#app .dreco-btn.primary *,
+#app .dreco-btn.primary:hover *,
+#app .modal-footer .btn.primary *,
+#app .modal-footer .btn.primary:hover *{
+  color:#1A1C2E!important;
+}
+#app .btn.danger,
+#app .btn.danger:hover{
+  background:#FEF2F2!important;
+  border-color:#FCA5A5!important;
+  color:#B91C1C!important;
+}
+#app .btn.danger *,
+#app .btn.danger:hover *{
+  color:#B91C1C!important;
+}
 </style>
 </head>
 <body>
@@ -8264,7 +8298,7 @@ html body #app .integrity-row.medium{
       <div class="field form-full"><label for="edit-team-display">Display name *</label><input id="edit-team-display" type="text" placeholder="e.g. Mary Wanjiku"></div>
       <div class="field form-full"><label for="edit-team-role">Role</label><select id="edit-team-role"><option value="staff">Staff</option><option value="admin">Admin</option></select></div>
     </div><div class="login-error" id="edit-team-error" role="alert" style="display:none"></div></div>
-    <div class="modal-footer"><button class="btn" data-action="modal.close" data-modal="edit-team-modal">Cancel</button><button class="btn primary" onclick="submitEditTeamMember()">Save changes</button></div>
+    <div class="modal-footer"><button class="btn danger" data-action="team.remove">Remove user</button><button class="btn" data-action="modal.close" data-modal="edit-team-modal">Cancel</button><button class="btn primary" onclick="submitEditTeamMember()">Save changes</button></div>
   </div>
 </div>
 <div class="modal-bg" id="quick-user-modal">
