@@ -17,7 +17,7 @@ const FILES = ['index.html', 'src/main.ts', 'src/dv5.ts'];
 const HANDLER_RE = /\son(click|change|input|submit|keydown|keyup|keypress|mouseenter|mouseleave|mousemove|mouseover|mousedown|mouseup|focus|blur|load|error|scroll|wheel|touchstart|touchend|paste|dragover|drop)\s*=/gi;
 
 // Current baseline. Lower this (never raise it) as handlers are migrated.
-const BASELINE = 252;
+const BASELINE = 251;
 
 let total = 0;
 const perFile = {};

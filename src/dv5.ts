@@ -121,16 +121,16 @@ export function injectDepsToD5(deps) {
   'use strict';
 
   // ── Constants ────────────────────────────────────────────
-  const TABS    = ['dash','pipeline','candidates','finance','payments','documents','reports','jobs','settings'];
+  const TABS    = ['dash','pipeline','candidates','finance','payments','documents','reports','jobs','notifications','settings'];
   const TITLES = {
     dash:'Home', pipeline:'Pipeline', candidates:'Candidates',
     tasks:'Tasks', finance:'Finance', payments:'Payments', documents:'Documents',
-    reports:'Reports', jobs:'Employers', settings:'Settings'
+    reports:'Reports', jobs:'Employers', notifications:'Notifications', settings:'Settings'
   };
   const ICONS = {
     dash:'ti-layout-dashboard', pipeline:'ti-briefcase', candidates:'ti-users',
     tasks:'ti-checkbox', finance:'ti-wallet', payments:'ti-cash', documents:'ti-clipboard-text',
-    reports:'ti-chart-line', jobs:'ti-building-skyscraper', settings:'ti-settings'
+    reports:'ti-chart-line', jobs:'ti-building-skyscraper', notifications:'ti-bell', settings:'ti-settings'
   };
 
   // ── Global job-type tab (Pro / General) ──────────────────
@@ -254,6 +254,23 @@ export function injectDepsToD5(deps) {
   function badge(stage) {
     return `<span class="dv5-badge ${stageColor(stage)}">${h(String(stage||'Not set').replace('PENDING ',''))}</span>`;
   }
+  function proInstallments(row: any = {}) {
+    const raw = Array.isArray(row.commissionPayments) ? row.commissionPayments : row.commission_payments;
+    if (Array.isArray(raw) && raw.length) {
+      return raw
+        .map(p => ({ amount: Number(p.amount) || 0, date: p.date || '' }))
+        .filter(p => p.amount > 0 || p.date);
+    }
+    const paid1 = Number(row.paid1) || 0;
+    const paid2 = Number(row.paid2) || 0;
+    const out = [];
+    if (paid1 > 0) out.push({ amount: paid1, date: row.paid1_date || row.interview || row.submitted || row.created_at || '' });
+    if (paid2 > 0) out.push({ amount: paid2, date: row.paid2_date || row.visa || row.ol || row.submitted || row.created_at || '' });
+    const paid = Number(row.paid) || 0;
+    const fromSlots = out.reduce((s, p) => s + p.amount, 0);
+    if (paid > fromSlots + 0.5) out.push({ amount: paid - fromSlots, date: row.visa || row.ol || row.submitted || row.created_at || '' });
+    return out;
+  }
 
   // ── Greeting with time-of-day ─────────────────────────────
   function greeting() {
@@ -285,6 +302,7 @@ export function injectDepsToD5(deps) {
         paid1, paid2, paid,
         paid1_date:r.paid1_date||null,
         paid2_date:r.paid2_date||null,
+        commissionPayments:proInstallments(r),
         balance:balPro(r),
         expected:payment.expected||0,
         dueNow:payment.dueNow||0,
@@ -540,7 +558,7 @@ export function injectDepsToD5(deps) {
     const inMonth = d => String(d || '').slice(0, 7) === ym;
     let sum = 0;
     if (isPro) {
-      (proDB || []).forEach(r => (Array.isArray(r.commissionPayments) ? r.commissionPayments : []).forEach(p => { if (inMonth(p.date)) sum += Number(p.amount) || 0; }));
+      (proDB || []).forEach(r => proInstallments(r).forEach(p => { if (inMonth(p.date)) sum += Number(p.amount) || 0; }));
     } else {
       (lbDB || []).forEach(r => {
         if (inMonth(r.r1Date || r.r1_date)) sum += Number(r.r1Amt || r.r1_amt) || 0;
@@ -751,7 +769,7 @@ export function injectDepsToD5(deps) {
       <div class="nav-section-label" style="font-size:10px;letter-spacing:.08em;font-weight:438;text-transform:uppercase;opacity:.5;margin:12px 0 2px 10px;padding:0">Workspace</div>
       ${['dash','pipeline','candidates'].map(navItem).join('')}
       <div class="nav-section-label" style="font-size:10px;letter-spacing:.08em;font-weight:438;text-transform:uppercase;opacity:.5;margin:12px 0 2px 10px;padding:0">Operations</div>
-      ${['finance','payments','documents','jobs','reports','settings'].map(navItem).join('')}
+      ${['finance','payments','documents','jobs','reports','notifications','settings'].map(navItem).join('')}
       <div class="nav-spacer"></div>
       <div class="sidebar-company-name" id="sidebar-company-name">${h(co())}</div>`;
     sidebarBuilt = true;
@@ -1081,15 +1099,15 @@ export function injectDepsToD5(deps) {
     if (!rows.length) return;
     const sample = rows.slice(0, 3).map(r => r.name).join(', ');
     if (!confirm(`Delete ${rows.length} selected candidate${rows.length!==1?'s':''} and their documents/timeline records?\n\n${sample}${rows.length>3?'...':''}\n\nThis cannot be undone.`)) return;
-    const proIds = new Set(rows.filter(r=>r.type==='pro').map(r=>r.id));
-    const lbIds = new Set(rows.filter(r=>r.type==='lb').map(r=>r.id));
-    setProDB(proDB.filter(r => !proIds.has(r.id)));
-    setLbDB(lbDB.filter(r => !lbIds.has(r.id)));
     for (const r of rows) {
       if (typeof deleteCandidateArtifacts === 'function') await deleteCandidateArtifacts(r.type, r.id);
       if (typeof useCloud === 'function' && useCloud() && typeof dbDelete === 'function') await dbDelete(r.type==='pro' ? 'pro_candidates' : 'lb_candidates', r.id);
       if (typeof auditAction === 'function') auditAction(r.type==='pro' ? 'Professional Jobs' : 'General Jobs', 'Candidate deleted', r.name || '');
     }
+    const proIds = new Set(rows.filter(r=>r.type==='pro').map(r=>r.id));
+    const lbIds = new Set(rows.filter(r=>r.type==='lb').map(r=>r.id));
+    setProDB(proDB.filter(r => !proIds.has(r.id)));
+    setLbDB(lbDB.filter(r => !lbIds.has(r.id)));
     selectedCandidates.clear();
     saveLocalStore?.();
     renderCandidates();
@@ -1409,9 +1427,9 @@ export function injectDepsToD5(deps) {
     const paymentEntries = [];
     dateRows.forEach(r => {
       if (r.type === 'pro') {
-        if (r.paid1 > 0) paymentEntries.push({ r, label: `${r.name} — 1st Commission`, amt: r.paid1, date: r.paid1_date || r.interview || r.submitted || r.created_at, slot: 'paid1_date', isUSD: false });
-        if (r.paid2 > 0) paymentEntries.push({ r, label: `${r.name} — 2nd Commission`, amt: r.paid2, date: r.paid2_date || r.ol || r.submitted || r.created_at, slot: 'paid2_date', isUSD: false });
-        if (!r.paid1 && !r.paid2 && r.paid > 0) paymentEntries.push({ r, label: `${r.name} — Commission`, amt: r.paid, date: r.submitted || r.created_at, slot: null, isUSD: false });
+        (r.commissionPayments || proInstallments(r.raw || r)).forEach((p, i) => {
+          paymentEntries.push({ r, label: `${r.name} - Installment ${i + 1}`, amt: Number(p.amount) || 0, date: p.date || r.submitted || r.created_at, slot: null, isUSD: false });
+        });
       } else {
         const r1 = Number(r.r1Amt)||0, r2 = Number(r.r2Amt)||0;
         if (r1 > 0) paymentEntries.push({ r, label: `${r.name} — 1st Refund`, amt: r1, date: r.r1Date || r.travelDate || r.submitted || r.created_at, slot: 'r1Date', isUSD: true });
@@ -1648,9 +1666,9 @@ export function injectDepsToD5(deps) {
   function renderPayments() {
     const el = document.getElementById('payments-section'); if (!el) return;
     const withCalc = (proDB || [])
-      .filter(r => (Number(r.commission)||0) > 0 || (Array.isArray(r.commissionPayments) && r.commissionPayments.length))
+      .filter(r => (Number(r.commission)||0) > 0 || proInstallments(r).length)
       .map(r => {
-        const pays = Array.isArray(r.commissionPayments) ? r.commissionPayments : [];
+        const pays = proInstallments(r);
         const paid = pays.reduce((s,p)=>s+(Number(p.amount)||0),0);
         const commission = Number(r.commission)||0;
         const balance = Math.max(commission - paid, 0);

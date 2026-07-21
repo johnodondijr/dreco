@@ -20,6 +20,7 @@ const fs = require('fs');
 const ROOT = path.join(__dirname, '..');
 const PORT = 4183;
 const URL = `http://localhost:${PORT}/`;
+const viteCli = path.join(ROOT, 'node_modules', 'vite', 'bin', 'vite.js');
 
 function waitForServer(url, timeoutMs) {
   const deadline = Date.now() + timeoutMs;
@@ -39,11 +40,19 @@ function waitForServer(url, timeoutMs) {
   // Build if there is no dist yet.
   if (!fs.existsSync(path.join(ROOT, 'dist', 'index.html'))) {
     console.log('· building (no dist found)…');
-    execSync('npm run build', { cwd: ROOT, stdio: 'inherit' });
+    if (fs.existsSync(viteCli)) {
+      execSync(`"${process.execPath}" "${viteCli}" build`, { cwd: ROOT, stdio: 'inherit' });
+    } else {
+      execSync('npm run build', { cwd: ROOT, stdio: 'inherit' });
+    }
   }
 
   console.log('· starting preview server…');
-  const server = spawn('npx', ['vite', 'preview', '--port', String(PORT), '--strictPort'], {
+  const previewCmd = fs.existsSync(viteCli) ? process.execPath : 'npx';
+  const previewArgs = fs.existsSync(viteCli)
+    ? [viteCli, 'preview', '--port', String(PORT), '--strictPort']
+    : ['vite', 'preview', '--port', String(PORT), '--strictPort'];
+  const server = spawn(previewCmd, previewArgs, {
     cwd: ROOT, stdio: 'ignore',
   });
 

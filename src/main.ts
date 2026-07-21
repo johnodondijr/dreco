@@ -1587,6 +1587,7 @@ const DRECO_ACTIONS = {
     const t = el.getAttribute('data-tab');
     if (t && typeof window.switchTab === 'function') window.switchTab(t);
   },
+  'pipeline.retry': () => window.renderPipelinePage?.(),
   'doc.mark': (el) => {
     if (typeof window.drecoMarkDocComplete === 'function') {
       window.drecoMarkDocComplete(
@@ -1979,7 +1980,7 @@ function fallBackToLocal(err) {
 }
 async function saveProRecord(rec, isUpdate = false) {
   setSaveStatus('saving');
-  if (!useCloud()) { saveLocalStore(); setSaveStatus('saved'); return; }
+  if (!useCloud()) { saveLocalStore(); setSaveStatus('saved'); return true; }
   const tempId = rec.id;
   async function doProSave(payload, guarded=true) {
     if (isUpdate) {
@@ -2003,7 +2004,7 @@ async function saveProRecord(rec, isUpdate = false) {
   } catch(e) {
     if (e?.code === 'DRECO_CONFLICT') {
       if (!confirm('This candidate was changed by someone else since you opened it. Overwrite their changes?')) {
-        setSaveStatus('saved'); showToast('Save cancelled — reload to see the latest.', 'error'); return;
+        setSaveStatus('saved'); showToast('Save cancelled — reload to see the latest.', 'error'); return false;
       }
       try { await saveWith(toProDbPayload, false); }
       catch(e2) {
@@ -2015,10 +2016,11 @@ async function saveProRecord(rec, isUpdate = false) {
       catch(e2) { fallBackToLocal(e2); setSaveStatus('saved'); }
     } else { fallBackToLocal(e); setSaveStatus('saved'); }
   }
+  return true;
 }
 async function saveLBRecord(rec, isUpdate = false) {
   setSaveStatus('saving');
-  if (!useCloud()) { saveLocalStore(); setSaveStatus('saved'); return; }
+  if (!useCloud()) { saveLocalStore(); setSaveStatus('saved'); return true; }
   const tempId = rec.id;
   async function doLBSave(payload, guarded=true) {
     if (isUpdate) {
@@ -2042,7 +2044,7 @@ async function saveLBRecord(rec, isUpdate = false) {
   } catch(e) {
     if (e?.code === 'DRECO_CONFLICT') {
       if (!confirm('This candidate was changed by someone else since you opened it. Overwrite their changes?')) {
-        setSaveStatus('saved'); showToast('Save cancelled — reload to see the latest.', 'error'); return;
+        setSaveStatus('saved'); showToast('Save cancelled — reload to see the latest.', 'error'); return false;
       }
       try { await saveWith(toLBDbPayload, false); }
       catch(e2) {
@@ -2054,6 +2056,7 @@ async function saveLBRecord(rec, isUpdate = false) {
       catch(e2) { fallBackToLocal(e2); setSaveStatus('saved'); }
     } else { fallBackToLocal(e); setSaveStatus('saved'); }
   }
+  return true;
 }
 async function deleteProRecord(id) {
   setSaveStatus('saving');
@@ -2650,7 +2653,7 @@ function switchTab(tab, _pushHistory = true){
                 <h1>Pipeline</h1>
                 <p>Loading the candidate pipeline...</p>
               </div>
-              <button class="dv5-btn" onclick="window.renderPipelinePage?.()">
+              <button class="dv5-btn" data-action="pipeline.retry">
                 <i class="ti ti-refresh"></i> Retry
               </button>
             </div>
@@ -4470,21 +4473,23 @@ async function savePro(){
     const changes=recordChanges(oldRec,rec,[['name','Name'],['pp','Passport'],['phone','Phone'],['position','Position'],['company','Company'],['country','Country'],['stage','Stage'],['commission','Commission'],['paid','Paid'],['travel','Travel date']]);
     addTimeline('pro',editingProId,changes.length?`Updated: ${changes.slice(0,4).join('; ')}${changes.length>4?'...':''}`:'Details reviewed');
     auditAction('Professional Jobs','Candidate updated',rec.name);
-    showToast('Candidate updated ✓','success');
   } else {
     rec.id=Date.now(); proDB.push(rec);
     addTimeline('pro',rec.id,`Added - Stage: ${newStage}`);
     auditAction('Professional Jobs','Candidate added',rec.name);
-    showToast('Candidate added ✓','success');
   }
   const proWasEditing = !!editingProId;
+  const saved = await saveProRecord(rec, proWasEditing);
+  if (!saved) return;
   editingProId = null;
-  closeModal('pro-modal'); renderPro(); window.renderPipelinePage?.(); window.renderDash?.(); window.renderFinancePage?.(); await saveProRecord(rec, proWasEditing);
+  closeModal('pro-modal'); renderPro(); window.renderPipelinePage?.(); window.renderDash?.(); window.renderFinancePage?.();
+  showToast(proWasEditing ? 'Candidate updated' : 'Candidate added', 'success');
 }
 async function deletePro(id){
   const r=proDB.find(x=>x.id==id);
   if(!confirm(`Delete ${r?r.name:'this candidate'}? Cannot be undone.`)) return;
-  setProDB(proDB.filter(x=>x.id!=id)); auditAction('Professional Jobs','Candidate deleted',r?.name||''); showToast('Deleted','success'); renderPro(); window.renderDash?.(); await deleteProRecord(id);
+  await deleteProRecord(id);
+  setProDB(proDB.filter(x=>x.id!=id)); auditAction('Professional Jobs','Candidate deleted',r?.name||''); showToast('Deleted','success'); renderPro(); window.renderDash?.(); window.renderPipelinePage?.();
 }
 
 // *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
@@ -4689,21 +4694,23 @@ async function saveLB(){
     const changes=recordChanges(oldRec,rec,[['name','Name'],['phone','Phone'],['ppStatus','Passport'],['travelStatus','Travel'],['travelDate','Travel date'],['toRefund','To refund'],['r1Amt','1st refund'],['r2Amt','2nd refund'],['notes','Notes']]);
     addTimeline('lb',editingLbId,changes.length?`Updated: ${changes.slice(0,4).join('; ')}${changes.length>4?'...':''}`:'Details reviewed');
     auditAction('General Jobs','Candidate updated',rec.name);
-    showToast('Candidate updated ✓','success');
   } else {
     rec.id=Date.now(); lbDB.push(rec);
     addTimeline('lb',rec.id,`Added - Stage: ${newTravel}${own_passport?' (Own PP)':''}`);
     auditAction('General Jobs','Candidate added',rec.name);
-    showToast('Candidate added ✓','success');
   }
   const lbWasEditing = !!editingLbId;
+  const saved = await saveLBRecord(rec, lbWasEditing);
+  if (!saved) return;
   editingLbId = null;
-  closeModal('lb-modal'); renderLB(); window.renderPipelinePage?.(); window.renderDash?.(); await saveLBRecord(rec, lbWasEditing);
+  closeModal('lb-modal'); renderLB(); window.renderPipelinePage?.(); window.renderDash?.();
+  showToast(lbWasEditing ? 'Candidate updated' : 'Candidate added', 'success');
 }
 async function deleteLB(id){
   const r=lbDB.find(x=>x.id==id);
   if(!confirm(`Delete ${r?r.name:'this candidate'}? Cannot be undone.`)) return;
-  setLbDB(lbDB.filter(x=>x.id!=id)); auditAction('General Jobs','Candidate deleted',r?.name||''); showToast('Deleted','success'); renderLB(); window.renderDash?.(); await deleteLBRecord(id);
+  await deleteLBRecord(id);
+  setLbDB(lbDB.filter(x=>x.id!=id)); auditAction('General Jobs','Candidate deleted',r?.name||''); showToast('Deleted','success'); renderLB(); window.renderDash?.(); window.renderPipelinePage?.();
 }
 
 let _lbRefundTargetId = null;

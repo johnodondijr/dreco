@@ -10,8 +10,10 @@
 const fs = require('fs');
 const path = require('path');
 
-const file = path.join(__dirname, '..', 'src', 'dv5.ts');
-const src = fs.readFileSync(file, 'utf8');
+const dv5File = path.join(__dirname, '..', 'src', 'dv5.ts');
+const mainFile = path.join(__dirname, '..', 'src', 'main.ts');
+const src = fs.readFileSync(dv5File, 'utf8');
+const mainSrc = fs.readFileSync(mainFile, 'utf8');
 
 const fail = (msg) => { console.error('FAIL  ' + msg); process.exitCode = 1; };
 const parseList = (inner) =>
@@ -40,12 +42,25 @@ const keysOf = (name) => {
 const titleKeys = keysOf('TITLES');
 const iconKeys = keysOf('ICONS');
 
+// 4) main.ts router tabs. This catches pages added to switchTab but omitted
+// from the DV5 sidebar registry, which makes them hard to reach in the UI.
+const mainTabsMatch = mainSrc.match(/const\s+DV5_TABS\s*=\s*\[([^\]]*)\]/);
+if (!mainTabsMatch) fail('could not find DV5_TABS in main.ts');
+const mainTabs = mainTabsMatch ? parseList(mainTabsMatch[1]) : [];
+const mainTabsSet = new Set(mainTabs);
+
 // ── Assertions ────────────────────────────────────────────────────────────
 if (!setEq(tabsSet, sidebarSet)) {
   const onlyTabs = [...tabsSet].filter((t) => !sidebarSet.has(t));
   const onlyNav = [...sidebarSet].filter((t) => !tabsSet.has(t));
   if (onlyTabs.length) fail('in TABS but missing from the sidebar nav: ' + onlyTabs.join(', '));
   if (onlyNav.length) fail('in the sidebar nav but missing from TABS: ' + onlyNav.join(', '));
+}
+if (!setEq(tabsSet, mainTabsSet)) {
+  const onlyDv5 = [...tabsSet].filter((t) => !mainTabsSet.has(t));
+  const onlyMain = [...mainTabsSet].filter((t) => !tabsSet.has(t));
+  if (onlyDv5.length) fail('in dv5 TABS but missing from main DV5_TABS: ' + onlyDv5.join(', '));
+  if (onlyMain.length) fail('in main DV5_TABS but missing from dv5 TABS/sidebar: ' + onlyMain.join(', '));
 }
 for (const t of TABS) {
   if (!titleKeys.has(t)) fail('tab "' + t + '" has no entry in TITLES (nav label would be blank)');
