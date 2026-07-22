@@ -8770,6 +8770,65 @@ html body #app .integrity-row.medium{
     max-width:88vw!important;
   }
 }
+
+/* Final mobile login balance + Recruitflow hover accent */
+#login-screen .lp-submit:hover,
+#login-screen #signup-section .lp-submit:hover,
+#login-screen #recovery-submit:hover{
+  background:#DDF56C!important;
+  border-color:#DDF56C!important;
+  color:#1F2133!important;
+  box-shadow:0 18px 36px rgba(221,245,108,.28)!important;
+}
+#login-screen .lp-submit:hover *,
+#login-screen #signup-section .lp-submit:hover *,
+#login-screen #recovery-submit:hover *{
+  color:#1F2133!important;
+}
+@media(max-width:760px){
+  #login-screen .lp-form-panel{
+    display:grid!important;
+    grid-template-rows:auto minmax(0,1fr) auto!important;
+    min-height:100dvh!important;
+    padding:clamp(36px,5.5dvh,56px) 18px clamp(30px,5dvh,48px)!important;
+  }
+  #login-screen .lp-brand-tag{
+    align-self:start!important;
+    margin:0!important;
+  }
+  #login-screen .lp-content-area{
+    align-self:center!important;
+    width:100%!important;
+    max-width:430px!important;
+    margin:0 auto!important;
+    transform:translateY(-1.5dvh)!important;
+  }
+  #login-screen .lp-footer-note{
+    align-self:end!important;
+    margin:0 auto!important;
+    max-width:340px!important;
+  }
+  #login-screen .lp-content-area:has(#signup-section[style*="block"]),
+  #login-screen .lp-content-area:has(#forgot-section[style*="block"]){
+    align-self:start!important;
+    margin-top:clamp(28px,5dvh,48px)!important;
+    transform:none!important;
+  }
+}
+@media(max-width:420px){
+  #login-screen .lp-form-panel{
+    padding:32px 14px 28px!important;
+  }
+  #login-screen .lp-content-area{
+    transform:translateY(-1dvh)!important;
+  }
+  #login-screen .lp-header{
+    margin-bottom:22px!important;
+  }
+  #login-screen .lp-signup-cta{
+    margin-top:24px!important;
+  }
+}
 </style>
 </head>
 <body>
