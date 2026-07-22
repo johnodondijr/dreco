@@ -8266,6 +8266,502 @@ html body #app .integrity-row.medium{
 #app .btn.danger:hover *{
   color:#B91C1C!important;
 }
+
+/* ============================================================
+   FINAL RESPONSIVE SYSTEM - phone and tablet polish
+   Keep this last so it wins over the older layered UI patches.
+   ============================================================ */
+@media(max-width:1024px){
+  html body #app{
+    padding:0!important;
+    min-height:100dvh!important;
+    overflow:hidden!important;
+    background:#F4F4EC!important;
+  }
+  html body #app .app-layout{
+    width:100%!important;
+    height:100dvh!important;
+    min-height:100dvh!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    background:#F4F4EC!important;
+    overflow:hidden!important;
+  }
+  html body #app .content-area{
+    min-width:0!important;
+  }
+  html body #app .content-area>div{
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+  html body #app .metrics-strip,
+  html body #app .dashboard-stats,
+  html body #app .kpi-grid,
+  html body #app .dv5-kpi-grid,
+  html body #app .finance-grid,
+  html body #app .reports-grid,
+  html body #app .dash-2col,
+  html body #app .split-65-35,
+  html body #app .settings-grid,
+  html body #app .team-grid,
+  html body #app .jobs-grid,
+  html body #app .clients-grid{
+    grid-template-columns:1fr!important;
+  }
+  html body #app .right-col{
+    display:flex!important;
+    flex-direction:column!important;
+    min-width:0!important;
+    overflow:visible!important;
+  }
+}
+
+@media(max-width:760px){
+  html,body{
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:hidden!important;
+  }
+  #login-screen{
+    padding:0!important;
+    align-items:stretch!important;
+    justify-content:flex-start!important;
+    min-height:100dvh!important;
+    background:#FFFFFF!important;
+    overflow-y:auto!important;
+  }
+  #login-screen .lp-window{
+    display:block!important;
+    width:100%!important;
+    min-height:100dvh!important;
+    height:auto!important;
+    max-height:none!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    background:#FFFFFF!important;
+  }
+  #login-screen .lp-media{
+    display:none!important;
+  }
+  #login-screen .lp-form-panel{
+    width:100%!important;
+    min-height:100dvh!important;
+    padding:28px 18px 34px!important;
+    overflow:visible!important;
+  }
+  #login-screen .lp-brand-tag{
+    margin:0 0 34px!important;
+    justify-content:flex-start!important;
+  }
+  #login-screen .lp-content-area{
+    width:100%!important;
+    max-width:430px!important;
+    margin:0 auto!important;
+  }
+  #login-screen .lp-header{
+    text-align:center!important;
+    margin-bottom:26px!important;
+  }
+  #login-screen .lp-header h1{
+    font-size:30px!important;
+    line-height:1.08!important;
+  }
+  #login-screen .lp-header p{
+    font-size:14px!important;
+    line-height:1.45!important;
+  }
+  #login-screen .lp-input-group{
+    margin-bottom:18px!important;
+  }
+  #login-screen .lp-input-wrap input,
+  #login-screen .lp-submit{
+    height:52px!important;
+    border-radius:12px!important;
+  }
+  #login-screen .lp-remember{
+    gap:8px!important;
+    margin:2px 0 22px!important;
+    font-size:12px!important;
+  }
+  #login-screen .lp-forgot{
+    font-size:12px!important;
+  }
+  #login-screen .lp-signup-cta{
+    margin-top:28px!important;
+    text-align:center!important;
+  }
+  #login-screen .lp-footer-note{
+    position:static!important;
+    justify-content:center!important;
+    margin:48px auto 0!important;
+    text-align:center!important;
+    max-width:320px!important;
+  }
+
+  html body #app .app-layout{
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  html body #app #sidebar,
+  html body #app .sidebar{
+    display:none!important;
+  }
+  html body #app .topbar{
+    position:sticky!important;
+    top:0!important;
+    z-index:150!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:58px!important;
+    padding:10px 12px!important;
+    display:grid!important;
+    grid-template-columns:40px minmax(0,1fr) auto auto auto!important;
+    gap:8px!important;
+    align-items:center!important;
+    background:rgba(244,244,236,.96)!important;
+    border-bottom:1px solid rgba(31,33,51,.08)!important;
+    border-radius:0!important;
+  }
+  html body #app .topbar-hamburger{
+    display:flex!important;
+    width:38px!important;
+    height:38px!important;
+    border-radius:14px!important;
+    background:#FFFFFF!important;
+    border:1px solid rgba(31,33,51,.08)!important;
+    color:#1F2133!important;
+  }
+  html body #app .topbar-title,
+  html body #app #topbar-workspace-name{
+    display:none!important;
+  }
+  html body #app .topbar-search{
+    display:flex!important;
+    min-width:0!important;
+    width:auto!important;
+    max-width:none!important;
+    height:38px!important;
+    padding:0 12px!important;
+    border-radius:999px!important;
+    background:#FFFFFF!important;
+    border:1px solid rgba(31,33,51,.08)!important;
+  }
+  html body #app .topbar-search-fake{
+    font-size:11px!important;
+  }
+  html body #app .topbar-search-kbd,
+  html body #app .topbar-user-info,
+  html body #app .topbar-user-caret{
+    display:none!important;
+  }
+  html body #app .topbar-icon-btn,
+  html body #app .topbar-refresh-btn,
+  html body #app .topbar-notif-btn{
+    width:36px!important;
+    height:36px!important;
+    border-radius:13px!important;
+    background:#FFFFFF!important;
+    border:1px solid rgba(31,33,51,.08)!important;
+    color:#1F2133!important;
+  }
+  html body #app .topbar-user-card{
+    width:38px!important;
+    height:38px!important;
+    padding:0!important;
+    justify-content:center!important;
+  }
+  html body #app .topbar-user-card .topbar-avatar{
+    width:34px!important;
+    height:34px!important;
+    min-width:34px!important;
+  }
+  html body #app .content-area{
+    flex:1 1 auto!important;
+    height:auto!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    -webkit-overflow-scrolling:touch!important;
+    padding:0!important;
+  }
+  html body #app .content-area>div{
+    padding:16px 12px 96px!important;
+  }
+  html body #app .page-header,
+  html body #app .welcome-banner,
+  html body #app .dv5-page-head,
+  html body #app .panel-header{
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:12px!important;
+  }
+  html body #app .page-header h1,
+  html body #app .welcome-banner h2,
+  html body #app .dv5-page-head h1,
+  html body #app .section-title{
+    font-size:23px!important;
+    line-height:1.1!important;
+    letter-spacing:-.03em!important;
+  }
+  html body #app .page-actions,
+  html body #app .panel-actions,
+  html body #app .toolbar,
+  html body #app .table-toolbar,
+  html body #app .dv5-toolbar{
+    width:100%!important;
+    display:flex!important;
+    flex-wrap:wrap!important;
+    gap:8px!important;
+    align-items:stretch!important;
+  }
+  html body #app .btn,
+  html body #app .dv5-btn,
+  html body #app .dreco-btn,
+  html body #app .toolbar-select,
+  html body #app .search-wrap,
+  html body #app .search-wrap input{
+    min-height:42px!important;
+    border-radius:14px!important;
+  }
+  html body #app .search-wrap{
+    width:100%!important;
+    max-width:100%!important;
+  }
+  html body #app .search-wrap input{
+    width:100%!important;
+    min-width:0!important;
+  }
+  html body #app .pill-tabs,
+  html body #app .modal-tabs,
+  html body #app .tab-nav,
+  html body #app .sub-tabs,
+  html body #app .country-tabs,
+  html body #app .dv5-view-tabs{
+    display:flex!important;
+    overflow-x:auto!important;
+    white-space:nowrap!important;
+    gap:6px!important;
+    padding-bottom:4px!important;
+    scrollbar-width:none!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  html body #app .pill-tabs::-webkit-scrollbar,
+  html body #app .modal-tabs::-webkit-scrollbar,
+  html body #app .tab-nav::-webkit-scrollbar,
+  html body #app .sub-tabs::-webkit-scrollbar,
+  html body #app .country-tabs::-webkit-scrollbar,
+  html body #app .dv5-view-tabs::-webkit-scrollbar{
+    display:none!important;
+  }
+  html body #app .metrics-strip,
+  html body #app .metric-grid,
+  html body #app .pipeline-cards,
+  html body #app .cards-grid,
+  html body #app .dashboard-stats,
+  html body #app .dv5-kpi-grid,
+  html body #app .finance-grid,
+  html body #app .reports-grid,
+  html body #app .settings-kpi-row,
+  html body #app .candidate-summary-kpis{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:12px!important;
+  }
+  html body #app .p-card,
+  html body #app .metric-card,
+  html body #app .dash-card,
+  html body #app .panel,
+  html body #app .dreco-card,
+  html body #app .dv5-card,
+  html body #app .dv5-kpi,
+  html body #app .table-card,
+  html body #app .report-card{
+    width:100%!important;
+    max-width:100%!important;
+    border-radius:20px!important;
+    padding:16px!important;
+    overflow:hidden!important;
+  }
+  html body #app .p-card-count,
+  html body #app .metric-val,
+  html body #app .kpi-val,
+  html body #app .stat-val{
+    font-size:28px!important;
+    line-height:1.05!important;
+  }
+  html body #app .pipeline-board,
+  html body #app .kanban-board,
+  html body #app .pipe-board,
+  html body #app .pipeline-columns{
+    display:flex!important;
+    overflow-x:auto!important;
+    gap:12px!important;
+    padding-bottom:10px!important;
+    scroll-snap-type:x mandatory!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  html body #app .pipe-col,
+  html body #app .kanban-col,
+  html body #app .pipeline-col{
+    min-width:82vw!important;
+    max-width:82vw!important;
+    scroll-snap-align:start!important;
+  }
+  html body #app .table-wrap,
+  html body #app .table-scroll,
+  html body #app .dv5-table-wrap{
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  html body #app table{
+    display:table!important;
+    min-width:720px!important;
+    width:100%!important;
+  }
+  html body #app th,
+  html body #app td{
+    white-space:nowrap!important;
+  }
+  html body #app .chart-wrap,
+  html body #app .report-chart,
+  html body #app .activity-chart,
+  html body #app svg{
+    max-width:100%!important;
+  }
+  html body #app .bar-chart,
+  html body #app .activity-bars,
+  html body #app .report-chart{
+    overflow-x:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  html body .modal-bg,
+  html body #app .modal-bg{
+    padding:0!important;
+    align-items:flex-end!important;
+  }
+  html body .modal,
+  html body #app .modal{
+    width:100%!important;
+    max-width:100%!important;
+    max-height:92dvh!important;
+    border-radius:22px 22px 0 0!important;
+    overflow-y:auto!important;
+  }
+  html body #app .modal-header{
+    position:sticky!important;
+    top:0!important;
+    z-index:2!important;
+  }
+  html body #app .modal-body{
+    padding:16px 14px!important;
+  }
+  html body #app .modal-footer{
+    position:sticky!important;
+    bottom:0!important;
+    flex-wrap:wrap!important;
+  }
+  html body #app .form-grid,
+  html body #app .account-form-grid,
+  html body #app .candidate-summary,
+  html body #app .candidate-summary-grid{
+    grid-template-columns:1fr!important;
+  }
+  html body #app .candidate-summary{
+    gap:12px!important;
+  }
+  html body #app .candidate-summary-kpis{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  html body #app .candidate-kpi{
+    width:auto!important;
+    text-align:left!important;
+  }
+  html body #app .bottom-nav{
+    display:flex!important;
+    position:fixed!important;
+    left:10px!important;
+    right:10px!important;
+    bottom:10px!important;
+    z-index:220!important;
+    height:64px!important;
+    padding:7px!important;
+    gap:3px!important;
+    background:#1F2133!important;
+    border:1px solid rgba(255,255,255,.10)!important;
+    border-radius:22px!important;
+    box-shadow:0 18px 44px rgba(31,33,51,.24)!important;
+  }
+  html body #app .bottom-nav-item{
+    flex:1 1 0!important;
+    min-width:0!important;
+    height:50px!important;
+    border-radius:17px!important;
+    color:rgba(255,255,255,.66)!important;
+    background:transparent!important;
+  }
+  html body #app .bottom-nav-item.active{
+    background:#DDF56C!important;
+    color:#1F2133!important;
+  }
+  html body #app .bottom-nav-item i{
+    font-size:20px!important;
+  }
+  html body #app .bottom-nav-item span{
+    display:none!important;
+  }
+  html body #app .sidebar-backdrop.visible{
+    display:block!important;
+  }
+  html body #app .sidebar.mobile-open{
+    display:flex!important;
+    position:fixed!important;
+    left:12px!important;
+    top:12px!important;
+    bottom:12px!important;
+    width:min(292px,calc(100vw - 24px))!important;
+    z-index:300!important;
+    border-radius:24px!important;
+    box-shadow:0 24px 70px rgba(31,33,51,.36)!important;
+  }
+}
+
+@media(max-width:420px){
+  #login-screen .lp-form-panel{
+    padding:24px 14px 30px!important;
+  }
+  #login-screen .lp-header h1{
+    font-size:26px!important;
+  }
+  html body #app .topbar{
+    grid-template-columns:38px minmax(0,1fr) 34px 34px 34px!important;
+    gap:6px!important;
+    padding:8px!important;
+  }
+  html body #app .topbar-icon-btn,
+  html body #app .topbar-refresh-btn,
+  html body #app .topbar-notif-btn,
+  html body #app .topbar-user-card{
+    width:34px!important;
+    height:34px!important;
+  }
+  html body #app .topbar-search{
+    height:34px!important;
+    padding:0 10px!important;
+  }
+  html body #app .content-area>div{
+    padding:12px 10px 92px!important;
+  }
+  html body #app .pipe-col,
+  html body #app .kanban-col,
+  html body #app .pipeline-col{
+    min-width:88vw!important;
+    max-width:88vw!important;
+  }
+}
 </style>
 </head>
 <body>
