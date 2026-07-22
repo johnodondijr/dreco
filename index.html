@@ -3,29 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dreco</title>
-  <meta name="description" content="Dreco helps recruitment agencies manage candidates, documents, payments, visa workflows, travel, and team activity in one workspace.">
+  <title>Recruitflow</title>
+  <meta name="description" content="Recruitflow helps recruitment agencies manage candidates, documents, payments, visa workflows, travel, and team activity in one workspace.">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/icon-180.png">
   <link rel="manifest" href="/manifest.json">
   <link rel="canonical" href="https://dreco-app.vercel.app/">
   <meta name="theme-color" content="#1F2133">
-  <meta name="apple-mobile-web-app-title" content="Dreco">
-  <meta name="application-name" content="Dreco">
+  <meta name="apple-mobile-web-app-title" content="Recruitflow">
+  <meta name="application-name" content="Recruitflow">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Dreco">
+  <meta name="apple-mobile-web-app-title" content="Recruitflow">
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Dreco">
-  <meta property="og:title" content="Dreco">
-  <meta property="og:description" content="A workspace for recruitment agencies to track candidates, documents, commissions, visa processing, travel, and team activity.">
+  <meta property="og:site_name" content="Recruitflow">
+  <meta property="og:title" content="Recruitflow">
+  <meta property="og:description" content="A recruitment agency workspace to track candidates, documents, commissions, visa processing, travel, and team activity.">
   <meta property="og:url" content="https://dreco-app.vercel.app/">
   <meta property="og:image" content="https://dreco-app.vercel.app/icon-512.png">
   <meta property="og:image:width" content="512">
   <meta property="og:image:height" content="512">
-  <meta property="og:image:alt" content="Dreco logo">
+  <meta property="og:image:alt" content="Recruitflow logo">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Dreco">
+  <meta name="twitter:title" content="Recruitflow">
   <meta name="twitter:description" content="Recruitment agency workspace for candidate records, documents, commissions, visa workflows, travel, and team activity.">
   <meta name="twitter:image" content="https://dreco-app.vercel.app/icon-512.png">
   <style>
@@ -522,11 +522,11 @@
     .sv-text{font-size:10px;color:rgba(255,255,255,.2);font-weight:625;white-space:nowrap;transition:opacity .2s}
     .sidebar.collapsed .sv-text{opacity:0}
 
-    /* ── Responsive sidebar auto-collapse ─────────────────────────────────────
-       860–1100px: sidebar shrinks to icon-only automatically (no JS needed).
-       640–860px:  sidebar hidden entirely; hamburger drawer takes over.
+    /* â”€â”€ Responsive sidebar auto-collapse â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+       860â€“1100px: sidebar shrinks to icon-only automatically (no JS needed).
+       640â€“860px:  sidebar hidden entirely; hamburger drawer takes over.
        < 640px:    handled by the mobile drawer block further down.
-       ──────────────────────────────────────────────────────────────────────── */
+       â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     @media(min-width:641px) and (max-width:1100px){
       .sidebar{
         width:var(--sidebar-w-collapsed)!important;
@@ -778,10 +778,10 @@
       .pagination{flex-direction:column;gap:6px;align-items:flex-start;padding:8px 12px}
     }
 
-    /* "-"- BOTTOM NAV — permanently off "-"- */
+    /* "-"- BOTTOM NAV â€” permanently off "-"- */
     .bottom-nav{ display:none !important; }
 
-    /* Hamburger — hidden on desktop, shown on mobile */
+    /* Hamburger â€” hidden on desktop, shown on mobile */
     .topbar-hamburger{
       display:none;align-items:center;justify-content:center;
       width:38px;height:38px;border:none;background:none;cursor:pointer;
@@ -791,12 +791,12 @@
     .topbar-hamburger:active{background:var(--gray-light);}
     .topbar-hamburger i{font-size:22px;line-height:1;}
 
-    /* Sidebar backdrop and swipe target — hidden by default */
+    /* Sidebar backdrop and swipe target â€” hidden by default */
     .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:299;-webkit-tap-highlight-color:transparent;}
     .sidebar-backdrop.visible{display:block;}
     .swipe-edge-hint{display:none;position:fixed;top:0;left:0;bottom:0;width:22px;z-index:298;}
 
-    /* Login screen mobile — overrides are near the end of the stylesheet
+    /* Login screen mobile â€” overrides are near the end of the stylesheet
        (after the 900px and 760px blocks) to avoid cascade conflicts */
     /* "-"- KANBAN "-"- */
     .kanban-col{flex:0 0 240px;background:var(--gray-light);border-radius:var(--radius-xl);padding:12px;display:flex;flex-direction:column;gap:8px;border:1px solid var(--border)}
@@ -1566,7 +1566,7 @@ td,th,.badge,.btn,.toolbar-select,.pill-tab,.country-tab,.field input,.field sel
   .metric-val.sm{font-size:15px!important}
 }
 
-/* Final production calibration for the Dreco authentication surface */
+/* Final production calibration for the Recruitflow authentication surface */
 :root{
   --auth-primary:#635BFF;
   --auth-surface:#F6F5FF;
@@ -1577,7 +1577,7 @@ td,th,.badge,.btn,.toolbar-select,.pill-tab,.country-tab,.field input,.field sel
   --auth-shadow-sm:0 2px 8px rgba(0,0,0,.03);
   --auth-shadow-md:0 18px 40px rgba(15,23,42,.18);
 }
-/* Dreco login exact reference redesign */
+/* Recruitflow login exact reference redesign */
 :root{--font-heading:'Geist Variable',sans-serif;--font-body:'Geist Variable',sans-serif}
 
 @media (prefers-reduced-motion: reduce){
@@ -2111,7 +2111,7 @@ td,th,.badge,.btn,.toolbar-select,.pill-tab,.country-tab,.field input,.field sel
     margin-top:86px!important;
   }
 }
-/* Dreco inner app premium visual upgrade */
+/* Recruitflow inner app premium visual upgrade */
 :root{
   --dreco-purple:#C9F035;
   --dreco-purple-2:#A8CC1A;
@@ -2745,12 +2745,12 @@ tbody tr:hover td{
 .app-layout{border-radius:10px!important;overflow:hidden!important;border:1px solid #E2E8F0!important;background:#F7F9FD!important;box-shadow:0 20px 60px rgba(30,41,59,.08)!important}
 .sidebar{width:228px!important;background:#fff!important;border-right:1px solid #E2E8F0!important;padding:22px 18px!important;color:#18223A!important;box-shadow:none!important}
 .sidebar-top{padding:0 0 28px!important;justify-content:flex-start!important}.sidebar-logo{gap:10px!important}.sidebar-logo-mark{width:36px!important;height:36px!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}.sidebar-logo-mark svg{display:none!important}.sidebar-logo-mark::before{content:'D';display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:0 16px 16px 0;background:linear-gradient(135deg,#6A5AF9,#4D3FD9);color:#fff;font-size:25px;font-weight:562;letter-spacing:-.08em;font-family:'Geist Variable',sans-serif;clip-path:polygon(0 0,72% 0,100% 50%,72% 100%,0 100%)}.sidebar-logo-text{font-size:20px!important;font-weight:512!important;color:#0B1024!important}.sidebar-toggle,.sidebar-user-card,.sidebar-version,.sidebar-divider{display:none!important}.nav-section-label{display:block!important;margin:18px 0 10px!important;padding:0 12px!important;color:#9AA4B7!important;font-size:10px!important;line-height:1!important;font-weight:475!important;letter-spacing:.06em!important;text-transform:uppercase!important}.nav-item{height:40px!important;margin:4px 0!important;padding:0 13px!important;border-radius:9px!important;gap:12px!important;color:#43506A!important;background:transparent!important;font-size:13px!important;font-weight:675!important;box-shadow:none!important;border:0!important}.nav-item i{font-size:17px!important;color:#415479!important}.nav-item:hover{background:#F5F3FF!important;color:#4D3FD9!important}.nav-item:hover i{color:#4D3FD9!important}.nav-item.active{background:linear-gradient(90deg,#F0ECFF,#F7F5FF)!important;color:#4D3FD9!important;font-weight:475!important;box-shadow:inset 4px 0 0 #5A49F8!important}.nav-item.active i{color:#5A49F8!important}.nav-spacer{flex:1!important}.sidebar::after{content:'';display:none!important}
-.main-area{background:#F7F9FD!important}.topbar{height:68px!important;padding:0 24px!important;background:#fff!important;border-bottom:1px solid #E2E8F0!important;gap:18px!important}.topbar-title{font-size:20px!important;font-weight:500!important;color:#0B1024!important;flex:0 0 520px!important}.topbar-search{order:0!important;flex:1 1 auto!important;max-width:360px!important;margin-left:auto!important}.topbar-search input{height:34px!important;border-radius:9px!important;border:1px solid #DCE3EF!important;background:#fff!important;color:#26334D!important;font-size:12px!important;padding-left:36px!important}.topbar-search input:focus{border-color:#BDB7FF!important;box-shadow:0 0 0 4px rgba(90,73,248,.10)!important}.topbar-search::after{content:'âŒ˜ K';position:absolute;right:10px;top:7px;border:1px solid #DCE3EF;border-radius:6px;color:#8B96AA;font-size:11px;padding:2px 6px;background:#fff}.save-dot{width:8px!important;height:8px!important;background:#FF5068!important;margin-left:8px!important}.save-label{display:none!important}.topbar::after{content:'?';width:20px;height:20px;border:1px solid #93A0B6;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#3D4A65;font-size:12px;font-weight:500}.topbar-workspace{height:34px!important;border-radius:9px!important;border:0!important;background:#F0ECFF!important;color:#11182D!important;font-size:12px!important;font-weight:475!important;box-shadow:none!important;padding:0 14px!important}.topbar-workspace i{color:#5A49F8!important}.topbar-profile-btn{width:36px!important;height:36px!important}.topbar-avatar{width:36px!important;height:36px!important;border-radius:50%!important;background:linear-gradient(135deg,#6657F6,#4536D6)!important;color:#fff!important;font-size:13px!important;font-weight:488!important}
+.main-area{background:#F7F9FD!important}.topbar{height:68px!important;padding:0 24px!important;background:#fff!important;border-bottom:1px solid #E2E8F0!important;gap:18px!important}.topbar-title{font-size:20px!important;font-weight:500!important;color:#0B1024!important;flex:0 0 520px!important}.topbar-search{order:0!important;flex:1 1 auto!important;max-width:360px!important;margin-left:auto!important}.topbar-search input{height:34px!important;border-radius:9px!important;border:1px solid #DCE3EF!important;background:#fff!important;color:#26334D!important;font-size:12px!important;padding-left:36px!important}.topbar-search input:focus{border-color:#BDB7FF!important;box-shadow:0 0 0 4px rgba(90,73,248,.10)!important}.topbar-search::after{content:'Ã¢Å’Ëœ K';position:absolute;right:10px;top:7px;border:1px solid #DCE3EF;border-radius:6px;color:#8B96AA;font-size:11px;padding:2px 6px;background:#fff}.save-dot{width:8px!important;height:8px!important;background:#FF5068!important;margin-left:8px!important}.save-label{display:none!important}.topbar::after{content:'?';width:20px;height:20px;border:1px solid #93A0B6;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#3D4A65;font-size:12px;font-weight:500}.topbar-workspace{height:34px!important;border-radius:9px!important;border:0!important;background:#F0ECFF!important;color:#11182D!important;font-size:12px!important;font-weight:475!important;box-shadow:none!important;padding:0 14px!important}.topbar-workspace i{color:#5A49F8!important}.topbar-profile-btn{width:36px!important;height:36px!important}.topbar-avatar{width:36px!important;height:36px!important;border-radius:50%!important;background:linear-gradient(135deg,#6657F6,#4536D6)!important;color:#fff!important;font-size:13px!important;font-weight:488!important}
 .content-area{background:#F7F9FD!important}.content-area>div{padding:28px 26px 24px!important}.ref-dashboard{position:relative;animation:refFade .32s ease both}.ref-dashboard-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px}.ref-dashboard-head h1{font-size:20px;line-height:1.2;font-weight:512;color:#0B1024;margin:0 0 7px}.ref-dashboard-head p{font-size:13px;color:#667089;margin:0}.ref-date-btn{height:38px;display:inline-flex;align-items:center;gap:10px;padding:0 16px;border:1px solid #DDE4F0;border-radius:9px;background:#fff;color:#40506A;font-size:12px;font-weight:700;box-shadow:0 8px 20px rgba(15,23,42,.03)}.ref-board-grid{display:grid;grid-template-columns:minmax(0,1fr) 266px;gap:20px}.ref-main-column{min-width:0}.ref-kpi-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin-bottom:18px}.ref-kpi{height:106px;background:#fff;border:1px solid #E6EAF2;border-radius:10px;padding:18px;display:flex;align-items:center;gap:18px;box-shadow:0 12px 28px rgba(30,41,59,.04);transition:transform .18s,box-shadow .18s}.ref-kpi:hover,.ref-card:hover{transform:translateY(-2px);box-shadow:0 18px 38px rgba(30,41,59,.08)}.ref-kpi-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#5A49F8;font-size:18px}.ref-kpi span{display:block;font-size:11px;color:#526077;font-weight:450;margin-bottom:9px}.ref-kpi strong{display:block;color:#0B1024;font-size:24px;font-weight:531;letter-spacing:-.02em;line-height:1}.ref-kpi em{display:flex;align-items:center;gap:4px;margin-top:10px;font-style:normal;color:#0AA35D;font-size:11px;font-weight:475}.ref-kpi small{color:#667089;font-weight:650}.ref-kpi.wide{background:linear-gradient(135deg,#F7FFFB,#ECFBF4)}.ref-card{background:#fff;border:1px solid #E6EAF2;border-radius:10px;box-shadow:0 12px 28px rgba(30,41,59,.04);transition:transform .18s,box-shadow .18s}.ref-card-title{font-size:14px;font-weight:519;color:#0B1024}.ref-card-head{display:flex;align-items:center;justify-content:space-between}.ref-card-head button,.ref-card button{border:0;background:transparent;color:#4D3FD9;font-size:12px;font-weight:406;cursor:pointer}.ref-pipeline-overview{padding:20px;margin-bottom:18px}.ref-stage-row{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr auto 1fr;gap:10px;align-items:center;margin-top:18px}.ref-stage-box{height:64px;border:1px solid #E5EAF3;border-radius:10px;background:#fff;display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:12px;padding:0 14px}.ref-stage-icon{width:34px;height:34px;border-radius:10px;background:#F0ECFF;color:#5A49F8;display:flex;align-items:center;justify-content:center;font-size:17px}.ref-stage-label{font-size:10px;color:#647089;font-weight:438}.ref-stage-value{font-size:22px;color:#0B1024;font-weight:531;line-height:1.1}.ref-stage-percent{font-size:12px;color:#16213A;font-weight:438}.ref-stage-arrow{color:#A9B3C7;font-size:18px}.ref-pipe-line{height:4px;border-radius:999px;background:#E6EAF2;margin-top:22px;overflow:hidden}.ref-pipe-line span{display:block;height:100%;background:#5A49F8}.ref-pipe-foot{display:flex;justify-content:space-between;margin-top:12px;color:#0AA35D;font-size:12px;font-weight:475}.ref-pipe-foot span:first-child{color:#4D3FD9}.ref-chart-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(310px,.85fr);gap:18px;margin-bottom:18px}.ref-trend-card,.ref-breakdown-card{height:278px;padding:18px}.ref-card-head>button{border:1px solid #DDE4F0;border-radius:8px;padding:8px 12px;color:#40506A}.ref-legend{display:flex;gap:22px;margin:14px 0 8px 56px;font-size:12px;color:#526077}.ref-legend span{display:flex;align-items:center;gap:8px}.ref-legend b{width:8px;height:8px;border-radius:50%;background:#5A49F8}.ref-legend span:nth-child(2) b{background:#5DD6C4}.ref-line-chart{position:relative;height:205px;padding:0 14px}.ref-line-chart svg{width:100%;height:168px;display:block}.ref-tooltip{position:absolute;left:42%;top:60px;width:122px;background:#fff;border:1px solid #DDE4F0;border-radius:9px;padding:12px;box-shadow:0 12px 30px rgba(30,41,59,.16);font-size:11px}.ref-tooltip strong{display:block;color:#0B1024;margin-bottom:8px}.ref-tooltip span{display:flex;justify-content:space-between;color:#526077;margin-top:6px}.ref-tooltip b{width:6px;height:6px;background:#5A49F8;border-radius:50%;margin-right:6px}.ref-axis{display:flex;justify-content:space-between;font-size:10px;color:#667089;margin-top:-3px}.ref-donut-wrap{display:grid;grid-template-columns:180px 1fr;gap:26px;align-items:center;height:220px}.ref-donut{width:174px;height:174px;border-radius:50%;position:relative}.ref-donut::after{content:'';position:absolute;inset:43px;border-radius:50%;background:#fff}.ref-donut>div{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center}.ref-donut strong{font-size:26px;color:#0B1024}.ref-donut span{font-size:12px;color:#526077}.ref-donut-legend{display:flex;flex-direction:column;gap:13px}.ref-donut-legend div{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#526077}.ref-donut-legend span{display:flex;align-items:center;gap:10px}.ref-donut-legend b{width:8px;height:8px;border-radius:50%;display:inline-block}.ref-donut-legend strong{font-weight:475;color:#16213A}.ref-bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.ref-bottom-grid .ref-card{height:212px;padding:18px}.ref-list{margin-top:18px}.ref-activity-item,.ref-task{display:grid;grid-template-columns:34px 1fr auto;gap:12px;align-items:center;padding:9px 0}.ref-avatar-mini{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#FFD3B3,#A9C7FF);font-size:9px;font-weight:500;color:#172033;display:flex;align-items:center;justify-content:center}.ref-activity-name,.ref-task strong{font-size:12px;font-weight:488;color:#16213A}.ref-activity-meta,.ref-task small{font-size:11px;color:#667089;display:block;margin-top:3px}.ref-activity-time{font-size:10px;color:#8B96AA}.ref-task{grid-template-columns:16px 1fr auto}.ref-task>span{width:15px;height:15px;border:1px solid #C7D0E0;border-radius:4px}.ref-task em{font-style:normal;font-size:10px;color:#EF4444}.ref-task:nth-child(2) em{color:#F59E0B}.ref-task:nth-child(3) em{color:#4D3FD9}.ref-side-column{display:flex;flex-direction:column;gap:18px}.ref-fin-card{height:380px;border-radius:10px;background:linear-gradient(145deg,#5B49F5 0%,#3F31CF 100%);color:#fff;padding:20px;box-shadow:0 18px 40px rgba(79,64,224,.25)}.ref-fin-head{display:flex;align-items:center;justify-content:space-between;text-transform:uppercase;font-size:11px;font-weight:531;letter-spacing:.04em}.ref-fin-head button{height:30px;padding:0 10px;border:1px solid rgba(255,255,255,.18);border-radius:8px;background:rgba(255,255,255,.07);color:#fff;font-size:11px}.ref-fin-block{border-top:1px solid rgba(255,255,255,.18);margin-top:18px;padding-top:16px}.ref-fin-block p{margin:0 0 9px;font-size:12px;opacity:.88}.ref-fin-block h2{margin:0 0 16px;color:#fff;font-size:24px;font-weight:531}.ref-fin-block div{display:flex;justify-content:space-between;margin-top:9px;font-size:12px}.ref-fin-report{width:100%;height:38px;margin-top:16px;border:1px solid rgba(255,255,255,.18);border-radius:9px;background:rgba(255,255,255,.08);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:12px;font-weight:475}.ref-upcoming{height:224px;padding:16px}.ref-travel-item{display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;padding:10px 0}.ref-travel-icon{width:34px;height:34px;border-radius:9px;background:#F0ECFF;color:#5A49F8;display:flex;align-items:center;justify-content:center}.ref-travel-name{font-size:11px;font-weight:500;color:#16213A}.ref-travel-meta{font-size:10px;color:#667089;margin-top:2px}.ref-travel-date{font-size:10px;color:#5A49F8;background:#F0ECFF;border-radius:8px;padding:6px 8px;font-weight:475}.ref-total-link{text-align:center;color:#4D3FD9;font-size:12px;font-weight:475;margin-top:4px}.ref-quick{height:200px;padding:16px}.ref-quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.ref-quick-grid button{height:54px;border:1px solid #E3E8F2;border-radius:9px;background:#fff;color:#18223A;font-size:11px;font-weight:450;display:flex;align-items:center;gap:10px;justify-content:center}.ref-quick-grid button:nth-child(1){background:#FCFBFF}.ref-quick-grid button:nth-child(2){background:#F6FFFB}.ref-quick-grid button:nth-child(3){background:#FFF9F5}.ref-quick-grid button:nth-child(4){background:#F7FBFF}.ref-quick-grid i{width:28px;height:28px;border-radius:9px;background:#F0ECFF;color:#5A49F8;display:flex;align-items:center;justify-content:center;font-size:16px}.ref-chat-btn{position:fixed;right:22px;bottom:20px;width:44px;height:44px;border-radius:50%;border:0;background:#5A49F8;color:#fff;box-shadow:0 16px 30px rgba(90,73,248,.3);font-size:22px;display:flex;align-items:center;justify-content:center;z-index:20}.ref-empty{font-size:12px;color:#667089;padding:12px 0}@keyframes refFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:1280px){.topbar-title{flex-basis:300px!important}.ref-board-grid{grid-template-columns:1fr}.ref-side-column{display:grid;grid-template-columns:repeat(3,minmax(240px,1fr));overflow-x:auto}.ref-fin-card{height:auto}.ref-kpi-row{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:900px){.sidebar{display:none!important}.topbar-title{flex:1!important}.topbar-workspace,.topbar::after,.save-dot{display:none!important}.content-area>div{padding:18px 14px 90px!important}.ref-kpi-row,.ref-chart-grid,.ref-bottom-grid{grid-template-columns:1fr}.ref-stage-row{display:flex;overflow-x:auto}.ref-stage-box{min-width:172px}.ref-stage-arrow{display:none}.ref-side-column{display:flex;overflow:visible}.ref-donut-wrap{grid-template-columns:1fr;justify-items:center}.ref-dashboard-head{flex-direction:column;gap:14px}.ref-board-grid{gap:16px}}
 
-/* Reference match correction: keep Dreco logo, cleaner typography, tighter proportions */
+/* Reference match correction: keep Recruitflow logo, cleaner typography, tighter proportions */
 body,#app,.app-layout,.sidebar,.topbar,.content-area,.ref-dashboard{
   font-family:'Geist Variable',sans-serif!important;
   font-feature-settings:'cv02' 1,'cv03' 1,'cv04' 1,'cv11' 1!important;
@@ -2774,7 +2774,7 @@ body,#app,.app-layout,.sidebar,.topbar,.content-area,.ref-dashboard{
 /* Full workflow sections and responsive cleanup */
 .sidebar-user-card.sidebar-account-trigger{border:0;width:100%;text-align:left;cursor:pointer}.sidebar-user-card.sidebar-account-trigger:hover{background:#F7F5FF!important;border-color:#DCD8FF!important}.topbar-avatar-static{cursor:default!important;pointer-events:none!important}.profile-dropdown{position:fixed!important;right:auto!important;left:228px!important;top:auto!important;bottom:auto!important}.profile-wrap .profile-dropdown{left:228px!important;right:auto!important;top:auto!important;bottom:auto!important}.section-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}.section-page-head h2{margin:0;color:#0B1024;font-size:22px;font-weight:488;letter-spacing:-.035em}.section-page-head p{margin:6px 0 0;color:#657188;font-size:13px}.ref-table{width:100%;min-width:900px}.ref-table th,.ref-table td{white-space:nowrap}.team-grid,.settings-page-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.team-card,.settings-page-card{background:#fff;border:1px solid #E6EAF2;border-radius:12px;box-shadow:0 12px 28px rgba(30,41,59,.04);padding:18px}.team-card-head{display:flex;align-items:center;gap:12px}.team-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#6A5AF9,#4D3FD9);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:488}.team-name{font-weight:475;color:#0B1024}.team-role{font-size:12px;color:#657188;margin-top:3px}.team-perms{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.team-perms span,.settings-pill{font-size:11px;border-radius:999px;background:#F0ECFF;color:#4D3FD9;padding:6px 9px;font-weight:406}.settings-page-card h3{margin:0 0 8px;color:#0B1024;font-size:15px}.settings-page-card p{margin:0 0 14px;color:#657188;font-size:12px;line-height:1.5}.setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid #EEF2F7}.setting-row:first-of-type{border-top:0}.setting-row span{font-size:12px;color:#27364F}.setting-row button,.setting-row select{height:32px;border-radius:8px;border:1px solid #DDE4F0;background:#fff;color:#27364F;padding:0 10px;font-size:12px}.mini-empty{padding:18px;color:#657188;font-size:13px}.action-link{border:0;background:transparent;color:#4D3FD9;font-weight:438;cursor:pointer}.finance-period-menu{position:relative;display:inline-flex}.finance-period-menu select{height:30px;border:1px solid rgba(255,255,255,.18);border-radius:8px;background:rgba(255,255,255,.08);color:#fff;font-size:11px;padding:0 8px}.finance-period-menu option{color:#111827}.trend-hit{position:absolute;inset:0;cursor:crosshair}.ref-tooltip.dynamic{display:none}.ref-line-chart:hover .ref-tooltip.dynamic{display:block}@media(max-width:900px){.section-page-head{flex-direction:column}.section-page-head .btn{width:100%}.profile-dropdown{left:10px!important;right:10px!important;bottom:74px!important;width:auto!important}.ref-table{min-width:820px}.team-grid,.settings-page-grid{grid-template-columns:1fr}.topbar-avatar-static{display:flex!important}}
 
-/* Dreco functional responsiveness pass */
+/* Recruitflow functional responsiveness pass */
 .profile-dropdown{z-index:400!important}
 .ref-line-chart{position:relative!important}
 .ref-tooltip.dynamic{pointer-events:none;transition:left .12s ease,top .12s ease}
@@ -2792,10 +2792,10 @@ body,#app,.app-layout,.sidebar,.topbar,.content-area,.ref-dashboard{
 
 .quick-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.quick-choice{display:block;cursor:pointer}.quick-choice input{position:absolute;opacity:0;pointer-events:none}.quick-choice span{height:100%;display:flex;flex-direction:column;gap:8px;border:1px solid #DDE4F0;border-radius:14px;background:#fff;padding:16px;color:#27364F}.quick-choice i{width:38px;height:38px;border-radius:12px;background:#F0EEFF;color:#4D3FD9;display:inline-flex;align-items:center;justify-content:center;font-size:22px}.quick-choice strong{font-size:14px;color:#0B1024}.quick-choice small{font-size:12px;color:#657188;line-height:1.4}.quick-choice input:checked+span{border-color:#6A5AF9;box-shadow:0 0 0 4px rgba(106,90,249,.12);background:#FBFAFF}.quick-modal textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-family:inherit;resize:vertical}@media(max-width:640px){.quick-choice-grid{grid-template-columns:1fr}}
 
-/* Dreco proportion and efficiency pass */
+/* Recruitflow proportion and efficiency pass */
 html,body{font-size:12.5px!important}.app-layout{max-width:100%!important}.sidebar{width:224px!important;padding:18px 14px 14px!important}.sidebar-toggle,.sidebar-version{display:none!important}.sidebar-user-card.sidebar-account-trigger{display:flex!important;margin-top:12px!important;background:#F8FAFC!important;border:1px solid #E6EAF2!important;border-radius:12px!important;min-height:54px!important;padding:9px!important}.sidebar::after{display:none!important;content:none!important}.suc-avatar{width:34px!important;height:34px!important;border-radius:50%!important;background:linear-gradient(135deg,#6657F6,#4536D6)!important;color:#fff!important}.suc-name{font-size:12px!important}.suc-org{font-size:10px!important;color:#667089!important}.profile-dropdown{position:fixed!important;left:16px!important;top:auto!important;bottom:82px!important;right:auto!important;width:292px!important;max-width:calc(100vw - 32px)!important}.topbar{height:60px!important;padding:0 20px!important;gap:12px!important}.topbar-title{flex:0 0 auto!important;font-size:18px!important}.topbar-search{max-width:340px!important}.topbar-workspace{height:32px!important}.content-area>div{padding:20px 22px 22px!important}.ref-dashboard-head{margin-bottom:18px!important}.ref-dashboard-head h1{font-size:18px!important}.ref-kpi-row{gap:14px!important;margin-bottom:14px!important}.ref-kpi{height:92px!important;padding:14px!important;gap:12px!important}.ref-kpi-icon{width:36px!important;height:36px!important}.ref-kpi strong{font-size:21px!important}.ref-board-grid{grid-template-columns:minmax(0,1fr) 252px!important;gap:16px!important}.ref-pipeline-overview{padding:16px!important;margin-bottom:14px!important}.ref-stage-box{height:58px!important}.ref-stage-value{font-size:19px!important}.ref-trend-card,.ref-breakdown-card{height:252px!important;padding:16px!important}.ref-fin-card{height:auto!important;min-height:346px!important;padding:18px!important}.ref-fin-block h2{font-size:22px!important}.ref-upcoming,.ref-quick{height:auto!important}.section-page-head{margin-bottom:14px!important}.section-page-head h2{font-size:20px!important}.panel{border-radius:11px!important}.panel-header{padding:14px 16px!important}.metric-card{min-height:86px!important}.metric-val{font-size:24px!important}.metric-val.sm{font-size:18px!important}@media(max-width:1200px){.ref-board-grid{grid-template-columns:1fr!important}.ref-side-column{display:grid!important;grid-template-columns:repeat(3,minmax(230px,1fr))!important;overflow-x:auto!important}.topbar-title{font-size:17px!important}}@media(max-width:900px){.sidebar{display:none!important}.topbar{height:auto!important;min-height:56px!important;flex-wrap:wrap!important;padding:10px 12px!important}.topbar-title{width:100%!important}.topbar-workspace{max-width:100%!important}.content-area>div{padding:14px 12px 86px!important}.ref-kpi-row,.ref-chart-grid,.ref-bottom-grid{grid-template-columns:1fr!important}.ref-side-column{display:flex!important;flex-direction:column!important}.ref-trend-card,.ref-breakdown-card{height:auto!important;min-height:240px!important}.profile-dropdown{left:10px!important;right:10px!important;bottom:74px!important;width:auto!important}}@media(max-width:640px){.ref-kpi{height:auto!important;min-height:84px!important}.ref-stage-row{overflow-x:auto!important}.ref-stage-box{min-width:168px!important}.section-page-head .btn{width:100%!important;justify-content:center!important}.modal{max-width:100%!important}.topbar-search{display:none!important}.bottom-nav{height:62px!important}.bottom-nav-item span{font-size:9px!important}}
 
-/* Final Dreco efficiency and responsiveness stabilizer */
+/* Final Recruitflow efficiency and responsiveness stabilizer */
 .smart-alert-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:0 0 16px}.smart-alert{border:1px solid #E2E8F4;border-radius:16px;background:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;color:#111827;font-weight:438;box-shadow:0 12px 30px rgba(35,42,70,.05);cursor:pointer}.smart-alert i{width:34px;height:34px;border-radius:11px;display:inline-flex;align-items:center;justify-content:center;background:#F1EEFF;color:#5A49F8;font-size:18px}.smart-alert span{flex:1;text-align:left;font-size:13px}.smart-alert strong{font-size:20px}.smart-alert.warn i{background:#FFF4DE;color:#B7791F}.smart-alert.money i{background:#EAFBF3;color:#079455}.smart-alert.blue i{background:#EAF2FF;color:#3B82F6}.finance-page-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}.transaction-panel{padding-bottom:14px}.transaction-list{display:flex;flex-direction:column;gap:8px;padding:0 14px 14px}.transaction-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid #EEF2F7}.transaction-row:last-child{border-bottom:0}.transaction-row strong{display:block;font-size:12px;color:#10172F}.transaction-row span,.transaction-row em{display:block;font-size:11px;color:#7B8496;font-style:normal}.transaction-row b{display:block;text-align:right;font-size:13px;color:#10172F}.audit-row{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #EEF2F7;padding:10px 0;font-size:12px}.audit-row strong{color:#10172F}.audit-row span{color:#7B8496}.doc-checklist{border:1px solid #E7ECF5;background:#F8FAFF;border-radius:14px;padding:12px;margin:0 0 14px}.doc-checklist-title{font-size:12px;font-weight:500;color:#10172F;margin-bottom:10px}.doc-checklist-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.doc-check{display:flex;align-items:center;gap:7px;border:1px solid #E1E7F2;background:#fff;border-radius:10px;padding:8px 9px;font-size:11px;color:#667085;font-weight:438}.doc-check.done{color:#067647;background:#ECFDF3;border-color:#B7E7C7}.doc-check.missing{color:#B54708;background:#FFFAEB;border-color:#FEDF89}.doc-check i{font-size:15px}
 @media(max-width:1180px){#login-screen{padding:0!important;align-items:flex-start!important;overflow:auto!important}#login-screen .lp-window{display:block!important;width:100%!important;max-width:none!important;height:auto!important;min-height:100dvh!important;max-height:none!important;border-radius:0!important;border:0!important}#login-screen .lp-media{display:none!important}#login-screen .lp-form-panel{min-height:100dvh!important;width:100%!important;padding:32px 24px!important;overflow:visible!important}#login-screen .lp-content-area{max-width:430px!important;margin:78px auto 0!important}#login-screen .lp-footer-note{position:static!important;margin:52px auto 0!important;max-width:430px!important}.app-layout{min-width:0}.main{min-width:0}.content-area{padding:18px!important}.topbar{gap:10px!important}.topbar-search{max-width:420px!important}.ref-board-grid{grid-template-columns:1fr!important}.ref-side-column{display:grid!important;grid-template-columns:repeat(3,minmax(240px,1fr));gap:14px;overflow-x:auto;padding-bottom:4px}.ref-bottom-grid,.ref-chart-grid{grid-template-columns:1fr!important}.finance-page-grid{grid-template-columns:1fr}.smart-alert-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:900px){.sidebar{position:fixed!important;left:0;top:0;bottom:0;z-index:80;transform:translateX(-102%);transition:transform .2s ease}.sidebar.open{transform:translateX(0)}.main{width:100%!important}.topbar{height:auto!important;min-height:58px!important;padding:10px 14px!important;flex-wrap:wrap}.topbar-search{order:3;flex:1 0 100%!important;max-width:none!important}.content-area{padding:14px!important;height:calc(100dvh - 104px)!important}.ref-dashboard-head{align-items:flex-start!important;gap:12px!important;flex-direction:column!important}.ref-dashboard-head h1{font-size:22px!important}.ref-kpi-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}.ref-stage-row{display:flex!important;overflow-x:auto!important;padding-bottom:8px}.ref-stage-box{min-width:210px!important}.ref-side-column{grid-template-columns:1fr!important;overflow:visible!important}.section-page-head{flex-direction:column!important;align-items:stretch!important}.metrics-strip{grid-template-columns:repeat(2,minmax(0,1fr))!important}.table-scroll{overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}.table-scroll table,.table-scroll .ref-table{min-width:900px!important;width:max-content!important}.smart-alert-strip{grid-template-columns:1fr}.modal{width:min(96vw,720px)!important;max-height:90dvh!important}.modal-body{overflow:auto!important}}
@@ -2807,10 +2807,10 @@ html,body{font-size:12.5px!important}.app-layout{max-width:100%!important}.sideb
 @media(max-width:900px){.sidebar{display:none!important}.topbar{height:auto!important;min-height:58px!important;align-items:center!important}.topbar-title{width:auto!important;flex:1 1 auto!important;min-width:120px!important}.topbar-search{display:none!important}.content-area{height:calc(100dvh - 58px)!important;overflow:auto!important}.content-area>div{padding:14px 12px 92px!important}.ref-dashboard-head{position:relative!important;margin-bottom:14px!important}.ref-dashboard-head h1{font-size:20px!important;line-height:1.15!important}.ref-kpi-row{grid-template-columns:1fr!important}.smart-alert-strip{grid-template-columns:1fr!important}.ref-side-column{display:flex!important;flex-direction:column!important;overflow:visible!important}.ref-upcoming,.ref-quick,.ref-fin-card{height:auto!important;min-height:0!important}.ref-chart-grid,.ref-bottom-grid{grid-template-columns:1fr!important}.ref-trend-card,.ref-breakdown-card{height:auto!important;min-height:244px!important}.ref-line-chart{height:186px!important}.ref-axis{font-size:10px!important}.profile-dropdown{left:10px!important;right:10px!important;bottom:74px!important;top:auto!important;width:auto!important;max-width:none!important}.settings-page-grid,.team-grid{grid-template-columns:1fr!important}}
 @media(max-width:560px){.topbar-workspace,.save-dot,.save-label,.topbar-icon-btn{display:none!important}.ref-quick-grid{grid-template-columns:1fr!important}.ref-quick-grid button{justify-content:flex-start!important}.ref-chat-btn{width:42px!important;height:42px!important;right:14px!important;bottom:76px!important}.ref-axis span{font-size:9px!important}.section-page-head h2{font-size:20px!important}}
 
-/* ══════════════════════════════════════════════════════════
-   DRECO FINAL AUTHORITY — resolves all conflicting :root
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   DRECO FINAL AUTHORITY â€” resolves all conflicting :root
    blocks and !important overrides above. This block wins.
-   ══════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 :root {
   /* Single authoritative purple accent */
   --accent: #5347CE;
@@ -2840,7 +2840,7 @@ html,body{font-size:12.5px!important}.app-layout{max-width:100%!important}.sideb
   --red-light: #FDEAEA;
   --blue: #1A6BB5;
   --blue-light: #E3EEF9;
-  /* Dreco v2 — lime green + dark navy */
+  /* Recruitflow v2 â€” lime green + dark navy */
   --dreco-purple: #C9F035;
   --dreco-purple-2: #A8CC1A;
   --dreco-lavender: #D4F56A;
@@ -2894,7 +2894,7 @@ html,body{font-size:12.5px!important}.app-layout{max-width:100%!important}.sideb
 .save-dot.saving{background:var(--amber)!important;animation:pulse .8s infinite alternate}
 @keyframes pulse{to{opacity:.5}}
 
-/* Bottom nav removed — navigation is now via left sidebar drawer on mobile. */
+/* Bottom nav removed â€” navigation is now via left sidebar drawer on mobile. */
 
 
 /* =========================================================
@@ -3079,11 +3079,11 @@ th { padding: 9px 14px !important; }
 /* Candidate profile name */
 .pd-name { font-family: 'Geist Variable', sans-serif !important; font-weight: 562 !important; }
 
-/* ═══════════════════════════════════════════
-   MOBILE RESPONSIVENESS — comprehensive fix
-   ═══════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   MOBILE RESPONSIVENESS â€” comprehensive fix
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* Topbar: single-row layout on mobile — title inline with hamburger */
+/* Topbar: single-row layout on mobile â€” title inline with hamburger */
 @media(max-width:900px) {
   .topbar {
     height: 56px !important;
@@ -3103,11 +3103,11 @@ th { padding: 9px 14px !important; }
     overflow: hidden !important;
     text-overflow: ellipsis !important;
   }
-  /* Hide workspace button text on mobile — keep only avatar */
+  /* Hide workspace button text on mobile â€” keep only avatar */
   .topbar-workspace {
     display: none !important;
   }
-  /* Compact topbar-search hidden — cmd palette triggered by avatar */
+  /* Compact topbar-search hidden â€” cmd palette triggered by avatar */
   .topbar-search {
     display: none !important;
   }
@@ -3191,7 +3191,7 @@ th { padding: 9px 14px !important; }
   .dv5-view-tab { flex: 1 !important; }
 }
 
-/* Final nav-item active override — must come last to beat all competing rules */
+/* Final nav-item active override â€” must come last to beat all competing rules */
 #app .nav-item.active,
 .sidebar .nav-item.active {
   background: #5347CE !important;
@@ -3204,7 +3204,7 @@ th { padding: 9px 14px !important; }
   color: rgba(255,255,255,.9) !important;
 }
 
-/* Tighter sidebar — shadcn-inspired 36px nav items */
+/* Tighter sidebar â€” shadcn-inspired 36px nav items */
 #app .nav-item,
 .sidebar .nav-item {
   height: 36px !important;
@@ -3213,7 +3213,7 @@ th { padding: 9px 14px !important; }
   font-size: 12.5px !important;
 }
 
-/* ⌘K Command Palette */
+/* âŒ˜K Command Palette */
 #cmd-overlay {
   position: fixed; inset: 0; background: rgba(15,23,42,.52); z-index: 99999;
   display: none; align-items: flex-start; justify-content: center;
@@ -3352,15 +3352,15 @@ input, textarea, select, [contenteditable] {
 #app .sidebar-user-card .suc-name{font-size:13px!important;line-height:1.25!important}
 #app .sidebar-user-card .suc-org{font-size:11px!important;line-height:1.25!important;max-width:100%!important}
 
-/* ══════════════════════════════════════════════════════════════
-   HRISELINK-INSPIRED THEME v2 — clean minimal enterprise UI
-   ══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   HRISELINK-INSPIRED THEME v2 â€” clean minimal enterprise UI
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 /* Metric card icon box */
 .mc-icon{width:38px;height:38px;background:#F3F4F6;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;flex-shrink:0}
 .mc-icon i{font-size:19px;color:#6B7280}
 
-/* Tabs — HRISELINK bordered-button style */
+/* Tabs â€” HRISELINK bordered-button style */
 .pill-tabs{gap:2px!important;background:transparent!important}
 .pill-tab{padding:6px 14px!important;border-radius:8px!important;border:1px solid transparent!important;font-size:13px!important;font-weight:625!important;color:#6B7280!important;background:transparent!important;box-shadow:none!important}
 .pill-tab.active{background:#ffffff!important;border:1px solid #E5E7EB!important;color:#111827!important;font-weight:375!important;box-shadow:0 1px 3px rgba(0,0,0,.06)!important}
@@ -3374,10 +3374,10 @@ input, textarea, select, [contenteditable] {
 .sidebar-search-bar:hover{border-color:#D1D5DB;background:#ffffff}
 .sidebar.collapsed .sidebar-search-bar{display:none!important}
 
-/* Hide click-hint — not in HRISELINK */
+/* Hide click-hint â€” not in HRISELINK */
 .click-hint{display:none!important}
 
-/* Topbar workspace switcher — minimal */
+/* Topbar workspace switcher â€” minimal */
 .topbar-workspace{font-size:12px!important;color:#6B7280!important;background:transparent!important;border:1px solid #E8EAED!important;border-radius:8px!important;padding:5px 10px!important;gap:5px!important}
 .topbar-workspace i{font-size:13px!important;color:#9CA3AF!important}
 .topbar-workspace:hover{background:#F9FAFB!important;border-color:#D1D5DB!important;color:#111827!important}
@@ -3386,7 +3386,7 @@ input, textarea, select, [contenteditable] {
 .panel-header{flex-wrap:wrap!important;row-gap:10px!important}
 .panel-actions{border-top:1px solid #F1F3F5;padding-top:10px;width:100%;margin-top:2px;flex-wrap:wrap;gap:6px}
 
-/* Table header — cleaner weight */
+/* Table header â€” cleaner weight */
 th{font-size:12px!important;font-weight:375!important;color:#6B7280!important;letter-spacing:0!important;text-transform:none!important;white-space:nowrap!important}
 
 /* Sidebar bottom workspace badge */
@@ -3400,7 +3400,7 @@ th{font-size:12px!important;font-weight:375!important;color:#6B7280!important;le
 .sidebar-ws-caret{color:#9CA3AF;font-size:14px;flex-shrink:0}
 .sidebar.collapsed .sidebar-ws-info,.sidebar.collapsed .sidebar-ws-caret{display:none}
 
-/* App shell — warm cream like reference */
+/* App shell â€” warm cream like reference */
 #app,.app-layout,.main-area{background:#F5F4EF!important}
 .content-area{background:#F5F4EF!important}
 
@@ -3422,25 +3422,25 @@ th{font-size:12px!important;font-weight:375!important;color:#6B7280!important;le
 #app .nav-item:hover,.sidebar .nav-item:hover{background:var(--dreco-surface-soft,#F8F7EF)!important;color:var(--dreco-ink,#171715)!important;transform:none!important}
 #app .nav-item:hover i,.sidebar .nav-item:hover i{color:var(--dreco-ink,#171715)!important}
 
-/* Active nav — dark ink */
+/* Active nav â€” dark ink */
 #app .nav-item.active,.sidebar .nav-item.active{background:var(--dreco-ink,#171715)!important;color:#fff!important;font-weight:438!important;box-shadow:none!important;border:none!important}
 #app .nav-item.active i,.sidebar .nav-item.active i{color:#fff!important}
 
 /* Sidebar nav label sizing */
 #app .nav-item-label,.sidebar .nav-item-label{font-size:12.5px!important;font-weight:438!important;color:inherit!important}
 
-/* Sidebar search — hide on desktop, show on mobile */
+/* Sidebar search â€” hide on desktop, show on mobile */
 .sidebar-search-bar{display:none!important}
 @media(max-width:760px){.sidebar-search-bar{display:flex!important}}
 
-/* Sidebar user card — warm neutral */
+/* Sidebar user card â€” warm neutral */
 #app .sidebar-user-card{background:linear-gradient(160deg,#F7F5EE 0%,#F0EEE5 100%)!important;border:1px solid var(--dreco-line,#E4E1D6)!important;box-shadow:0 2px 8px rgba(23,23,21,.06)!important}
 #app .sidebar-user-card:hover{background:linear-gradient(160deg,#F0EDE4 0%,#E8E5DC 100%)!important;border-color:var(--dreco-line-strong,#D6D1C3)!important}
 .suc-avatar,.topbar-avatar{background:var(--dreco-ink,#171715)!important;color:#fff!important;box-shadow:none!important;border:none!important}
 .suc-name{color:var(--dreco-ink,#171715)!important}
 .suc-org{color:var(--dreco-muted,#76746B)!important}
 
-/* Topbar — match dashboard background */
+/* Topbar â€” match dashboard background */
 .topbar{background:var(--dreco-bg,#F4F3EC)!important;border-bottom:none!important;box-shadow:none!important;height:60px!important;padding:0 24px!important;gap:12px!important;backdrop-filter:none!important}
 .topbar-title{color:#111827!important;font-size:18px!important;font-weight:438!important;letter-spacing:-.02em!important}
 .topbar-icon-btn{color:#6B7280!important}
@@ -3449,7 +3449,7 @@ th{font-size:12px!important;font-weight:375!important;color:#6B7280!important;le
 #app .topbar-search{background:rgba(255,255,255,.7)!important;border:1px solid #E0DDD4!important;border-radius:10px!important;box-shadow:none!important}
 #app .topbar-search:hover{border-color:#C8C4B8!important;background:#fff!important}
 
-/* Metric cards — pure white, flat */
+/* Metric cards â€” pure white, flat */
 .metric-card{background:#ffffff!important;border:1px solid #E8EAED!important;box-shadow:0 1px 2px rgba(0,0,0,.04)!important;border-radius:12px!important;transition:box-shadow .14s!important}
 .metric-card:hover{transform:none!important;box-shadow:0 4px 12px rgba(0,0,0,.07)!important}
 .metric-card::before{display:none!important}
@@ -3463,7 +3463,7 @@ th{font-size:12px!important;font-weight:375!important;color:#6B7280!important;le
 .metric-val.blue{color:#2563EB!important}
 .metric-val.sm{font-size:18px!important}
 
-/* Status badges — outline-only */
+/* Status badges â€” outline-only */
 .badge{background:transparent!important;border:1.5px solid currentColor!important;border-radius:999px!important;font-size:11px!important;font-weight:375!important;padding:3px 10px!important;letter-spacing:0!important;text-transform:none!important}
 .b-pol,.b-applied,.b-notyet{color:#2563EB!important;background:transparent!important}
 .b-mol,.b-incomplete{color:#D97706!important;background:transparent!important}
@@ -3489,7 +3489,7 @@ th{font-size:12px!important;font-weight:375!important;color:#6B7280!important;le
 .pill-tab:not(.active){background:transparent!important;color:#6B7280!important;box-shadow:none!important;border:none!important}
 .pill-tab:hover:not(.active){background:#F3F4F6!important;color:#111827!important}
 
-/* Table — flat standard rows */
+/* Table â€” flat standard rows */
 table{border-collapse:collapse!important;border-spacing:0!important;padding:0!important}
 th{background:#F9FAFB!important;border-bottom:1px solid #E8EAED!important;color:#6B7280!important;font-size:11px!important;font-weight:375!important;letter-spacing:.02em!important;padding:10px 16px!important;text-transform:none!important}
 td{background:#ffffff!important;border-bottom:1px solid #F3F4F6!important;border-radius:0!important;color:#111827!important;padding:13px 16px!important}
@@ -3567,18 +3567,18 @@ tr:last-child td{border-bottom:none!important}
 .field input,.field select,.field textarea{background:#F9FAFB!important;border-color:#E8EAED!important}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:#374151!important;box-shadow:0 0 0 3px rgba(55,65,81,.08)!important;background:#ffffff!important}
 
-/* ══════════════════════════════════════════════════════════════
-   HRISELINK v3 — tabs, tables, user card, icons, mobile
-   ══════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   HRISELINK v3 â€” tabs, tables, user card, icons, mobile
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Pill tabs: iOS segmented control ── */
+/* â”€â”€ Pill tabs: iOS segmented control â”€â”€ */
 .pill-tabs{display:inline-flex!important;align-items:center!important;gap:2px!important;background:#ECEEF0!important;border-radius:10px!important;padding:3px!important;border:none!important;scrollbar-width:none!important}
 .pill-tabs::-webkit-scrollbar{display:none}
 #app .pill-tab,.pill-tab{padding:5px 13px!important;border-radius:7px!important;border:none!important;font-size:12px!important;font-weight:625!important;color:#6B7280!important;background:transparent!important;box-shadow:none!important;white-space:nowrap!important;flex-shrink:0!important;transition:background .12s,color .12s,box-shadow .12s!important;cursor:pointer!important;line-height:1.4!important}
 #app .pill-tab.active,.pill-tab.active{background:#ffffff!important;border:none!important;color:#111827!important;font-weight:375!important;box-shadow:0 1px 3px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.04)!important}
 #app .pill-tab:hover:not(.active),.pill-tab:hover:not(.active){background:rgba(0,0,0,.06)!important;color:#374151!important;box-shadow:none!important}
 
-/* ── Tables: refined ── */
+/* â”€â”€ Tables: refined â”€â”€ */
 #app table{border-collapse:collapse!important;width:100%!important}
 #app thead th{background:#F8F9FA!important;color:#9CA3AF!important;font-size:11px!important;font-weight:438!important;padding:9px 14px!important;letter-spacing:.04em!important;text-transform:uppercase!important;border-bottom:1.5px solid #E8EAED!important;border-top:none!important;border-left:none!important;border-right:none!important;white-space:nowrap!important}
 #app tbody td{color:#111827!important;font-size:13px!important;padding:11px 14px!important;border-bottom:1px solid #F3F4F6!important;border-top:none!important;border-left:none!important;border-right:none!important;background:#ffffff!important;vertical-align:middle!important}
@@ -3593,7 +3593,7 @@ tr:last-child td{border-bottom:none!important}
 #app .action-btn.del:hover{border-color:#FECACA!important;background:#FEF2F2!important;color:#DC2626!important}
 #app tr.row-selected td{background:#F0F9FF!important}
 
-/* ── Sidebar user card (static + dynamic) ── */
+/* â”€â”€ Sidebar user card (static + dynamic) â”€â”€ */
 #app .sidebar-user-card.sidebar-account-trigger{box-shadow:none!important;border:1px solid #E8EAED!important;background:#F9FAFB!important;border-radius:10px!important;padding:8px 10px!important;margin:0 10px 6px!important;width:calc(100% - 20px)!important;gap:9px!important;cursor:pointer!important;transition:background .12s,border-color .12s!important}
 #app .sidebar-user-card.sidebar-account-trigger:hover{background:#F3F4F6!important;border-color:#D1D5DB!important;box-shadow:none!important}
 #app .sidebar-user-card.sidebar-account-trigger::after{display:none!important}
@@ -3607,13 +3607,13 @@ tr:last-child td{border-bottom:none!important}
 #app .dv5-suc-name{font-size:12.5px!important;font-weight:375!important;color:#111827!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;line-height:1.3!important}
 #app .dv5-suc-email{font-size:10.5px!important;color:#9CA3AF!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;margin-top:1px!important}
 
-/* ── Nav icons: consistent 16px ── */
+/* â”€â”€ Nav icons: consistent 16px â”€â”€ */
 #app .nav-item .ti,#app a.nav-item .ti{font-size:16px!important;width:18px!important;text-align:center!important;flex-shrink:0!important}
 
-/* ── Empty state ── */
+/* â”€â”€ Empty state â”€â”€ */
 .empty{color:#9CA3AF!important;font-size:13px!important;padding:28px!important;text-align:center!important}
 
-/* ── Mobile ── */
+/* â”€â”€ Mobile â”€â”€ */
 @media(max-width:860px){
   .pill-tabs{width:100%!important;overflow-x:auto!important;display:flex!important;flex-shrink:0!important}
   .panel-header{flex-direction:column!important;align-items:stretch!important;padding:12px 14px!important}
@@ -3660,7 +3660,7 @@ tr:last-child td{border-bottom:none!important}
 .am-danger{color:#DC2626}
 .am-danger i{color:#DC2626}
 .am-danger:hover{background:#FEF2F2}
-/* ── Login redesign 2 ── */
+/* â”€â”€ Login redesign 2 â”€â”€ */
 #login-screen .lp-auth-tabs{display:none!important}
 #login-screen .lp-content-area{margin-top:162px!important}
 #login-screen .lp-header{margin-bottom:32px!important;text-align:center!important}
@@ -4373,7 +4373,7 @@ tr:last-child td{border-bottom:none!important}
   #login-screen .lp-header h1{font-size:28px!important}
   #login-screen .lp-social-row{grid-template-columns:1fr!important}
 }
-/* ── Document Library ── */
+/* â”€â”€ Document Library â”€â”€ */
 .dv5-doc-library{display:flex;flex-direction:column;gap:14px}
 .dv5-doc-category{background:#fff;border:1px solid #e6eaf2;border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.04)}
 .dv5-doc-category .dv5-card-head{padding:14px 18px;border-bottom:1px solid #eef1f6;display:flex;align-items:center;justify-content:space-between}
@@ -4429,7 +4429,7 @@ tr:last-child td{border-bottom:none!important}
   }
 }
 
-/* ── Login: center form content vertically ─────────────────── */
+/* â”€â”€ Login: center form content vertically â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media(min-width:1181px){
   #login-screen .lp-form-panel{
     justify-content:center!important;
@@ -4446,7 +4446,7 @@ tr:last-child td{border-bottom:none!important}
   }
 }
 
-/* ── Sidebar user card: profile card style ─────────────────── */
+/* â”€â”€ Sidebar user card: profile card style â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #app .sidebar-user-card,
 #app .sidebar-user-card.sidebar-account-trigger {
   flex-direction: column !important;
@@ -4548,7 +4548,7 @@ tr:last-child td{border-bottom:none!important}
 #app .sidebar.collapsed .suc-name,
 #app .sidebar.collapsed .suc-org { display: none !important; }
 
-/* Dreco v2 — Dark Navy + Lime Green */
+/* Recruitflow v2 â€” Dark Navy + Lime Green */
 :root{
   --dreco-bg:#FAFAF8;
   --dreco-shell:#F7F6F2;
@@ -4741,7 +4741,7 @@ tbody tr:hover td,.dreco-table tr:hover td{background:var(--dreco-surface-soft)!
 @media(max-width:900px){
   #login-screen .lp-security-note{right:0!important;bottom:28px!important;}
 }
-/* ── Final cascade wins: warm neutral direction ─────────────── */
+/* â”€â”€ Final cascade wins: warm neutral direction â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .topbar{background:var(--dreco-bg,#F4F3EC)!important;border-bottom:none!important;box-shadow:none!important;backdrop-filter:none!important;}
 #app .sidebar-user-card,
 #app .sidebar-user-card.sidebar-account-trigger{
@@ -4779,13 +4779,13 @@ tbody tr:hover td,.dreco-table tr:hover td{background:var(--dreco-surface-soft)!
 #app .sidebar.collapsed .sidebar-user-card{
   background:transparent!important;border-color:transparent!important;box-shadow:none!important;
 }
-/* ── Sidebar logo — pure black ───────────────────────────── */
+/* â”€â”€ Sidebar logo â€” pure black â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #app .sidebar-logo-mark{background:var(--dreco-ink,#171715)!important;box-shadow:0 4px 14px rgba(23,23,21,.22)!important;}
 #app .sidebar-logo-text{color:var(--dreco-ink,#171715)!important;}
-/* ── Command palette — warm neutral ──────────────────────── */
+/* â”€â”€ Command palette â€” warm neutral â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cmd-item-icon{background:var(--dreco-soft,#F8F7EF)!important;color:var(--dreco-ink,#171715)!important;}
 .cmd-item-badge{background:var(--dreco-soft,#F8F7EF)!important;color:var(--dreco-muted,#76746B)!important;}
-/* ── Login right side — remove remaining purple ──────────── */
+/* â”€â”€ Login right side â€” remove remaining purple â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #login-screen .lp-kicker{color:var(--dreco-ink,#171715)!important;border-color:var(--dreco-line,#E4E1D6)!important;}
 #login-screen .lp-orbit.one{border-color:rgba(23,23,21,.18)!important;}
 #login-screen .lp-preview-kpi i{background:var(--dreco-soft,#F8F7EF)!important;color:var(--dreco-ink,#171715)!important;}
@@ -4793,29 +4793,29 @@ tbody tr:hover td,.dreco-table tr:hover td{background:var(--dreco-surface-soft)!
 #login-screen .lp-report-wave{background:linear-gradient(180deg,var(--dreco-soft,#F8F7EF),#fff)!important;}
 #login-screen .lp-metric{border-color:var(--dreco-line,#E4E1D6)!important;box-shadow:0 8px 20px rgba(23,23,21,.07)!important;}
 #login-screen .lp-hero-card,#login-screen .lp-float-card{border-color:var(--dreco-line,#E4E1D6)!important;box-shadow:0 18px 44px rgba(23,23,21,.12)!important;}
-/* ── Candidate profile popup — warm surface ──────────────── */
+/* â”€â”€ Candidate profile popup â€” warm surface â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cp-panel{background:var(--dreco-surface,#fff)!important;border:1px solid var(--dreco-line,#E4E1D6)!important;box-shadow:0 30px 90px rgba(23,23,21,.18)!important;}
 .cp-step.active span{background:var(--dreco-ink,#171715)!important;border-color:var(--dreco-ink,#171715)!important;color:#fff!important;}
-/* ── Nav hover / active ───────────────────────────────────── */
+/* â”€â”€ Nav hover / active â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #app .nav-item.active,#app .sidebar .nav-item.active{background:var(--dreco-ink,#171715)!important;color:#fff!important;box-shadow:none!important;}
 #app .nav-item.active i,#app .sidebar .nav-item.active i{color:#fff!important;}
 #app .nav-item:hover,#app .sidebar .nav-item:hover{background:var(--dreco-surface-soft,#F8F7EF)!important;color:var(--dreco-ink,#171715)!important;}
 #app .nav-item:hover i,#app .sidebar .nav-item:hover i{color:var(--dreco-ink,#171715)!important;}
-/* ── Login logo — black mark ─────────────────────────────── */
+/* â”€â”€ Login logo â€” black mark â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #login-screen .lp-logo-mark{background:var(--dreco-ink,#171715)!important;box-shadow:0 4px 14px rgba(23,23,21,.22)!important;}
 #login-screen .lp-brand-name{color:var(--dreco-ink,#171715)!important;}
-/* ── Login form — remove all remaining purple ────────────── */
+/* â”€â”€ Login form â€” remove all remaining purple â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #login-screen .lp-auth-tab.active{color:var(--dreco-ink,#171715)!important;border-bottom-color:var(--dreco-ink,#171715)!important;}
 #login-screen .lp-input-wrap input:focus{border-color:var(--dreco-ink,#171715)!important;box-shadow:0 0 0 3px rgba(23,23,21,.1)!important;}
 #login-screen .lp-forgot{color:var(--dreco-muted,#76746B)!important;}
 #login-screen .lp-submit{background:var(--dreco-ink,#171715)!important;box-shadow:0 10px 22px rgba(23,23,21,.22)!important;}
 #login-screen .lp-signup-cta strong{color:var(--dreco-ink,#171715)!important;}
-/* ── Smart alert default icon — warm neutral ─────────────── */
+/* â”€â”€ Smart alert default icon â€” warm neutral â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .smart-alert i{background:var(--dreco-soft,#F8F7EF)!important;color:var(--dreco-ink,#171715)!important;}
-/* ── Quick-choice selector — warm neutral ────────────────── */
+/* â”€â”€ Quick-choice selector â€” warm neutral â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .quick-choice i{background:var(--dreco-soft,#F8F7EF)!important;color:var(--dreco-ink,#171715)!important;}
 .quick-choice input:checked+span{border-color:var(--dreco-ink,#171715)!important;box-shadow:0 0 0 3px rgba(23,23,21,.09)!important;background:var(--dreco-soft,#F8F7EF)!important;}
-/* ── Document checklist icons ────────────────────────────── */
+/* â”€â”€ Document checklist icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .dreco-doc-status i{width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:18px;background:var(--dreco-soft,#F8F7EF)!important;color:var(--dreco-muted,#76746B)!important;}
 .dreco-doc-item.uploaded .dreco-doc-status i{background:#E7F0E9!important;color:#386A52!important;}
 .dreco-doc-item.missing .dreco-doc-status i{background:#FAF9F2!important;color:var(--dreco-muted,#76746B)!important;}
@@ -5278,25 +5278,25 @@ tbody tr:hover td,.dreco-table tr:hover td{background:var(--dreco-surface-soft)!
 @media(max-width:900px){
   .workflow-settings-grid{grid-template-columns:1fr;}
 }
-/* ══════════════════════════════════════════════════════════════
-   DRECO v2 FINAL LAYER — Dark Navy #1A1C2E + Lime #C9F035
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   DRECO v2 FINAL LAYER â€” Dark Navy #1A1C2E + Lime #C9F035
    Must be last to win every cascade conflict
-   ══════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Mobile topbar: single row, no wrap ──────────────────── */
+/* â”€â”€ Mobile topbar: single row, no wrap â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media(max-width:860px){
   .topbar{flex-wrap:nowrap!important;align-items:center!important;min-height:unset!important;}
   .topbar-workspace{display:none!important;}
 }
 
-/* ── App shell ────────────────────────────────────────────── */
+/* â”€â”€ App shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 body{background:#F2F4F8!important;}
 #app{background:#F2F4F8!important;padding:12px!important;}
 .app-layout{background:#F8F9FC!important;border:1px solid #E4E7F0!important;border-radius:18px!important;box-shadow:0 18px 50px rgba(26,28,46,.10)!important;}
 .main-area{background:#F8F9FC!important;}
 .content-area{background:transparent!important;}
 .topbar{background:#fff!important;border-bottom:1px solid #E4E7F0!important;box-shadow:none!important;padding:0 16px 0 20px!important;gap:10px!important;display:flex!important;align-items:center!important;}
-/* ── New topbar layout: search + notif + user card ────────── */
+/* â”€â”€ New topbar layout: search + notif + user card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .topbar-search{flex:1!important;max-width:none!important;min-width:0!important;order:0!important;margin-left:0!important;display:flex!important;align-items:center!important;gap:8px!important;height:38px!important;background:#F8FAFD!important;border:1px solid #DFE5F1!important;border-radius:10px!important;padding:0 12px!important;cursor:pointer!important;}
 .topbar-search-icon{font-size:15px!important;color:#9BA4B8!important;flex-shrink:0!important;}
 .topbar-search-fake{flex:1!important;color:#9BA4B8!important;font-size:12px!important;font-weight:500!important;user-select:none!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
@@ -5311,7 +5311,7 @@ body{background:#F2F4F8!important;}
 .topbar-user-sub{font-size:10px!important;font-weight:400!important;color:#9BA4B8!important;max-width:110px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;line-height:1.2!important;}
 .topbar-user-caret{font-size:13px!important;color:#9BA4B8!important;flex-shrink:0!important;}
 
-/* ── Sidebar — dark navy ──────────────────────────────────── */
+/* â”€â”€ Sidebar â€” dark navy â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #app .sidebar,#app #sidebar,.sidebar{background:#1A1C2E!important;border-right:none!important;}
 #app .sidebar-logo-mark,.sidebar-logo-mark{background:#C9F035!important;border-radius:10px!important;box-shadow:0 4px 14px rgba(201,240,53,.30)!important;}
 .sidebar-logo-mark svg path[fill="#18191B"]{fill:#1A1C2E!important;}
@@ -5327,7 +5327,7 @@ body{background:#F2F4F8!important;}
 #app .nav-item.active,#app .sidebar .nav-item.active,#app .sidebar.collapsed .nav-item.active,.nav-item.active{background:#C9F035!important;color:#1A1C2E!important;box-shadow:0 2px 14px rgba(201,240,53,.28)!important;}
 #app .nav-item.active i,#app .sidebar .nav-item.active i,.nav-item.active i{color:#1A1C2E!important;}
 
-/* Desktop user card — inside dark sidebar */
+/* Desktop user card â€” inside dark sidebar */
 #app .sidebar-user-card,
 #app .sidebar-user-card.sidebar-account-trigger{
   background:rgba(255,255,255,.08)!important;
@@ -5367,34 +5367,34 @@ body{background:#F2F4F8!important;}
 .sidebar.mobile-open .suc-name{color:#1A1C2E!important;}
 .sidebar.mobile-open .suc-org{color:#6B6248!important;}
 
-/* ── Bottom nav ───────────────────────────────────────────── */
+/* â”€â”€ Bottom nav â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .bottom-nav{background:#1A1C2E!important;border-color:rgba(255,255,255,.08)!important;}
 .bottom-nav-item{color:rgba(255,255,255,.5)!important;}
 .bottom-nav-item.active,.bottom-nav-item.active i{color:#C9F035!important;background:transparent!important;}
 
-/* ── Buttons ──────────────────────────────────────────────── */
+/* â”€â”€ Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .btn.primary,.dv5-btn.primary{background:#C9F035!important;color:#1A1C2E!important;border-color:#A8CC1A!important;box-shadow:0 4px 14px rgba(201,240,53,.25)!important;}
 .btn.primary:hover,.dv5-btn.primary:hover{background:#A8CC1A!important;border-color:#7A9A10!important;}
 .modal-footer .btn.primary{background:#C9F035!important;color:#1A1C2E!important;border-color:#A8CC1A!important;}
 .dv5-action-btn.primary{background:#C9F035!important;color:#1A1C2E!important;border-color:#A8CC1A!important;}
 
-/* ── Pill / view tabs ─────────────────────────────────────── */
+/* â”€â”€ Pill / view tabs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .pill-tab.active{background:#1A1C2E!important;color:#fff!important;border-color:#1A1C2E!important;}
 .modal-tab.active{background:#1A1C2E!important;color:#fff!important;}
 .dv5-view-tab.active{background:#1A1C2E!important;color:#fff!important;}
 .modal-close:hover{background:#1A1C2E!important;color:#fff!important;}
 
-/* ── Form focus ───────────────────────────────────────────── */
+/* â”€â”€ Form focus â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .form-input:focus,.form-select:focus,.form-textarea:focus,
 .lp-input-wrap input:focus{border-color:#C9F035!important;box-shadow:0 0 0 4px rgba(201,240,53,.15)!important;}
 
-/* ── Spinner / loading ring ───────────────────────────────── */
+/* â”€â”€ Spinner / loading ring â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .spinner{border-color:rgba(201,240,53,.2)!important;border-top-color:#C9F035!important;}
 
-/* ── Timeline dots ────────────────────────────────────────── */
+/* â”€â”€ Timeline dots â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .tl-dot{background:#C9F035!important;}
 
-/* ── Bar charts — dark bars, lime accent on active ────────── */
+/* â”€â”€ Bar charts â€” dark bars, lime accent on active â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .report-bar,.finance-chart .bar,.dash-bar-fill{
   background:linear-gradient(180deg,#2A2D44,#1A1C2E)!important;
 }
@@ -5406,18 +5406,18 @@ body{background:#F2F4F8!important;}
 .lp-mini-chart span{background:#2A2D44!important;}
 .lp-mini-chart span:last-child{background:#C9F035!important;}
 
-/* ── Kanban ───────────────────────────────────────────────── */
+/* â”€â”€ Kanban â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .kanban-col-count{background:rgba(201,240,53,.15)!important;color:#5A7A10!important;}
 .dv5-col-count{background:#C9F035!important;color:#1A1C2E!important;}
 
-/* ── Status / pipeline badges ─────────────────────────────── */
+/* â”€â”€ Status / pipeline badges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .b-mol,.b-travel{background:rgba(201,240,53,.15)!important;color:#5A7A10!important;}
 
-/* ── Logo mark on sidebar (SVG override) ──────────────────── */
+/* â”€â”€ Logo mark on sidebar (SVG override) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #app .sidebar-logo-mark{background:#C9F035!important;box-shadow:0 4px 14px rgba(201,240,53,.28)!important;}
 #app .sidebar-logo-text{color:#fff!important;}
 
-/* ── Login page ───────────────────────────────────────────── */
+/* â”€â”€ Login page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #login-screen{background:#F2F4F8!important;}
 #login-screen .lp-submit{background:#1A1C2E!important;color:#C9F035!important;border-color:#1A1C2E!important;box-shadow:0 14px 28px rgba(26,28,46,.18)!important;}
 #login-screen .lp-submit:hover{background:#252839!important;}
@@ -5426,11 +5426,11 @@ body{background:#F2F4F8!important;}
 #login-screen .lp-preview-kpi i{background:rgba(201,240,53,.15)!important;color:#5A7A10!important;}
 #login-screen .lp-dash-sidebar{background:#1A1C2E!important;}
 
-/* ── Command palette ──────────────────────────────────────── */
+/* â”€â”€ Command palette â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cmd-item-icon{background:rgba(201,240,53,.12)!important;color:#5A7A10!important;}
 
-/* ── Theme-color meta (dynamic) — handled via variable ────── */
-/* Premium Dreco palette: warm SaaS, purple brand, lime accent */
+/* â”€â”€ Theme-color meta (dynamic) â€” handled via variable â”€â”€â”€â”€â”€â”€ */
+/* Premium Recruitflow palette: warm SaaS, purple brand, lime accent */
 :root{
   --edu-brand:#5347CE;
   --edu-brand-2:#6A5CF0;
@@ -5915,35 +5915,35 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
 .p-card{
   padding-left:74px!important;
 }
-/* ── purppinkgreen palette: stage badges ── */
+/* â”€â”€ purppinkgreen palette: stage badges â”€â”€ */
 .dv5-badge.amber,.dv5-pill.amber{background:#FCECEA!important;color:#8B2010!important;}
 .dv5-badge.blue{background:#EDEDFB!important;color:#252677!important;}
 .dv5-badge.teal{background:#EDE8FB!important;color:#4825B8!important;}
-/* ── purppinkgreen palette: KPI & task icons ── */
+/* â”€â”€ purppinkgreen palette: KPI & task icons â”€â”€ */
 .dv5-kpi-icon.purple{background:#EDE8FB!important;color:#4825B8!important;}
 .dv5-kpi-icon.blue{background:#EDEDFB!important;color:#252677!important;}
 .dv5-kpi-icon.teal{background:#F0FDFA!important;color:#0D9488!important;}
 .dv5-kpi-icon.rose{background:#FCECEA!important;color:#8B2010!important;}
 .dv5-task-icon.high{background:#FCECEA!important;color:#8B2010!important;}
 .dv5-task-icon.med{background:#EDEDFB!important;color:#252677!important;}
-/* ── Topbar: search fills available space, actions on right ── */
+/* â”€â”€ Topbar: search fills available space, actions on right â”€â”€ */
 .topbar-title{display:none!important}
 .topbar-search{display:flex!important;align-items:center!important;flex:1!important;max-width:none!important;min-width:0!important;height:38px!important;background:#F8FAFD!important;border:1px solid #DFE5F1!important;border-radius:10px!important;padding:0 12px!important;cursor:pointer!important;gap:8px!important;margin-left:0!important;order:0!important;}
 .topbar-search .ti-search{display:none!important}
-/* ── purppinkgreen: progress bars ── */
+/* â”€â”€ purppinkgreen: progress bars â”€â”€ */
 .dv5-workflow-bar i{background:#C9F035!important;}
 .dv5-workflow-mini.watch .dv5-workflow-bar i{background:#AE9CF0!important;}
 .dv5-workflow-mini.risk .dv5-workflow-bar i{background:#F9B3AA!important;}
 .dv5-workflow-bar{background:#EDFAA8!important;}
-/* ── purppinkgreen: pipeline steps ── */
+/* â”€â”€ purppinkgreen: pipeline steps â”€â”€ */
 .dv5-step.done span{background:#C9F035!important;color:#1A1C2E!important;border-color:#C9F035!important;}
 .dv5-step.active span{background:#AE9CF0!important;color:#1A1C2E!important;border-color:#AE9CF0!important;}
-/* ── file card icon box ── */
+/* â”€â”€ file card icon box â”€â”€ */
 .dv5-file-icon-box{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .dv5-file-card .dv5-file-icon-box i{background:transparent!important;color:inherit!important;}
-/* ══════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    LOGIN PAGE: remove circle decorations, palette preview
-══════════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 /* Remove circle illustrations from the dark panel */
 .lp-bg-circle{display:none!important;}
 .lp-media::before,.lp-media::after{content:none!important;display:none!important;}
@@ -6248,7 +6248,7 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
 /* Activity/reminder row icons: palette */
 #login-screen .lp-dash-row>i{background:#EDFAA8!important;color:#4A5E10!important;}
 #login-screen .lp-dash-task>i{background:#EDE8FB!important;color:#5347CE!important;}
-/* Login preview: exact Dreco dashboard shell with neutral demo data */
+/* Login preview: exact Recruitflow dashboard shell with neutral demo data */
 #login-screen .lp-product-preview{display:block!important;grid-template-columns:none!important;left:66px!important;right:60px!important;bottom:0!important;height:338px!important;background:transparent!important;border:0!important;box-shadow:none!important}
 #login-screen .lp-product-preview>.lp-preview-sidebar,#login-screen .lp-product-preview>.lp-preview-card{display:none!important}
 #login-screen .lp-dreco-preview{width:100%;height:100%;display:grid;grid-template-columns:132px minmax(0,1fr);gap:8px;background:#F4F4EC;border-radius:18px 18px 0 0;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.24);color:#070B1D}
@@ -6318,13 +6318,13 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
 #login-screen .lp-real-rings i::after{content:'';position:absolute;inset:7px;border-radius:50%;background:#fff}
 #login-screen .lp-real-rings b{color:#070B1D;font-size:16px;line-height:1;font-weight:700}
 #login-screen .lp-real-rings span{color:#667085;font-size:7.5px;line-height:1.1}
-/* ══════════════════════════════════════════════════════
-   MOBILE LOGIN — full-screen, no grey strip (≤768px)
-   No display:!important on #login-screen — JS (main.ts:974)
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   MOBILE LOGIN â€” full-screen, no grey strip (â‰¤768px)
+   No display:!important on #login-screen â€” JS (main.ts:974)
    sets display:'none' after login; !important would block it.
    Uses block layout (not flex) to avoid cross-rule flex conflicts.
    max-width:100% overrides the base max-width:1360px on .lp-window.
-══════════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 @media(max-width:768px){
   #login-screen{
     position:fixed!important;
@@ -6370,11 +6370,11 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
   .lp-footer-note{position:static!important;left:auto!important;right:auto!important;bottom:auto!important;margin-top:28px!important;max-width:none!important;}
 }
 
-/* ══════════════════════════════════════════════════════
-   MOBILE PREMIUM LAYOUT (≤640px)
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   MOBILE PREMIUM LAYOUT (â‰¤640px)
    Higher-specificity selectors beat dv5.ts runtime CSS
    injection which arrives after static styles.
-══════════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 @media(max-width:640px){
   /* root containment */
   html,body{overflow-x:hidden!important;max-width:100vw!important;}
@@ -6435,15 +6435,15 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
   .dv5-card{padding:8px!important;}
   .lp-form-panel{padding:32px 16px 24px!important;}
 }
-/* ── APP LAYOUT: topbar full-width, sidebar+content in row below ── */
+/* â”€â”€ APP LAYOUT: topbar full-width, sidebar+content in row below â”€â”€ */
 #app .app-layout{display:flex!important;flex-direction:column!important;height:100%!important;overflow:hidden!important;}
 #app .app-body{display:flex!important;flex-direction:row!important;flex:1!important;min-height:0!important;overflow:hidden!important;}
 #app .main-area{display:flex!important;flex-direction:column!important;flex:1!important;min-width:0!important;overflow:hidden!important;}
-/* ── TOPBAR FINAL OVERRIDE — must be last ────────────────────
+/* â”€â”€ TOPBAR FINAL OVERRIDE â€” must be last â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    Uses #app prefix (specificity 1,1,0) to beat all earlier
    .topbar-search rules and placed last to win cascade order.
    padding-left aligns search bar with main content (after sidebar)
-────────────────────────────────────────────────────────────── */
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 #app .topbar{display:flex!important;align-items:center!important;gap:10px!important;padding:0 20px 0 calc(var(--sidebar-w,224px) + 16px)!important;height:64px!important;min-height:64px!important;overflow:visible!important;flex-wrap:nowrap!important;flex-shrink:0!important;width:100%!important;box-sizing:border-box!important;}
 #app.sidebar-collapsed .topbar{padding-left:calc(var(--sidebar-w-collapsed,64px) + 16px)!important;}
 #app .topbar-search{flex:1!important;max-width:none!important;min-width:0!important;min-height:38px!important;height:38px!important;display:flex!important;align-items:center!important;gap:8px!important;padding:0 12px!important;background:#F8FAFD!important;border:1px solid #DFE5F1!important;border-radius:10px!important;cursor:pointer!important;position:static!important;order:0!important;margin-left:0!important;box-shadow:none!important;}
@@ -6466,7 +6466,7 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
   #app .topbar-user-info,#app .topbar-user-caret,#app .topbar-search-kbd{display:none!important;}
   #app .topbar-user-card{padding:0 6px!important;}
 }
-/* Dreco topbar inspiration pass: sidebar first, search across top, compact actions */
+/* Recruitflow topbar inspiration pass: sidebar first, search across top, compact actions */
 #app .app-layout{display:grid!important;grid-template-columns:232px minmax(0,1fr)!important;grid-template-rows:56px minmax(0,1fr)!important;height:100vh!important;overflow:hidden!important;background:#fff!important;}
 #app .app-body{display:contents!important;}
 #app .sidebar{grid-column:1!important;grid-row:1 / span 2!important;width:232px!important;height:100vh!important;border-right:1px solid #ECEEF3!important;background:#fff!important;}
@@ -6575,14 +6575,14 @@ tbody tr:hover td,.dreco-table tr:hover td,.dv5-table tbody tr:hover{background:
     padding:0!important;
   }
 }
-/* ── Spacing balance pass ─────────────────────────────────────
+/* â”€â”€ Spacing balance pass â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    1. Sidebar bottom: overflow:hidden clips margins on flex items, so
       we set padding-bottom on the sidebar itself instead of margin
       on the user card. Use high-specificity to win cascade.
    2. Topbar + content: equalise left/right to 28px with full padding
       shorthand (not just padding-left/right) so the grid+flex topbar
       and the content sections are both symmetric.
-──────────────────────────────────────────────────────────────── */
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html body #app #sidebar,
 html body #app .sidebar{padding-bottom:20px!important;}
 html body #app #sidebar.collapsed,
@@ -7115,11 +7115,11 @@ html body #app .integrity-row.medium{
 }
 
 /* ============================================================
-   MOBILE FIXES — login full-screen + app responsiveness
-   Last in file → wins over all earlier !important rules
+   MOBILE FIXES â€” login full-screen + app responsiveness
+   Last in file â†’ wins over all earlier !important rules
    ============================================================ */
 
-/* --- LOGIN: no popup card on mobile (≤760px) -------------- */
+/* --- LOGIN: no popup card on mobile (â‰¤760px) -------------- */
 @media(max-width:760px){
   #login-screen{
     padding:0!important;
@@ -7167,7 +7167,7 @@ html body #app .integrity-row.medium{
   #login-screen .lp-signup-cta{margin-top:26px!important;}
 }
 
-/* --- LOGIN: very small screens (≤420px) ------------------- */
+/* --- LOGIN: very small screens (â‰¤420px) ------------------- */
 @media(max-width:420px){
   #login-screen .lp-form-panel{padding:36px 18px 44px!important;}
   #login-screen .lp-header h1{font-size:24px!important;}
@@ -7178,7 +7178,7 @@ html body #app .integrity-row.medium{
   #login-screen .lp-social-btn{height:50px!important;font-size:14px!important;}
 }
 
-/* --- APP: mobile layout, spacing and text (≤760px) -------- */
+/* --- APP: mobile layout, spacing and text (â‰¤760px) -------- */
 @media(max-width:760px){
   html body #app{padding:0!important;background:#F5F4EF!important;}
   html body #app .app-layout{
@@ -7286,7 +7286,7 @@ html body #app .integrity-row.medium{
   }
 }
 
-/* ── Candidate edit modal redesign ─────────────────────────── */
+/* â”€â”€ Candidate edit modal redesign â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 /* Modal shell */
 .modal{
@@ -7296,7 +7296,7 @@ html body #app .integrity-row.medium{
   box-shadow:0 32px 80px rgba(13,14,12,.28),0 0 0 1px rgba(255,255,255,.7)!important;
 }
 
-/* Header — eyebrow label + close button, no name */
+/* Header â€” eyebrow label + close button, no name */
 .modal-header{
   display:flex!important;
   align-items:center!important;
@@ -7342,7 +7342,7 @@ html body #app .integrity-row.medium{
   box-shadow:0 2px 12px rgba(72,37,184,.06)!important;
 }
 
-/* Avatar — gradient square with initials */
+/* Avatar â€” gradient square with initials */
 .cs-avatar{
   width:52px;
   height:52px;
@@ -7359,7 +7359,7 @@ html body #app .integrity-row.medium{
   flex-shrink:0;
   box-shadow:0 6px 18px rgba(72,37,184,.30);
 }
-/* General Jobs avatar — teal variant */
+/* General Jobs avatar â€” teal variant */
 .cs-avatar.cs-avatar-lb{
   background:linear-gradient(145deg,#0D7A6A 0%,#0D9488 100%)!important;
   box-shadow:0 6px 18px rgba(13,148,136,.28)!important;
@@ -7428,12 +7428,12 @@ html body #app .integrity-row.medium{
   margin-top:2px!important;
   color:#9a9b90!important;
 }
-/* Paid off KPI — green tint */
+/* Paid off KPI â€” green tint */
 .cs-kpi-paid strong{ color:#16813D!important; }
-/* Still owed KPI — amber tint */
+/* Still owed KPI â€” amber tint */
 .cs-kpi-due strong{ color:#4825B8!important; }
 
-/* Tabs — sit flush below the summary */
+/* Tabs â€” sit flush below the summary */
 .modal-tabs{
   margin-top:12px!important;
   padding:0 18px!important;
@@ -7590,12 +7590,12 @@ html body #app .integrity-row.medium{
 </head>
 <body>
 
-<!-- ⌘K COMMAND PALETTE -->
+<!-- âŒ˜K COMMAND PALETTE -->
 <div id="cmd-overlay" onclick="if(event.target===this)closeCmd()">
   <div id="cmd-modal">
     <div id="cmd-input-wrap">
       <i class="ti ti-search"></i>
-      <input id="cmd-input" placeholder="Search candidates, tabs…" autocomplete="off" oninput="cmdSearch()" onkeydown="cmdKey(event)">
+      <input id="cmd-input" placeholder="Search candidates, tabsâ€¦" autocomplete="off" oninput="cmdSearch()" onkeydown="cmdKey(event)">
       <span id="cmd-esc">ESC</span>
     </div>
     <div id="cmd-results"></div>
@@ -7612,14 +7612,14 @@ html body #app .integrity-row.medium{
 <div id="login-screen">
   <div class="lp-window">
     <div class="lp-form-panel">
-      <div class="lp-brand-tag" aria-label="Dreco">
-        <img class="dreco-wordmark dreco-wordmark-purple" src="/wordmark-purple.png" alt="Dreco">
+      <div class="lp-brand-tag" aria-label="Recruitflow">
+        <img class="dreco-wordmark dreco-wordmark-purple" src="/wordmark-purple.png" alt="Recruitflow">
       </div>
       <div class="lp-content-area">
         <div id="login-main">
           <div class="lp-header">
             <h1>Welcome Back</h1>
-            <p>Sign in to access your Dreco workspace.</p>
+            <p>Sign in to access your Recruitflow workspace.</p>
           </div>
 
           <form onsubmit="event.preventDefault(); doLogin();">
@@ -7648,7 +7648,7 @@ html body #app .integrity-row.medium{
 
           <div class="login-error" id="login-error" role="alert" aria-live="polite">Incorrect username or password.</div>
 
-          <button type="button" class="lp-signup-cta" onclick="showSignup()"><span>New to Dreco?</span><strong>Sign up</strong></button>
+          <button type="button" class="lp-signup-cta" onclick="showSignup()"><span>New to Recruitflow?</span><strong>Sign up</strong></button>
         </div>
 
         <div id="signup-section" style="display:none">
@@ -7663,7 +7663,7 @@ html body #app .integrity-row.medium{
                 <i class="ti ti-building lp-input-icon"></i>
                 <input type="text" id="signup-company" placeholder="e.g. Apex Recruitment" required autocomplete="organization">
               </div>
-              <span class="auth-helper">This becomes the workspace name shown across Dreco.</span>
+              <span class="auth-helper">This becomes the workspace name shown across Recruitflow.</span>
             </div>
             <div class="lp-input-group">
               <label for="signup-name">Your Name</label>
@@ -7739,13 +7739,13 @@ html body #app .integrity-row.medium{
 
       <div class="lp-media-copy">
         <h2>Run Your Recruitment<br>Business. <span>End to End.</span></h2>
-        <p>Dreco brings your candidate pipeline, visa workflows, payments, compliance, and team activity together in one secure workspace.</p>
+        <p>Recruitflow brings your candidate pipeline, visa workflows, payments, compliance, and team activity together in one secure workspace.</p>
       </div>
 
       <div class="lp-product-preview">
         <div class="lp-dreco-preview">
           <aside class="lp-real-sidebar">
-            <img class="lp-real-logo" src="/wordmark-lime.png" alt="Dreco">
+            <img class="lp-real-logo" src="/wordmark-lime.png" alt="Recruitflow">
             <span class="lp-real-section">Workspace</span>
             <div class="lp-real-nav active"><i class="ti ti-layout-grid"></i><b>Home</b></div>
             <div class="lp-real-nav"><i class="ti ti-briefcase"></i><b>Pipeline</b></div>
@@ -7756,11 +7756,11 @@ html body #app .integrity-row.medium{
             <div class="lp-real-nav"><i class="ti ti-chart-line"></i><b>Reports</b></div>
             <div class="lp-real-nav"><i class="ti ti-building"></i><b>Employers</b></div>
             <div class="lp-real-nav"><i class="ti ti-settings"></i><b>Settings</b></div>
-            <strong class="lp-real-company">Dreco Workspace</strong>
+            <strong class="lp-real-company">Recruitflow Workspace</strong>
           </aside>
           <main class="lp-real-main">
             <div class="lp-real-topbar">
-              <div class="lp-real-search"><span>Search candidates, tabs...</span><kbd>⌘K</kbd></div>
+              <div class="lp-real-search"><span>Search candidates, tabs...</span><kbd>âŒ˜K</kbd></div>
               <i class="ti ti-refresh"></i>
               <i class="ti ti-bell"></i>
               <span class="lp-real-avatar">AD</span>
@@ -7779,14 +7779,14 @@ html body #app .integrity-row.medium{
                 <div><i class="ti ti-users lavender"></i><strong>32</strong><span>Total Candidates</span><small>In pipeline</small></div>
               </div>
               <section class="lp-real-card lp-real-pipeline">
-                <header><strong>Candidates Pipeline</strong><span>View all →</span></header>
+                <header><strong>Candidates Pipeline</strong><span>View all â†’</span></header>
                 <div class="lp-real-flow">
-                  <div><strong>3</strong><span>INTERVIEW</span><em style="width:22%"></em></div><b>›</b>
-                  <div><strong>5</strong><span>OFFER</span><em style="width:38%"></em></div><b>›</b>
-                  <div><strong>2</strong><span>MEDICAL</span><em style="width:15%"></em></div><b>›</b>
-                  <div><strong>4</strong><span>PERMIT</span><em style="width:30%"></em></div><b>›</b>
-                  <div><strong>11</strong><span>VISA</span><em style="width:78%"></em></div><b>›</b>
-                  <div><strong>5</strong><span>TICKET</span><em style="width:36%"></em></div><b>›</b>
+                  <div><strong>3</strong><span>INTERVIEW</span><em style="width:22%"></em></div><b>â€º</b>
+                  <div><strong>5</strong><span>OFFER</span><em style="width:38%"></em></div><b>â€º</b>
+                  <div><strong>2</strong><span>MEDICAL</span><em style="width:15%"></em></div><b>â€º</b>
+                  <div><strong>4</strong><span>PERMIT</span><em style="width:30%"></em></div><b>â€º</b>
+                  <div><strong>11</strong><span>VISA</span><em style="width:78%"></em></div><b>â€º</b>
+                  <div><strong>5</strong><span>TICKET</span><em style="width:36%"></em></div><b>â€º</b>
                   <div><strong>12</strong><span>TRAVELLED</span><em class="done" style="width:86%"></em></div>
                 </div>
               </section>
@@ -7826,7 +7826,7 @@ html body #app .integrity-row.medium{
         </div>
         <div class="lp-preview-card">
           <div class="lp-preview-topbar">
-            <div class="lp-preview-search"><i class="ti ti-search"></i><span>Search candidates, tabs...</span><kbd>⌘K</kbd></div>
+            <div class="lp-preview-search"><i class="ti ti-search"></i><span>Search candidates, tabs...</span><kbd>âŒ˜K</kbd></div>
             <button type="button"><i class="ti ti-refresh"></i></button>
             <button type="button"><i class="ti ti-bell"></i></button>
           </div>
@@ -7937,8 +7937,8 @@ html body #app .integrity-row.medium{
       <div class="topbar-search" onclick="openCmd()" style="cursor:pointer" title="Search candidates, jobs, clients">
         <i class="ti ti-search topbar-search-icon"></i>
         <label for="global-search" class="sr-only">Search candidates, jobs, clients</label>
-        <div id="global-search" class="topbar-search-fake">Search candidates, tabs…</div>
-        <kbd class="topbar-search-kbd">⌘K</kbd>
+        <div id="global-search" class="topbar-search-fake">Search candidates, tabsâ€¦</div>
+        <kbd class="topbar-search-kbd">âŒ˜K</kbd>
       </div>
       <button class="topbar-icon-btn topbar-refresh-btn" id="topbar-refresh-btn" type="button" aria-label="Refresh data" title="Refresh data" onclick="refreshDrecoData()">
         <i class="ti ti-refresh"></i>
@@ -7959,7 +7959,7 @@ html body #app .integrity-row.medium{
           <i class="ti ti-chevron-down topbar-user-caret"></i>
         </button>
 
-        <!-- Account menu — JS-only display:none/block, position:fixed, no CSS class conflicts -->
+        <!-- Account menu â€” JS-only display:none/block, position:fixed, no CSS class conflicts -->
         <div id="acct-menu" style="display:none;position:fixed;z-index:9999;background:#F9F9F7;border:1px solid rgba(31,33,51,.08);border-radius:14px;box-shadow:0 18px 48px rgba(31,33,51,.16),0 1px 2px rgba(31,33,51,.05);width:184px;padding:6px;overflow:hidden;max-height:calc(100vh - 80px);overflow-y:auto">
           <div style="display:flex;align-items:center;gap:9px;padding:7px 8px 9px;border-bottom:1px solid rgba(31,33,51,.06);margin-bottom:3px">
             <div id="pd-avatar" style="width:30px;height:30px;border-radius:50%;background:#18181B;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0;letter-spacing:.02em;box-shadow:0 0 0 3px #ECEAF4">-</div>
@@ -7988,14 +7988,14 @@ html body #app .integrity-row.medium{
               </div>
               <div>
                 <div style="font-size:12px;font-weight:438;color:#111827">Upload photo</div>
-                <div style="font-size:11px;color:#6b7280;margin-top:2px">JPG, PNG or GIF · max 2MB</div>
+                <div style="font-size:11px;color:#6b7280;margin-top:2px">JPG, PNG or GIF Â· max 2MB</div>
                 <button type="button" id="pd-avatar-remove" onclick="removeUserAvatar()" style="display:none;margin-top:6px;font-size:11px;color:#ef4444;background:none;border:none;cursor:pointer;padding:0;font-family:inherit">Remove photo</button>
               </div>
               <input type="file" id="pd-avatar-upload" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)">
             </div>
             <div class="pd-section">Display name</div>
             <div class="pd-field">
-              <label for="pd-display-name">Name shown in Dreco</label>
+              <label for="pd-display-name">Name shown in Recruitflow</label>
               <input type="text" id="pd-display-name" placeholder="e.g. Fred">
             </div>
             <div class="pd-section">Change username</div>
@@ -8032,7 +8032,7 @@ html body #app .integrity-row.medium{
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-top">
         <a class="sidebar-logo" href="#">
-          <img class="dreco-wordmark dreco-wordmark-lime" src="/wordmark-lime.png" alt="Dreco">
+          <img class="dreco-wordmark dreco-wordmark-lime" src="/wordmark-lime.png" alt="Recruitflow">
         </a>
         <button class="sidebar-toggle" type="button" onclick="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">
           <i class="ti ti-layout-sidebar-left-collapse"></i>
@@ -8074,7 +8074,7 @@ html body #app .integrity-row.medium{
 
       <div class="nav-spacer"></div>
 
-      <div class="sidebar-company-name" id="sidebar-company-name">Dreco</div>
+      <div class="sidebar-company-name" id="sidebar-company-name">Recruitflow</div>
 </aside>
 
     <!-- MAIN -->
@@ -8260,7 +8260,7 @@ html body #app .integrity-row.medium{
         </div>
 
         <div id="account-section" style="display:none">
-          <div class="section-page-head"><div><h2>Profile</h2><p>Your Dreco account, profile photo, login name, and password.</p></div><button class="btn" data-action="tab.switch" data-tab="settings"><i class="ti ti-settings"></i> Settings</button></div>
+          <div class="section-page-head"><div><h2>Profile</h2><p>Your Recruitflow account, profile photo, login name, and password.</p></div><button class="btn" data-action="tab.switch" data-tab="settings"><i class="ti ti-settings"></i> Settings</button></div>
           <div id="account-page-content"></div>
         </div>
 
@@ -8275,7 +8275,7 @@ html body #app .integrity-row.medium{
         </div>
 
         <div id="settings-section" style="display:none">
-          <div class="section-page-head"><div><h2>Settings</h2><p>Workspace settings that affect how Dreco behaves for your team.</p></div><button class="btn export" onclick="downloadBackup()"><i class="ti ti-download"></i> Backup data</button></div>
+          <div class="section-page-head"><div><h2>Settings</h2><p>Workspace settings that affect how Recruitflow behaves for your team.</p></div><button class="btn export" onclick="downloadBackup()"><i class="ti ti-download"></i> Backup data</button></div>
           <div class="settings-page-grid" id="settings-page-content">
   <div class="settings-page-card"><h3>Workspace</h3><p>Manage company identity and data mode.</p><div class="setting-row"><span>Company</span><button onclick="openSettingsModal()">Edit</button></div></div>
   <div class="settings-page-card"><h3>Data</h3><p>Export backups or reset local filters.</p><div class="setting-row"><span>Backup</span><button onclick="downloadBackup()">Download</button></div></div>
@@ -8284,7 +8284,7 @@ html body #app .integrity-row.medium{
         </div>
 
         <div id="help-section" style="display:none">
-          <div class="section-page-head"><div><h2>Help &amp; Support</h2><p>Practical guidance for running Dreco efficiently.</p></div><button class="btn" data-action="tab.switch" data-tab="settings"><i class="ti ti-settings"></i> Settings</button></div>
+          <div class="section-page-head"><div><h2>Help &amp; Support</h2><p>Practical guidance for running Recruitflow efficiently.</p></div><button class="btn" data-action="tab.switch" data-tab="settings"><i class="ti ti-settings"></i> Settings</button></div>
           <div class="settings-page-grid" id="help-section-content"></div>
         </div>
 
@@ -8384,7 +8384,7 @@ html body #app .integrity-row.medium{
 <!-- ADD PAYMENT MODAL -->
 <div class="modal-bg" id="ap-modal">
   <div class="modal quick-modal">
-    <div class="modal-header"><h3>Add payment</h3><button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="ap-modal">×</button></div>
+    <div class="modal-header"><h3>Add payment</h3><button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="ap-modal">Ã—</button></div>
     <div class="modal-body">
       <div style="margin-bottom:12px">
         <div style="font-weight:375;font-size:14px" id="ap-name"></div>
@@ -8403,7 +8403,7 @@ html body #app .integrity-row.medium{
 <!-- INSTALLMENT VIEW / EDIT MODAL -->
 <div class="modal-bg" id="installment-modal">
   <div class="modal quick-modal" style="max-width:360px">
-    <div class="modal-header"><h3 id="inst-modal-title">Installment</h3><button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="installment-modal">×</button></div>
+    <div class="modal-header"><h3 id="inst-modal-title">Installment</h3><button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="installment-modal">Ã—</button></div>
     <div class="modal-body" id="inst-modal-body"></div>
   </div>
 </div>
@@ -8411,7 +8411,7 @@ html body #app .integrity-row.medium{
 <!-- PAYMENT MODAL -->
 <div class="modal-bg" id="quick-payment-modal">
   <div class="modal quick-modal">
-    <div class="modal-header"><h3>Record payment</h3><button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="quick-payment-modal">×</button></div>
+    <div class="modal-header"><h3>Record payment</h3><button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="quick-payment-modal">Ã—</button></div>
     <div class="modal-body">
       <div class="form-grid">
         <div class="field">
@@ -8427,7 +8427,7 @@ html body #app .integrity-row.medium{
         </div>
         <div class="field form-full">
           <label for="qp-candidate">Candidate</label>
-          <select id="qp-candidate" onchange="refreshPaymentInfo()"><option value="">— select —</option></select>
+          <select id="qp-candidate" onchange="refreshPaymentInfo()"><option value="">â€” select â€”</option></select>
         </div>
         <div class="field form-full" id="qp-info" style="display:none">
           <div id="qp-info-content" style="background:var(--bg-2,#f4f4f5);border-radius:6px;padding:10px 12px;font-size:13px;line-height:1.7"></div>
@@ -8448,7 +8448,7 @@ html body #app .integrity-row.medium{
   <div class="modal quick-modal" style="max-width:400px">
     <div class="modal-header">
       <h3 id="bpm-title">Record Payment</h3>
-      <button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="balance-pay-modal">×</button>
+      <button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="balance-pay-modal">Ã—</button>
     </div>
     <div class="modal-body">
       <div id="bpm-summary" style="background:#F8F7EF;border:1px solid #E4E1D6;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;line-height:1.7"></div>
@@ -8479,12 +8479,12 @@ html body #app .integrity-row.medium{
 <!-- TRAVEL MODAL -->
 <div class="modal-bg" id="quick-travel-modal">
   <div class="modal quick-modal">
-    <div class="modal-header"><h3>Record travel details</h3><button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="quick-travel-modal">×</button></div>
+    <div class="modal-header"><h3>Record travel details</h3><button class="modal-close" aria-label="Close" data-action="modal.close" data-modal="quick-travel-modal">Ã—</button></div>
     <div class="modal-body">
       <div class="form-grid">
         <div class="field form-full">
           <label for="qt-candidate">Candidate</label>
-          <select id="qt-candidate"><option value="">— select —</option></select>
+          <select id="qt-candidate"><option value="">â€” select â€”</option></select>
         </div>
         <div class="field">
           <label for="qt-date">Travel date</label>
@@ -8625,7 +8625,7 @@ html body #app .integrity-row.medium{
           </div>
         </div>
         <div id="lb-no-refund-notice" style="display:none;padding:16px;background:#f0fdf4;border-radius:8px;color:#16a34a;font-size:13px;font-weight:375">
-          Own passport — no refund required for this candidate.
+          Own passport â€” no refund required for this candidate.
         </div>
       </div>
       <div id="lb-tab-timeline" style="display:none">
@@ -8711,7 +8711,7 @@ html body #app .integrity-row.medium{
         <i class="ti ti-building"></i>
         <div style="width:100%">
           <strong>Workspace</strong>
-          <span>Set the company name shown across this Dreco workspace.</span>
+          <span>Set the company name shown across this Recruitflow workspace.</span>
           <div class="form-grid" style="margin-top:12px">
             <div class="field"><label for="settings-company-name">Company name</label><input type="text" id="settings-company-name"></div>
           </div>
@@ -8849,6 +8849,7 @@ html body #app .integrity-row.medium{
 </script>
 </body>
 </html>
+
 
 
 

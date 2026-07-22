@@ -52,7 +52,7 @@ module.exports = async function handler(req, res) {
     },
     defaultCompany: {
       id: process.env.DRECO_DEFAULT_COMPANY_ID || 'dreco-workspace',
-      name: process.env.DRECO_DEFAULT_COMPANY_NAME || 'Dreco Workspace',
+      name: process.env.DRECO_DEFAULT_COMPANY_NAME || 'Recruitflow Workspace',
       generalJobsCountries: countries.length ? countries : ['General'],
     },
     defaultAdminUsername: process.env.DRECO_DEFAULT_ADMIN_USERNAME || 'admin',
@@ -60,3 +60,4 @@ module.exports = async function handler(req, res) {
     blockedAdminAliases,
   });
 };
+

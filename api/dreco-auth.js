@@ -3,7 +3,7 @@ const AUTH_EMAIL_DOMAIN = 'dreco.local';
 function getDefaultCompany() {
   return {
     id: process.env.DRECO_DEFAULT_COMPANY_ID || 'dreco-workspace',
-    name: process.env.DRECO_DEFAULT_COMPANY_NAME || 'Dreco Workspace',
+    name: process.env.DRECO_DEFAULT_COMPANY_NAME || 'Recruitflow Workspace',
     generalJobsCountries: String(process.env.DRECO_GENERAL_JOBS_COUNTRIES || 'General')
       .split(',')
       .map(country => country.trim())
@@ -170,7 +170,7 @@ async function deleteCloudAccount(username) {
 async function sendEmail({ to, subject, html, text }) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) throw new Error('Email delivery is not configured. Set RESEND_API_KEY in Vercel.');
-  const from = process.env.DRECO_EMAIL_FROM || 'Dreco <onboarding@resend.dev>';
+  const from = process.env.DRECO_EMAIL_FROM || 'Recruitflow <onboarding@resend.dev>';
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -427,9 +427,9 @@ module.exports = async function handler(req, res) {
       });
       await sendEmail({
         to: email,
-        subject: 'Verify your Dreco email',
-        text: `Your Dreco verification code is ${code}. It expires in 15 minutes.`,
-        html: `<p>Your Dreco verification code is:</p><h2 style="letter-spacing:4px">${code}</h2><p>This code expires in 15 minutes.</p>`,
+        subject: 'Verify your Recruitflow email',
+        text: `Your Recruitflow verification code is ${code}. It expires in 15 minutes.`,
+        html: `<p>Your Recruitflow verification code is:</p><h2 style="letter-spacing:4px">${code}</h2><p>This code expires in 15 minutes.</p>`,
       });
       return res.status(200).json({ ok: true, email });
     }
@@ -467,9 +467,9 @@ module.exports = async function handler(req, res) {
         });
         await sendEmail({
           to: email,
-          subject: 'Your Dreco password reset code',
-          text: `Your Dreco password reset code is ${code}. It expires in 15 minutes.`,
-          html: `<p>Your Dreco password reset code is:</p><h2 style="letter-spacing:4px">${code}</h2><p>This code expires in 15 minutes. If you did not request it, ignore this email.</p>`,
+          subject: 'Your Recruitflow password reset code',
+          text: `Your Recruitflow password reset code is ${code}. It expires in 15 minutes.`,
+          html: `<p>Your Recruitflow password reset code is:</p><h2 style="letter-spacing:4px">${code}</h2><p>This code expires in 15 minutes. If you did not request it, ignore this email.</p>`,
         });
       }
       return res.status(200).json({ ok: true, message: 'If a verified email exists for this account, a recovery code has been sent.' });

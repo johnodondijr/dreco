@@ -9,7 +9,7 @@ import {
 // plus computed fields, keyed by a non-literal `type`, so branch-specific
 // access (r.paid1, r.r1Amt, …) is dynamic by design. The index signature keeps
 // that flexibility while the rest of the file is type-checked.
-type DrecoRow = { type: string; id: any; raw?: any; [k: string]: any };
+type RecruitflowRow = { type: string; id: any; raw?: any; [k: string]: any };
 
 // Constants mirrored from main.ts (never change at runtime). These are only
 // last-resort fallbacks; the live pipeline comes from the injected
@@ -19,7 +19,7 @@ type DrecoRow = { type: string; id: any; raw?: any; [k: string]: any };
 const PRO_PIPELINE_STAGES = ['INTERVIEW','OFFER LETTER','MEDICAL & ATTESTATION','WORK PERMIT','VISA','TICKET BOOKED','TRAVELLED'];
 const LB_PIPELINE_STAGES  = ['SUBMITTED','PROFILE SENT','SELECTED','PASSPORT APPLIED','VISA PROCESSING','TRAVELLED','REFUND PENDING','REFUND COMPLETE'];
 // Fallback only — overridden by injectDepsToD5 in practice
-let DEFAULT_COMPANY = { name: 'Dreco', id: 'dreco-default', generalJobsCountries: ['UAE'] };
+let DEFAULT_COMPANY = { name: 'Recruitflow', id: 'dreco-default', generalJobsCountries: ['UAE'] };
 let getActiveGeneralCountry, getGeneralWorkflowStages, getLBWorkflowStagesForRecord;
 function activeWorkflowStages(type, country = '') {
   const stages = type === 'pro'
@@ -307,7 +307,7 @@ export function injectDepsToD5(deps) {
   const avatar = (name, type='', id='') => candidateAvatar(name, type, id, 'dv5-avatar');
   const safeCall = (fn, fallback, ...args) => {
     try { return typeof fn === 'function' ? fn(...args) : fallback; }
-    catch (error) { console.warn('Dreco row helper failed', error); return fallback; }
+    catch (error) { console.warn('Recruitflow row helper failed', error); return fallback; }
   };
   const balPro  = r => safeCall(proBalance, Math.max((Number(r.commission)||0)-(Number(r.paid)||0),0), r);
   const LB_TRAVELLED_STAGES = new Set(['TRAVELLED','REFUND PENDING','REFUND COMPLETE']);
@@ -383,7 +383,7 @@ export function injectDepsToD5(deps) {
         ...r,
         pipelineStage: safeCall(proPipelineStageValue, canonicalProProcessStage(r.stage || 'INTERVIEW'), r)
       });
-      return <DrecoRow>{
+      return <RecruitflowRow>{
         type:'pro', id:r.id, name:r.name||'—', pp:r.pp||'', phone:r.phone||'',
         position:r.position||'—', company:r.company||'—', country:r.country||'—',
         stage:resolvedStage, pipelineStage:resolvedStage, submitted:r.submitted, interview:r.interview,
@@ -405,7 +405,7 @@ export function injectDepsToD5(deps) {
     const lb = (Array.isArray(lbDB) ? lbDB : []).map(r => {
       const r1Amt = Number(r.r1Amt||r.r1_amt)||0;
       const r2Amt = Number(r.r2Amt||r.r2_amt)||0;
-      return <DrecoRow>{
+      return <RecruitflowRow>{
         type:'lb', id:r.id, name:r.name||'—', pp:r.pp||r.passport||'', phone:r.phone||'',
         position: r.country || 'General Job',
         company:r.company||r.country||'—',
@@ -865,8 +865,8 @@ export function injectDepsToD5(deps) {
     </a>`;
     side.innerHTML = `
       <div class="sidebar-top">
-        <a class="sidebar-logo" data-action="tab.switch" data-tab="dash" aria-label="Dreco home">
-          <img class="dreco-wordmark dreco-wordmark-lime" src="/wordmark-lime.png" alt="Dreco">
+        <a class="sidebar-logo" data-action="tab.switch" data-tab="dash" aria-label="Recruitflow home">
+          <img class="dreco-wordmark dreco-wordmark-lime" src="/wordmark-lime.png" alt="Recruitflow">
         </a>
         <button class="sidebar-toggle" onclick="toggleSidebar()" type="button" aria-label="Toggle sidebar">
           <i class="ti ti-chevrons-left"></i>
@@ -1119,7 +1119,7 @@ export function injectDepsToD5(deps) {
         </div>
       </div>`;
     } catch (error) {
-      console.error('Dreco pipeline render failed', error);
+      console.error('Recruitflow pipeline render failed', error);
       el.innerHTML = `<div class="dv5-page"><div class="dv5-page-head"><div><h1>Pipeline</h1><p>We could not load the pipeline board.</p></div><button class="dv5-btn" onclick="window.renderPipelinePage?.()"><i class="ti ti-refresh"></i> Retry</button></div><div class="dv5-empty" style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:18px;text-align:left;color:#991b1b">Pipeline render error: ${h(error?.message || error || 'Unknown error')}</div></div>`;
     }
   }
@@ -2577,7 +2577,7 @@ export function injectDepsToD5(deps) {
             ${statCard('ti-clipboard-check', health.workflowScore + '%', 'Process Complete', h(nextAction(r)), '#EDEDFB','#252677','#fff')}
             ${statCard('ti-paperclip', `${health.docs.done || 0}/${health.docs.total || defs.length}`, 'Documents', `${health.docs.pct || 0}% uploaded`, '#EDFAA8','#5A7A10','#fff')}
             ${statCard('ti-wallet', financeStatusLabel, 'Finance Status', financeStatusHint, '#FCECEA','#8B2010','#fff')}
-            ${statCard('ti-history', lastActivity ? fmt(lastActivity) : 'None', 'Last Activity', r.owner || currentUser?.display || 'Dreco team', '#EDE8FB','#4825B8','#fff')}
+            ${statCard('ti-history', lastActivity ? fmt(lastActivity) : 'None', 'Last Activity', r.owner || currentUser?.display || 'Recruitflow team', '#EDE8FB','#4825B8','#fff')}
           </div>
           ${health.missing.length ? `<div class="dv5-empty" style="margin-top:12px;text-align:left;background:#fff;border:1px solid var(--border)">Missing: ${health.missing.map(h).join(', ')}</div>` : ''}
         </div>
@@ -2730,7 +2730,7 @@ export function injectDepsToD5(deps) {
               <div class="dv5-activity-icon"><i class="ti ti-clock"></i></div>
               <div>
                 <div class="dv5-activity-title">${h(t.action||t.text||'Updated')}</div>
-                <div class="dv5-activity-meta">${h(t.user||'Dreco')} · ${h(fmt(t.ts||t.at||''))}</div>
+                <div class="dv5-activity-meta">${h(t.user||'Recruitflow')} · ${h(fmt(t.ts||t.at||''))}</div>
               </div>
             </div>`).join('') : '<div class="dv5-empty">No activity recorded yet.</div>'}
         </div>
@@ -3260,7 +3260,7 @@ export function injectDepsToD5(deps) {
 .dv5-detail-grid span { font-size:12px; color:#7B8496; }
 .dv5-detail-grid strong { font-size:12px; color:var(--text,#18191B); text-align:right; }
 
-/* Dreco warm-neutral theme */
+/* Recruitflow warm-neutral theme */
 .dv5-page,
 .dv5-section {
   --dreco-bg:#F4F3EC;
@@ -3516,7 +3516,7 @@ export function injectDepsToD5(deps) {
 .dv5-profile-avatar,
 .dv5-avatar { background:#E4E1D6!important; color:#171715!important; }
 
-/* Premium Dreco palette: warm SaaS, purple brand, lime accent */
+/* Premium Recruitflow palette: warm SaaS, purple brand, lime accent */
 .dv5-page,
 .dv5-section {
   --dreco-brand:#5347CE;
@@ -3991,7 +3991,7 @@ export function injectDepsToD5(deps) {
         <div class="dreco-upload-intro">
           <div>
             <strong>Candidate document checklist</strong>
-            <span>Upload files directly into Dreco. Uploaded items show status, date, uploader, view, replace, and delete actions.</span>
+            <span>Upload files directly into Recruitflow. Uploaded items show status, date, uploader, view, replace, and delete actions.</span>
           </div>
           <div id="dreco-doc-progress" class="dreco-doc-progress"></div>
         </div>
@@ -4388,7 +4388,7 @@ export function injectDepsToD5(deps) {
       safeLocalSet(BACKUP_INDEX_KEY, JSON.stringify(trimmed));
       return id;
     } catch (err) {
-      console.warn('Dreco backup could not be created:', err);
+      console.warn('Recruitflow backup could not be created:', err);
       return null;
     }
   }
@@ -4418,7 +4418,7 @@ export function injectDepsToD5(deps) {
       if (typeof showToast === 'function') showToast('Restored latest local backup.', 'success');
       return true;
     } catch (err) {
-      console.warn('Dreco backup restore failed:', err);
+      console.warn('Recruitflow backup restore failed:', err);
       return false;
     }
   }
@@ -4433,7 +4433,7 @@ export function injectDepsToD5(deps) {
       const nextCount = (next.pro?.length || 0) + (next.lb?.length || 0);
       if (beforeCount > 0 && nextCount === 0) {
         console.error('Blocked unsafe empty data save. Existing candidate data was preserved.');
-        showHealthMessage('Unsafe save blocked', 'Dreco prevented an empty candidate state from overwriting saved data.');
+        showHealthMessage('Unsafe save blocked', 'Recruitflow prevented an empty candidate state from overwriting saved data.');
         return;
       }
       if (beforeCount > 0) createBackup('before-save');
@@ -4630,11 +4630,11 @@ export function injectDepsToD5(deps) {
   });
 
   window.addEventListener('error', event => {
-    console.error('Dreco runtime error:', event.error || event.message);
+    console.error('Recruitflow runtime error:', event.error || event.message);
     showHealthMessage('Runtime issue caught', 'A script error was caught. Your saved candidate data was not overwritten.');
   });
   window.addEventListener('unhandledrejection', event => {
-    console.error('Dreco async error:', event.reason);
+    console.error('Recruitflow async error:', event.reason);
     showHealthMessage('Sync/action issue caught', 'An action failed safely. Check the console for details.');
   });
 

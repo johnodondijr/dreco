@@ -1,13 +1,16 @@
 {
-  "name": "Dreco",
-  "short_name": "Dreco",
+  "name": "Recruitflow",
+  "short_name": "Recruitflow",
   "description": "Recruitment agency workspace for candidate records, documents, payments, visa workflows, travel, and team activity.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1F2133",
   "theme_color": "#1F2133",
   "orientation": "portrait-primary",
-  "categories": ["business", "productivity"],
+  "categories": [
+    "business",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "/icon-180.png",

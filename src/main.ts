@@ -12,9 +12,9 @@ import {
 } from './state';
 import { injectDepsToD5 } from './dv5';
 
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 // SUPABASE CONFIG - loaded at runtime from /api/dreco-config
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 let db = null;
 const LOCAL_STORE_KEY = 'dreco_local_store_v1';
 const LOCAL_STAFF_KEY = 'dreco_staff_accounts_v1';
@@ -23,23 +23,23 @@ const AUTH_API_PATH = '/api/dreco-auth';
 const AUTH_EMAIL_DOMAIN = 'dreco.local';
 let DEFAULT_COMPANY = {
   id: 'dreco-workspace',
-  name: 'Dreco Workspace',
+  name: 'Recruitflow Workspace',
   generalJobsCountries: ['General'],
 };
 let DEFAULT_ADMIN_USERNAME = 'admin';
 let RETIRED_USERNAMES = [];
 let BLOCKED_ADMIN_ALIASES = [];
 
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 // STAFF ACCOUNTS
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 const STAFF_ACCOUNTS = {};
-// Frozen snapshot of hardcoded accounts — used by doLogin to verify admin
+// Frozen snapshot of hardcoded accounts â€” used by doLogin to verify admin
 // credentials without touching cloud or localStorage. Never mutated.
 const _HARDCODED_SNAPSHOT = Object.freeze(
   Object.fromEntries(Object.entries(STAFF_ACCOUNTS).map(([u, a]) => [u, Object.freeze({ ...a })]))
 );
-// Recovery via shared code removed — password resets go through admin only.
+// Recovery via shared code removed â€” password resets go through admin only.
 
 function normalizeAccount(username, account = {}) {
   let companyName = (account.companyName || DEFAULT_COMPANY.name).trim();
@@ -61,7 +61,7 @@ function normalizeAccount(username, account = {}) {
     passwordSalt: account.passwordSalt || '',
     generalJobsCountries: [...new Set(generalJobsCountries.map(c => String(c || '').trim()).filter(Boolean))],
   };
-  // Preserve hashVersion — critical for PBKDF2 detection in verifyAccountPassword.
+  // Preserve hashVersion â€” critical for PBKDF2 detection in verifyAccountPassword.
   // Without this, every normalizeAccount call strips the field and forces a
   // legacy SHA-256 verification path, which fails for PBKDF2-hashed passwords.
   if (account.hashVersion) normalized.hashVersion = account.hashVersion;
@@ -184,7 +184,7 @@ function makePasswordSalt() {
   }
   return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
 }
-// PBKDF2 with 200,000 iterations – deliberately slow to resist offline brute-force.
+// PBKDF2 with 200,000 iterations â€“ deliberately slow to resist offline brute-force.
 // SHA-256 (used previously) is a fast hash and unsuitable for passwords.
 // Legacy SHA-256 hashes are detected and transparently upgraded on next successful login.
 const PBKDF2_ITERATIONS = 200000;
@@ -221,14 +221,14 @@ async function verifyAccountPassword(account, password) {
     if (!account.hashVersion) {
       const legacyHash = await _legacySha256Hex(`${account.passwordSalt}:${password}`);
       if (legacyHash !== account.passwordHash) return { ok: false, migrated: false };
-      // Password correct — re-hash with PBKDF2 and save upgraded hash.
+      // Password correct â€” re-hash with PBKDF2 and save upgraded hash.
       await setAccountPassword(account, password);
       return { ok: true, migrated: true };
     }
     const hash = await pbkdf2Hex(account.passwordSalt, password);
     return { ok: hash === account.passwordHash, migrated: false };
   }
-  // Plaintext password (very old accounts) — upgrade immediately.
+  // Plaintext password (very old accounts) â€” upgrade immediately.
   if (account.password && account.password === password) {
     await setAccountPassword(account, password);
     return { ok: true, migrated: true };
@@ -263,7 +263,7 @@ async function loadStaffAccounts() {
     }
   }
 
-  // Step 3: Merge — cloud first as the base, then local on top.
+  // Step 3: Merge â€” cloud first as the base, then local on top.
   Object.assign(STAFF_ACCOUNTS, cloudAccounts);
   Object.keys(localAccounts).forEach(username => {
     const local = localAccounts[username];
@@ -285,7 +285,7 @@ async function loadStaffAccounts() {
     const localHash = localAccounts[u]?.passwordHash;
     // "Custom" means the user changed their password to something other than the default
     const localIsCustom = localHash && localHash !== defaults.passwordHash;
-    if (localIsCustom) return; // deliberate password change — keep it
+    if (localIsCustom) return; // deliberate password change â€” keep it
     if (current) {
       STAFF_ACCOUNTS[u] = { ...current, passwordHash: defaults.passwordHash, passwordSalt: defaults.passwordSalt, hashVersion: defaults.hashVersion };
     } else {
@@ -350,9 +350,9 @@ function safeLocalRemove(key) {
   try { localStorage.removeItem(key); } catch { /* ignore */ }
 }
 
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 // STATE
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 let currentCompany = { ...DEFAULT_COMPANY };
 const PRO_PIPELINE_STAGES = ['INTERVIEW','OFFER LETTER','MEDICAL & ATTESTATION','WORK PERMIT','VISA','TICKET BOOKED','TRAVELLED'];
 const LB_PIPELINE_STAGES = ['SUBMITTED','PROFILE SENT','SELECTED','PASSPORT APPLIED','VISA PROCESSING','TRAVELLED','REFUND PENDING','REFUND COMPLETE'];
@@ -509,7 +509,7 @@ function getGeneralWorkflowPreset(country = getActiveGeneralCountry()) {
 }
 // Single source of truth for a country's General Jobs pipeline, resolved in one
 // clear order (no silent merges):
-//   1. a saved per-country override (generalWorkflows[country]) — set when a
+//   1. a saved per-country override (generalWorkflows[country]) â€” set when a
 //      user edits or applies a template for that country, else
 //   2. the built-in country preset (Saudi/Lebanon/Oman), else
 //   3. the workspace General default (lbStages).
@@ -854,7 +854,7 @@ function reconstructInstallments(r, paidTotal) {
     out.push({ amount: amt, date: stageMilestoneDate(r, rule.stage) || normalizeDateField(r.submitted) || '' });
     remaining -= amt;
   }
-  // Anything paid beyond the rule breakpoints (overpayment) → a final installment.
+  // Anything paid beyond the rule breakpoints (overpayment) â†’ a final installment.
   if (remaining > 0.5) out.push({ amount: remaining, date: stageMilestoneDate(r, r.stage) || normalizeDateField(r.submitted) || '' });
   return out.length ? out : [{ amount: paidTotal, date: normalizeDateField(r.submitted) || '' }];
 }
@@ -866,21 +866,21 @@ function deriveCommissionPayments(r, paid1, paid2) {
       .filter(p => p.amount > 0 || p.date);
   }
   const out = [];
-  // Explicit 1st/2nd amounts → keep them, dating missing ones by the offer-letter
+  // Explicit 1st/2nd amounts â†’ keep them, dating missing ones by the offer-letter
   // (1st) and visa (2nd) milestones so "half after offer, half after visa" reads right.
   if (paid1 != null && Number(paid1) > 0) out.push({ amount: Number(paid1), date: normalizeDateField(r.paid1_date) || stageMilestoneDate(r, 'OFFER LETTER') || '' });
   if (paid2 != null && Number(paid2) > 0) out.push({ amount: Number(paid2), date: normalizeDateField(r.paid2_date) || stageMilestoneDate(r, 'VISA') || '' });
   const paidTotal = Number(r.paid) || 0;
   if (out.length) {
     // If the running total exceeds the recorded slots, the rest was paid as a
-    // lump — add it as the visa-stage installment so the total stays correct.
+    // lump â€” add it as the visa-stage installment so the total stays correct.
     const fromSlots = out.reduce((s, p) => s + p.amount, 0);
     if (paidTotal > fromSlots + 0.5) {
       out.push({ amount: paidTotal - fromSlots, date: stageMilestoneDate(r, 'VISA') || stageMilestoneDate(r, r.stage) || normalizeDateField(r.submitted) || '' });
     }
     return out;
   }
-  // No split recorded at all — reconstruct from the payment rule + milestone dates.
+  // No split recorded at all â€” reconstruct from the payment rule + milestone dates.
   if (paidTotal > 0) return reconstructInstallments(r, paidTotal);
   return [];
 }
@@ -982,18 +982,18 @@ function nextLocalId(rows) {
   return rows.reduce((max, row) => Math.max(max, Number(row.id) || 0), 0) + 1;
 }
 
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 // LOADING
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 function showLoading(msg = 'Loading...') {
   const el = document.getElementById('loading-text'); if (el) el.textContent = msg;
   document.getElementById('loading-overlay').classList.add('show');
 }
 function hideLoading() { document.getElementById('loading-overlay').classList.remove('show'); }
 
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 // SIDEBAR TOGGLE
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 function toggleSidebar() {
   const sb = document.getElementById('sidebar');
   if (window.innerWidth <= 860) {
@@ -1006,7 +1006,7 @@ function toggleSidebar() {
 function openMobileSidebar() {
   const sb = document.getElementById('sidebar');
   if (!sb) return;
-  // Must use setProperty with 'important' priority — CSS display:none!important
+  // Must use setProperty with 'important' priority â€” CSS display:none!important
   // beats normal inline styles, so we need inline !important to win the cascade.
   const sp = (prop, val) => sb.style.setProperty(prop, val, 'important');
   sp('display', 'flex');
@@ -1060,9 +1060,9 @@ function closeMobileSidebar() {
   }, { passive: true });
 })();
 
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 // AUTH
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 function togglePassword() {
   const inp = document.getElementById('pw-input');
   const btn = document.getElementById('pw-toggle');
@@ -1241,7 +1241,7 @@ async function sendRecoveryCodeEmail() {
   }
 }
 
-// ── Centralised post-login entry point ───────────────────────────────────────
+// â”€â”€ Centralised post-login entry point â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Replaces three near-identical blocks that previously existed in doLogin,
 // doSignup, and the DOMContentLoaded session-restore handler.
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
@@ -1335,9 +1335,9 @@ async function doSignup() {
   });
 }
 
-// ── Login rate limiter ────────────────────────────────────────────────────────
+// â”€â”€ Login rate limiter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Persists failed attempts in localStorage so a page refresh does not reset
-// the lockout. Lockout grows with successive violations (30s → 5m → 15m).
+// the lockout. Lockout grows with successive violations (30s â†’ 5m â†’ 15m).
 const MAX_FAILURES = 5;
 const LOCKOUT_TIERS = [30_000, 5 * 60_000, 15 * 60_000]; // ms per violation tier
 
@@ -1399,7 +1399,7 @@ async function _doLoginInner() {
     return;
   }
 
-  // ── HARDCODED ACCOUNTS: verified directly, no cloud involved ─────────────
+  // â”€â”€ HARDCODED ACCOUNTS: verified directly, no cloud involved â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // These are defined at the top of this file and never touched by
   // loadStaffAccounts / saveStaffAccounts / Supabase Auth.
   // We read them from a frozen snapshot so runtime mutations cannot affect them.
@@ -1420,7 +1420,7 @@ async function _doLoginInner() {
     }
     _clearLoginFailures(username);
     // Kick off a background cloud load so staff data is available after login,
-    // but don't block on it — the hardcoded account is already authoritative.
+    // but don't block on it â€” the hardcoded account is already authoritative.
     loadStaffAccounts().catch(() => {});
     errEl.style.display = 'none';
     setLoginSuccessState();
@@ -1428,9 +1428,9 @@ async function _doLoginInner() {
     return;
   }
 
-  // ── STAFF ACCOUNTS: loaded from cloud + localStorage ─────────────────────
+  // â”€â”€ STAFF ACCOUNTS: loaded from cloud + localStorage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Best-effort: a failure here (e.g. RLS/network) must never block sign-in or
-  // leave the button spinning — Supabase Auth below is the real credential check.
+  // leave the button spinning â€” Supabase Auth below is the real credential check.
   try { await loadStaffAccounts(); } catch (e) { console.warn('loadStaffAccounts failed during login:', e); }
 
   // Try Supabase Auth first (gives us a live session token). Race against a
@@ -1442,7 +1442,7 @@ async function _doLoginInner() {
     ]);
     if (authLogin?.account) {
       _clearLoginFailures(username);
-      // Preserve password fields — Supabase Auth doesn't store them
+      // Preserve password fields â€” Supabase Auth doesn't store them
       const prev = STAFF_ACCOUNTS[username] || {};
       STAFF_ACCOUNTS[username] = normalizeAccount(username, {
         ...authLogin.account,
@@ -1498,10 +1498,10 @@ function doLogout() {
 }
 
 // Global safety net: log unexpected async failures so they aren't fully silent.
-// We deliberately do NOT show a user-facing toast here — many background
+// We deliberately do NOT show a user-facing toast here â€” many background
 // rejections (blocked writes, cancelled fetches) are benign, and a generic
 // "something went wrong" on every one cries wolf. User-facing failures are
-// reported by the specific code paths that own them (loadAllData, payments…).
+// reported by the specific code paths that own them (loadAllData, paymentsâ€¦).
 window.addEventListener('unhandledrejection', (e) => {
   console.error('Unhandled promise rejection:', e.reason);
 });
@@ -1509,7 +1509,7 @@ window.addEventListener('error', (e) => {
   if (e?.error) console.error('Uncaught error:', e.error);
 });
 
-// ── Accessible modal controller (dialog semantics, focus trap, Esc, restore) ──
+// â”€â”€ Accessible modal controller (dialog semantics, focus trap, Esc, restore) â”€â”€
 let _modalReturnFocus = null;
 function _openModals(){ return Array.from(document.querySelectorAll('.modal-bg.open')); }
 function _focusablesIn(el){
@@ -1573,7 +1573,7 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// ── Delegated action dispatcher (H6: replacing inline on*= handlers) ──────────
+// â”€â”€ Delegated action dispatcher (H6: replacing inline on*= handlers) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Elements opt in with data-action="name" and read their own data-* args. Each
 // handler migrated here removes an inline on*= attribute, ratcheting toward a
 // CSP without script-src 'unsafe-inline'. Register new actions as modules move
@@ -1609,7 +1609,7 @@ const DRECO_ACTIONS = {
     if (c) { window.settingsGeneralCountry = c; renderSettingsPage?.(); }
   },
   // Finance page interactions (delegated so the finance render adds no new
-  // inline on*= handlers — keeps the CSP handler ratchet flat).
+  // inline on*= handlers â€” keeps the CSP handler ratchet flat).
   'finance.tab': (el) => window.setFinanceTab?.(el.getAttribute('data-fintab')),
   'finance.open': (el) => {
     const t = el.getAttribute('data-type'), id = Number(el.getAttribute('data-id'));
@@ -1679,7 +1679,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     } catch { doLogout(); }
   });
   rebuildStageSelects();
-  // Delegated listener for docs buttons – avoids interpolating candidate names
+  // Delegated listener for docs buttons â€“ avoids interpolating candidate names
   // into onclick attribute strings (XSS risk).
   document.addEventListener('click', e => {
     const btn = e.target.closest('.dreco-open-docs');
@@ -1695,9 +1695,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   bindModalSummaries();
 });
 
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 // DATA LOADING
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 async function loadAllData() {
   if (!useCloud()) {
     appStorageMode='local';
@@ -1835,9 +1835,9 @@ async function seedLBData() {
   if(data&&data.length) setLbDB(data.map(normalizeLBRecord)); else { console.warn('Seed insert failed',error); setLbDB(JSON.parse(JSON.stringify(LB_SEED)).map(normalizeLBRecord)); }
 }
 
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 // SAVE STATUS
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 function setSaveStatus(s) {
   const dot=document.getElementById('save-dot');
   const lbl=document.getElementById('save-label');
@@ -1846,12 +1846,12 @@ function setSaveStatus(s) {
   lbl.textContent=s==='saving'?'Saving...':`${appStorageMode==='cloud'?'Cloud saved':'Local saved'} ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}`;
 }
 
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 // SUPABASE WRITES
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 function useCloud() { return db && appStorageMode==='cloud'; }
 
-// Map in-memory pro record → DB column names. Core fields match the original schema;
+// Map in-memory pro record â†’ DB column names. Core fields match the original schema;
 // extended fields use snake_case and require dreco-schema-v2-migration.sql to be run.
 function toProDbPayload(rec) {
   return {
@@ -1872,7 +1872,7 @@ function toProDbPayload(rec) {
     travel_notes: rec.travelNotes||null,
   };
 }
-// Core-only pro payload — used as fallback when extended columns haven't been migrated yet.
+// Core-only pro payload â€” used as fallback when extended columns haven't been migrated yet.
 function toProCorePayload(rec) {
   return {
     company_id: rec.company_id,
@@ -1885,7 +1885,7 @@ function toProCorePayload(rec) {
   };
 }
 
-// Map in-memory lb record → DB column names.
+// Map in-memory lb record â†’ DB column names.
 // lb_candidates uses quoted camelCase for original columns and snake_case for new ones.
 function toLBDbPayload(rec) {
   return {
@@ -1908,7 +1908,7 @@ function toLBDbPayload(rec) {
     visa_date: rec.visa_date||null,
   };
 }
-// Core-only lb payload — used as fallback when extended columns haven't been migrated yet.
+// Core-only lb payload â€” used as fallback when extended columns haven't been migrated yet.
 function toLBCorePayload(rec) {
   return {
     company_id: rec.company_id, country: rec.country,
@@ -1980,7 +1980,7 @@ function fallBackToLocal(err) {
   const dot = document.getElementById('save-dot');
   const lbl = document.getElementById('save-label');
   if (dot) dot.className = 'save-dot save-dot-warn';
-  if (lbl) lbl.textContent = 'Local only – cloud unavailable';
+  if (lbl) lbl.textContent = 'Local only â€“ cloud unavailable';
 }
 async function saveProRecord(rec, isUpdate = false) {
   setSaveStatus('saving');
@@ -2008,7 +2008,7 @@ async function saveProRecord(rec, isUpdate = false) {
   } catch(e) {
     if (e?.code === 'DRECO_CONFLICT') {
       if (!confirm('This candidate was changed by someone else since you opened it. Overwrite their changes?')) {
-        setSaveStatus('saved'); showToast('Save cancelled — reload to see the latest.', 'error'); return false;
+        setSaveStatus('saved'); showToast('Save cancelled â€” reload to see the latest.', 'error'); return false;
       }
       try { await saveWith(toProDbPayload, false); }
       catch(e2) {
@@ -2048,7 +2048,7 @@ async function saveLBRecord(rec, isUpdate = false) {
   } catch(e) {
     if (e?.code === 'DRECO_CONFLICT') {
       if (!confirm('This candidate was changed by someone else since you opened it. Overwrite their changes?')) {
-        setSaveStatus('saved'); showToast('Save cancelled — reload to see the latest.', 'error'); return false;
+        setSaveStatus('saved'); showToast('Save cancelled â€” reload to see the latest.', 'error'); return false;
       }
       try { await saveWith(toLBDbPayload, false); }
       catch(e2) {
@@ -2093,7 +2093,7 @@ async function saveDocsToDB(key, data) {
   } catch (e) { fallBackToLocal(e); setSaveStatus('saved'); }
 }
 
-// ── Document Checklists ────────────────────────────────────────────────────────
+// â”€â”€ Document Checklists â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // The candidate "Docs" tab is now a lightweight VIEW over the single document
 // system (dv5: DOC_DEFS + uploaded/marked items), so the checklist, the upload
 // modal, and the readiness gauge always agree. Toggling a row marks a required
@@ -2136,7 +2136,7 @@ function renderDocChecklist(type, id) {
   </div>`;
 }
 
-// ── Commission / Payment Status ────────────────────────────────────────────────
+// â”€â”€ Commission / Payment Status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderCommissionStatus(r) {
   const el = document.getElementById('pro-commission-status'); if (!el) return;
   if (!r || !r.commission) { el.innerHTML = ''; return; }
@@ -2153,7 +2153,7 @@ function renderCommissionStatus(r) {
   </div>`;
 }
 
-// ── Per-Candidate P&L ─────────────────────────────────────────────────────────
+// â”€â”€ Per-Candidate P&L â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderCandidateCommissionInstallments(r) {
   const el = document.getElementById('pro-installments-section'); if (!el) return;
   if (!r?.id) {
@@ -2172,7 +2172,7 @@ function renderCandidateCommissionInstallments(r) {
     <div class="commission-installments-head">
       <div>
         <strong>Commission installments</strong>
-        <small>${moneyKES(paid)} received · ${moneyKES(outstanding)} outstanding</small>
+        <small>${moneyKES(paid)} received Â· ${moneyKES(outstanding)} outstanding</small>
       </div>
       <button class="dv5-action-btn" data-action="installment.add" data-id="${r.id}"><i class="ti ti-plus"></i>Add installment</button>
     </div>
@@ -2214,21 +2214,21 @@ function renderCandidatePL(type, id) {
   const net = commission - totalExp;
   el.innerHTML = `<div class="commission-status-card" style="margin-top:12px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <strong style="font-size:12px">P&amp;L — Candidate Expenses</strong>
+      <strong style="font-size:12px">P&amp;L â€” Candidate Expenses</strong>
       <button class="dv5-action-btn" onclick="openAddCandidateExpense('${type}',${id})">+ Add expense</button>
     </div>
     ${expenses.length ? expenses.map((e,i)=>`<div class="cs-row" style="font-size:11.5px">
       <span>${escHTML(e.label||'Expense')}</span>
       <span style="display:flex;align-items:center;gap:6px">
         <strong style="color:#b91c1c">${moneyKES(e.amount)}</strong>
-        <button onclick="removeCandidateExpense('${type}',${id},${i})" style="font-size:10px;border:none;background:none;cursor:pointer;color:#9ca3af;padding:0">×</button>
+        <button onclick="removeCandidateExpense('${type}',${id},${i})" style="font-size:10px;border:none;background:none;cursor:pointer;color:#9ca3af;padding:0">Ã—</button>
       </span>
     </div>`).join('') : '<div class="cs-row" style="color:var(--text-3);font-size:11.5px"><span>No expenses recorded</span></div>'}
     <div class="cs-row" style="border-top:1px solid #e5e7eb;padding-top:8px;margin-top:4px">
       <span>Total expenses</span><strong style="color:#b91c1c">${moneyKES(totalExp)}</strong>
     </div>
     <div class="cs-row">
-      <span>Net (Commission − Expenses)</span><strong style="color:${net>=0?'#16a34a':'#b91c1c'}">${moneyKES(net)}</strong>
+      <span>Net (Commission âˆ’ Expenses)</span><strong style="color:${net>=0?'#16a34a':'#b91c1c'}">${moneyKES(net)}</strong>
     </div>
   </div>`;
 }
@@ -2256,7 +2256,7 @@ async function removeCandidateExpense(type, id, index) {
   await saveDocsToDB(key, list);
 }
 
-// ── Employer / Job Order CRUD ──────────────────────────────────────────────────
+// â”€â”€ Employer / Job Order CRUD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function saveEmployersData() {
   setSaveStatus('saving');
   if (!useCloud()) { saveLocalStore(); setSaveStatus('saved'); return; }
@@ -2298,7 +2298,7 @@ async function saveEmployer(data) {
   setEmployers([...employers]);
   await saveEmployersData();
   if (typeof window.renderJobsPage === 'function') window.renderJobsPage();
-  showToast('Employer saved ✓','success');
+  showToast('Employer saved âœ“','success');
 }
 async function deleteEmployer(id) {
   setEmployers(employers.filter(e=>e.id!==id));
@@ -2319,7 +2319,7 @@ async function saveJobOrder(data) {
   setJobOrders([...jobOrders]);
   await saveJobOrdersData();
   if (typeof window.renderJobsPage === 'function') window.renderJobsPage();
-  showToast('Job order saved ✓','success');
+  showToast('Job order saved âœ“','success');
 }
 async function deleteJobOrder(id) {
   setJobOrders(jobOrders.filter(j=>j.id!==id));
@@ -2508,7 +2508,7 @@ function renderWorkflowSettingsPanel(){
         </section>
         <section>
           <div class="workflow-settings-head">
-            <strong>General Jobs — ${escHTML(genCountry)}</strong>
+            <strong>General Jobs â€” ${escHTML(genCountry)}</strong>
             <button onclick="resetWorkflowStages('lb')">Reset</button>
           </div>
           ${multiCountry ? `<p class="workflow-country-hint">Each destination keeps its own pipeline. Pick a country to edit, then apply a template or reset below.</p>
@@ -2520,9 +2520,9 @@ function renderWorkflowSettingsPanel(){
     </div>`;
 }
 
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 // TIMELINE
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 function paymentRuleCards(){
   const active = paymentRules.proPreset;
   return PAYMENT_RULE_PRESETS.map(preset=>`
@@ -2564,9 +2564,9 @@ function renderTimelineHTML(type,id){
   }).join('');
 }
 
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 // HELPERS
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 function xlToISO(n){ if(!n||isNaN(n)) return ''; return new Date(EXCEL_EPOCH.getTime()+n*86400000).toISOString().split('T')[0]; }
 function escHTML(v){
   return String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -2618,13 +2618,13 @@ function ppBadge(s){
   return `<span class="badge ${map[s]||'b-na'}">${s ? escHTML(s) : '&mdash;'}</span>`;
 }
 
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 // TABS + MODALS
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 let _currentTab = 'dash';
 function switchTab(tab, _pushHistory = true){
   if (window.innerWidth <= 860) closeMobileSidebar();
-  // DV5 unified tab router — handles both legacy and new tabs
+  // DV5 unified tab router â€” handles both legacy and new tabs
   const DV5_TABS = ['dash','pipeline','candidates','finance','payments','documents','reports','jobs','notifications','settings'];
   const DV5_ALIASES = {
     pro:'candidates', lb:'candidates',
@@ -2669,7 +2669,7 @@ function switchTab(tab, _pushHistory = true){
   setBottomNav(t);
   if (typeof closeProfileDropdown === 'function') closeProfileDropdown();
 
-  // Route to renderer — use window.renderX so DV5 overrides are picked up
+  // Route to renderer â€” use window.renderX so DV5 overrides are picked up
   const renderers = {
     dash: ()=> window.renderDash?.(),
     pipeline: ()=> window.renderPipelinePage?.(),
@@ -3065,7 +3065,7 @@ async function saveWorkspaceSettings(){
 }
 function openHelp(){ closeProfileDropdown(); document.getElementById('help-modal')?.classList.add('open'); }
 function downloadBackup(){
-  // Strip credential fields before export – hashes must never leave the browser
+  // Strip credential fields before export â€“ hashes must never leave the browser
   // in a downloadable file that could end up in unintended hands.
   const safeAccounts = Object.fromEntries(
     Object.entries(STAFF_ACCOUNTS).map(([u, a]) => {
@@ -3087,14 +3087,14 @@ function downloadBackup(){
   };
   const a=Object.assign(document.createElement('a'),{
     href:URL.createObjectURL(new Blob([JSON.stringify(backup,null,2)],{type:'application/json'})),
-    download:`Dreco_Backup_${new Date().toISOString().split('T')[0]}.json`
+    download:`Recruitflow_Backup_${new Date().toISOString().split('T')[0]}.json`
   });
   a.click();
   showToast('Backup downloaded','success');
 }
 function restoreBackupFromFile(file){
   if(!file) return;
-  if(!confirm('Restore this backup into the current browser workspace? This replaces the records currently loaded in Dreco.')) return;
+  if(!confirm('Restore this backup into the current browser workspace? This replaces the records currently loaded in Recruitflow.')) return;
   const reader=new FileReader();
   reader.onload=()=>{
     try{
@@ -3107,7 +3107,7 @@ function restoreBackupFromFile(file){
       setLbStages(Array.isArray(data.lbStages)&&data.lbStages.length?data.lbStages:[...lbStages]);
       setGeneralWorkflows(data.generalWorkflows&&typeof data.generalWorkflows==='object'&&!Array.isArray(data.generalWorkflows)?data.generalWorkflows:{});
       if(data.staffAccounts&&typeof data.staffAccounts==='object'){
-        // Validate each restored account before merging – a crafted backup file
+        // Validate each restored account before merging â€“ a crafted backup file
         // could otherwise inject accounts with arbitrary roles or credentials.
         const ALLOWED_ROLES = new Set(['admin','staff','finance']);
         const sanitized = Object.fromEntries(
@@ -3230,8 +3230,8 @@ function renderProSummary(r){
     </div>
   </div>
   <div class="candidate-summary-kpis">
-    <div class="candidate-kpi"><strong>${isNew?'—':moneyKES(rec.commission)}</strong><span>Billed</span></div>
-    <div class="candidate-kpi ${!isNew&&bal<=0?'cs-kpi-paid':'cs-kpi-due'}"><strong>${isNew?'—':moneyKES(Math.max(0,bal))}</strong><span>Balance</span></div>
+    <div class="candidate-kpi"><strong>${isNew?'â€”':moneyKES(rec.commission)}</strong><span>Billed</span></div>
+    <div class="candidate-kpi ${!isNew&&bal<=0?'cs-kpi-paid':'cs-kpi-due'}"><strong>${isNew?'â€”':moneyKES(Math.max(0,bal))}</strong><span>Balance</span></div>
   </div>`;
 }
 function renderLBSummary(r){
@@ -3253,8 +3253,8 @@ function renderLBSummary(r){
     </div>
   </div>
   <div class="candidate-summary-kpis">
-    <div class="candidate-kpi"><strong>${isNew?'—':moneyUSD(owed)}</strong><span>To refund</span></div>
-    <div class="candidate-kpi ${!isNew&&bal<=0?'cs-kpi-paid':'cs-kpi-due'}"><strong>${isNew?'—':moneyUSD(bal)}</strong><span>Balance</span></div>
+    <div class="candidate-kpi"><strong>${isNew?'â€”':moneyUSD(owed)}</strong><span>To refund</span></div>
+    <div class="candidate-kpi ${!isNew&&bal<=0?'cs-kpi-paid':'cs-kpi-due'}"><strong>${isNew?'â€”':moneyUSD(bal)}</strong><span>Balance</span></div>
   </div>`;
 }
 function readProFormSummary(){
@@ -3289,9 +3289,9 @@ function bindModalSummaries(){
   });
 }
 
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 // STAGES + PILLS
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 function rebuildStageSelects(){
   const proSel=document.getElementById('pf-stage');
   if(proSel) proSel.innerHTML=proStages.map(s=>`<option value="${s}">${s}</option>`).join('')+`<option value="__add_new__">+ Add new stage...</option>`;
@@ -3549,14 +3549,14 @@ function renderCommissions(){
     const bal=proBalance(r);
     const payment=proPaymentStatus(r);
     const actions=`<button class="action-link" onclick="event.stopPropagation();openAddPayment(${r.id})" title="Add payment">+ Pay</button>`
-      +(bal>0?` <button class="action-link" style="color:var(--green,#22A06B)" onclick="event.stopPropagation();markCommissionCleared(${r.id})" title="Mark fully paid">✓ Cleared</button>`:'');
+      +(bal>0?` <button class="action-link" style="color:var(--green,#22A06B)" onclick="event.stopPropagation();markCommissionCleared(${r.id})" title="Mark fully paid">âœ“ Cleared</button>`:'');
     return `<tr onclick="editPro(${r.id})"><td class="name-cell">${escHTML(r.name)}</td><td>${escHTML(r.company||'-')}</td><td>${escHTML(r.position||'-')}</td><td>${moneyKES(r.commission)}</td><td>${moneyKES(payment.paid)}</td><td class="${payment.dueNow>0?'balance-owed':''}">${moneyKES(payment.dueNow)}</td><td class="${bal>0?'balance-owed':''}">${moneyKES(bal)}</td><td>${escHTML(getLatestTimelineText('pro',r.id))}</td><td onclick="event.stopPropagation()" style="white-space:nowrap">${actions}</td></tr>`;
   }).join(''):'<tr><td colspan="9"><div class="mini-empty">No commission records yet</div></td></tr>';
 }
 // Record a Pro commission payment of `amount` on `date` into the paid1/paid2
 // slots (each with its own date) and recompute the total. Storing the date is
 // what lets a payment surface in Latest Transactions ordered by when it was
-// actually paid — previously these flows bumped only `paid`, so the entry was
+// actually paid â€” previously these flows bumped only `paid`, so the entry was
 // dated by the candidate's submission date and never sorted as the latest.
 // Mutates `r` in place and returns the field updates to persist.
 // Keep the legacy mirrors (paid, paid1/paid2 + dates) in step with the
@@ -3600,7 +3600,7 @@ function applyProPayment(r, amount, date) {
   return proCommissionUpdates(r);
 }
 // Persist a Pro commission update, degrading gracefully when the extended
-// columns (commission_payments / paid1_date …) have not been migrated yet:
+// columns (commission_payments / paid1_date â€¦) have not been migrated yet:
 // retry with just the core paid1/paid2/paid so the amount still saves.
 async function persistProPaymentUpdate(id, updates) {
   try { await dbUpdate('pro_candidates', id, updates); }
@@ -3610,7 +3610,7 @@ async function persistProPaymentUpdate(id, updates) {
     } else throw e;
   }
 }
-// ── Commission installment ledger (Payments tab) ─────────────────────────────
+// â”€â”€ Commission installment ledger (Payments tab) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function addCommissionInstallment(id, amount, date) {
   const r = proDB.find(x => String(x.id) === String(id)); if (!r) return false;
   const amt = Number(amount) || 0;
@@ -3623,7 +3623,7 @@ async function addCommissionInstallment(id, amount, date) {
   try {
     if (useCloud()) await persistProPaymentUpdate(id, updates); else saveLocalStore();
     addTimeline('pro', id, `Installment ${r.commissionPayments.length}: ${moneyKES(amt)}`);
-    auditAction('Finance', 'Commission installment added', `${r.name} — ${moneyKES(amt)}`);
+    auditAction('Finance', 'Commission installment added', `${r.name} â€” ${moneyKES(amt)}`);
   } catch(e) { _restoreProComm(r, snapshot); showToast(e.message || 'Save failed.', 'error'); return false; }
   _afterCommissionChange();
   return true;
@@ -3639,7 +3639,7 @@ async function removeCommissionInstallment(id, index) {
   catch(e) { _restoreProComm(r, snapshot); showToast(e.message || 'Save failed.', 'error'); return; }
   _afterCommissionChange();
 }
-// Edit an installment's amount and date together (one save) — used by the
+// Edit an installment's amount and date together (one save) â€” used by the
 // installment view/edit popup.
 async function saveInstallmentEdit(id, index, amount, date) {
   const r = proDB.find(x => String(x.id) === String(id)); if (!r || !Array.isArray(r.commissionPayments)) return false;
@@ -3654,7 +3654,7 @@ async function saveInstallmentEdit(id, index, amount, date) {
   const snapshot = _proCommSnapshot(r);
   p.amount = amt; p.date = date || '';
   syncCommissionMirrors(r);
-  try { if (useCloud()) await persistProPaymentUpdate(id, proCommissionUpdates(r)); else saveLocalStore(); auditAction('Finance', 'Installment edited', `${r.name} — ${moneyKES(amt)}`); }
+  try { if (useCloud()) await persistProPaymentUpdate(id, proCommissionUpdates(r)); else saveLocalStore(); auditAction('Finance', 'Installment edited', `${r.name} â€” ${moneyKES(amt)}`); }
   catch(e) { _restoreProComm(r, snapshot); fail(e.message || 'Save failed.'); return false; }
   _afterCommissionChange();
   return true;
@@ -3732,7 +3732,7 @@ async function submitAddPayment() {
     if (useCloud()) await persistProPaymentUpdate(id, updates);
     else saveLocalStore();
     addTimeline('pro', id, `Payment received: ${moneyKES(amount)} on ${date}`);
-    auditAction('Finance', 'Commission payment received', `${r.name} — ${moneyKES(amount)}`);
+    auditAction('Finance', 'Commission payment received', `${r.name} â€” ${moneyKES(amount)}`);
   } catch(e) { _restoreProComm(r, snapshot); return fail(e.message || 'Save failed.'); }
   closeModal('ap-modal');
   _afterCommissionChange();
@@ -3754,7 +3754,7 @@ async function markCommissionCleared(id) {
     if (useCloud()) await persistProPaymentUpdate(id, updates);
     else saveLocalStore();
     addTimeline('pro', id, `Commission cleared: ${moneyKES(commission)}`);
-    auditAction('Finance', 'Commission marked cleared', `${r.name} — ${moneyKES(commission)}`);
+    auditAction('Finance', 'Commission marked cleared', `${r.name} â€” ${moneyKES(commission)}`);
   } catch(e) { _restoreProComm(r, snapshot); showToast(e.message || 'Save failed.', 'error'); return; }
   _afterCommissionChange();
   showToast(`${r.name} marked as cleared`, 'success');
@@ -3963,7 +3963,7 @@ function renderDataIntegrityPanel(){
     <div class="integrity-row ${issue.severity}">
       <div>
         <strong>${escHTML(issue.title)}</strong>
-        <span>${escHTML(issue.name)} · ${escHTML(issue.stream)} · ${escHTML(issue.detail)}</span>
+        <span>${escHTML(issue.name)} Â· ${escHTML(issue.stream)} Â· ${escHTML(issue.detail)}</span>
       </div>
       ${issue.action ? `<button onclick="${issue.action}">Open</button>` : ''}
     </div>`).join('');
@@ -4123,7 +4123,7 @@ function refreshPaymentCandidates(){
   const sel=document.getElementById('qp-candidate');
   if(!sel) return;
   const rows=type==='repayment'?lbDB.filter(isTravelledLB):proDB;
-  sel.innerHTML='<option value="">— select —</option>'+rows.map(r=>`<option value="${r.id}">${escHTML(r.name)}</option>`).join('');
+  sel.innerHTML='<option value="">â€” select â€”</option>'+rows.map(r=>`<option value="${r.id}">${escHTML(r.name)}</option>`).join('');
   const info=document.getElementById('qp-info');
   if(info) info.style.display='none';
 }
@@ -4137,7 +4137,7 @@ function refreshPaymentInfo(){
     const r=lbDB.find(x=>x.id===id);
     if(!r){ info.style.display='none'; return; }
     const owed=lbRefundPrincipal(r), paid=lbRefundPaidAmount(r);
-    content.innerHTML=`<strong>${escHTML(r.name)}</strong><br>To refund: ${moneyUSD(owed)} &nbsp;|&nbsp; Paid: ${moneyUSD(paid)} &nbsp;|&nbsp; Outstanding: ${moneyUSD(owed-paid)}<br><small>Installment 1: ${r.r1Amt?moneyUSD(r.r1Amt)+' on '+fmtDate(r.r1Date):'—'} &nbsp;|&nbsp; Installment 2: ${r.r2Amt?moneyUSD(r.r2Amt)+' on '+fmtDate(r.r2Date):'—'}</small>`;
+    content.innerHTML=`<strong>${escHTML(r.name)}</strong><br>To refund: ${moneyUSD(owed)} &nbsp;|&nbsp; Paid: ${moneyUSD(paid)} &nbsp;|&nbsp; Outstanding: ${moneyUSD(owed-paid)}<br><small>Installment 1: ${r.r1Amt?moneyUSD(r.r1Amt)+' on '+fmtDate(r.r1Date):'â€”'} &nbsp;|&nbsp; Installment 2: ${r.r2Amt?moneyUSD(r.r2Amt)+' on '+fmtDate(r.r2Date):'â€”'}</small>`;
   } else {
     const r=proDB.find(x=>x.id===id);
     if(!r){ info.style.display='none'; return; }
@@ -4187,7 +4187,7 @@ async function submitRecordPayment(){
   }
   showToast('Payment recorded','success');
 }
-// ── Balance card quick payment ──────────────────────────────────────────────
+// â”€â”€ Balance card quick payment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let _bpmType='', _bpmId=0, _bpmBalance=0, _bpmSubmitting=false;
 function openBalancePayment(type, id){
   const r = type==='lb' ? lbDB.find(x=>x.id===id||String(x.id)===String(id)) : proDB.find(x=>x.id===id||String(x.id)===String(id));
@@ -4199,7 +4199,7 @@ function openBalancePayment(type, id){
   const fmt = type==='lb' ? moneyUSD : moneyKES;
   const paid = type==='lb' ? lbRefundPaidAmount(r) : proPaidAmount(r);
   const commission = type==='lb' ? lbRefundPrincipal(r) : (Number(r.commission)||0);
-  document.getElementById('bpm-title').textContent = `Record Payment — ${escHTML(r.name)}`;
+  document.getElementById('bpm-title').textContent = `Record Payment â€” ${escHTML(r.name)}`;
   document.getElementById('bpm-summary').innerHTML =
     `<strong>${escHTML(r.name)}</strong><br>`+
     `${type==='lb'?'To refund':'Commission'}: <b>${fmt(commission)}</b> &nbsp;|&nbsp; `+
@@ -4226,7 +4226,7 @@ async function submitBalancePayment(){
   const btn=document.getElementById('bpm-submit');
   const origLabel=btn?btn.textContent:'';
   _bpmSubmitting=true;
-  if(btn){ btn.disabled=true; btn.textContent='Saving…'; }
+  if(btn){ btn.disabled=true; btn.textContent='Savingâ€¦'; }
   const release=()=>{ _bpmSubmitting=false; if(btn){ btn.disabled=false; btn.textContent=origLabel; } };
   try {
     const updates={};
@@ -4237,7 +4237,7 @@ async function submitBalancePayment(){
       if(!r.r1Amt){ updates.r1Amt=amount; updates.r1Date=date; r.r1Amt=amount; r.r1Date=date; }
       else if(!r.r2Amt){ updates.r2Amt=amount; updates.r2Date=date; r.r2Amt=amount; r.r2Date=date; }
       else{
-        // Both slots used — accumulate into r2Amt
+        // Both slots used â€” accumulate into r2Amt
         updates.r2Amt=(Number(r.r2Amt)||0)+amount; updates.r2Date=date; r.r2Amt=updates.r2Amt; r.r2Date=date;
       }
       try{ if(useCloud()) await dbUpdate('lb_candidates',id,updates); else saveLocalStore(); addTimeline('lb',id,`Payment recorded: ${moneyUSD(amount)}`); auditAction('Finance','Repayment recorded',`${r.name} - ${moneyUSD(amount)}`); }
@@ -4338,7 +4338,7 @@ function openTravelEventPrompt(){
   const sel=document.getElementById('qt-candidate');
   if(sel){
     const all=[...proDB.map(r=>({type:'pro',id:r.id,name:r.name,label:`${r.name} (Professional)`})),...lbDB.map(r=>({type:'lb',id:r.id,name:r.name,label:`${r.name} (General Jobs)`}))].sort((a,b)=>a.name.localeCompare(b.name));
-    sel.innerHTML='<option value="">— select —</option>'+all.map(r=>`<option value="${r.type}:${r.id}">${escHTML(r.label)}</option>`).join('');
+    sel.innerHTML='<option value="">â€” select â€”</option>'+all.map(r=>`<option value="${r.type}:${r.id}">${escHTML(r.label)}</option>`).join('');
   }
   const dateEl=document.getElementById('qt-date');
   if(dateEl) dateEl.value=new Date().toISOString().slice(0,10);
@@ -4397,7 +4397,7 @@ function buildConic(items,total){
   return `conic-gradient(${stops || '#E5E7EB 0 100%'})`;
 }
 // PROFESSIONAL
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 let lastProFiltered=[];
 let lastLBFiltered=[];
 function getFilteredPro(){
@@ -4571,9 +4571,9 @@ async function deletePro(id){
   setProDB(proDB.filter(x=>x.id!=id)); auditAction('Professional Jobs','Candidate deleted',r?.name||''); showToast('Deleted','success'); renderPro(); window.renderDash?.(); window.renderPipelinePage?.();
 }
 
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 // LB JOBS
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 function getFilteredLB(){
   const q=(document.getElementById('lb-search')?.value||'').toLowerCase();
   const travel=window.lbTravelPillFilter||'';
@@ -4802,7 +4802,7 @@ function openLBRefundPayment(id) {
   const rows = payments.map((p,i)=>`<tr><td>${h(fmt(p.date||''))}</td><td>${moneyUSD(p.amount)}</td><td><button class="dv5-action-btn" onclick="removeLBRefundPayment(${i})"><i class="ti ti-trash"></i></button></td></tr>`).join('');
   const html=`<div class="modal open" id="lb-refund-modal" onclick="if(event.target===this)closeModal('lb-refund-modal')" style="z-index:9000">
     <div class="modal-card" style="max-width:420px">
-      <div class="modal-header"><h2>Record Refund Payment — ${h(r.name)}</h2><button class="modal-close" onclick="closeModal('lb-refund-modal')">×</button></div>
+      <div class="modal-header"><h2>Record Refund Payment â€” ${h(r.name)}</h2><button class="modal-close" onclick="closeModal('lb-refund-modal')">Ã—</button></div>
       <div class="modal-body">
         <div style="display:flex;gap:12px;margin-bottom:12px">
           <div style="flex:1;background:#f0fdf4;border-radius:8px;padding:10px 12px;text-align:center"><div style="font-size:11px;color:#16a34a;font-weight:438">Total to Refund</div><div style="font-size:16px;font-weight:500">${moneyUSD(r.toRefund||r.to_refund||0)}</div></div>
@@ -4835,7 +4835,7 @@ async function submitLBRefundPayment() {
   payments.push({date,amount});
   lbDB[i]={...lbDB[i],refundPayments:payments};
   addTimeline('lb',id,`Refund payment recorded: ${moneyUSD(amount)}`);
-  showToast('Payment recorded ✓','success');
+  showToast('Payment recorded âœ“','success');
   closeModal('lb-refund-modal');
   await saveLBRecord(lbDB[i]);
   renderLB(); window.renderDash?.(); window.renderFinancePage?.();
@@ -4867,7 +4867,7 @@ async function updateTxDate(type, id, slot, newDate) {
     }
     window.renderFinancePage?.();
   } catch(e) {
-    showToast('Failed to save date — run the latest migration SQL in Supabase if this persists', 'error');
+    showToast('Failed to save date â€” run the latest migration SQL in Supabase if this persists', 'error');
     console.warn('updateTxDate error:', e);
   }
 }
@@ -4898,13 +4898,13 @@ async function batchSendProfiles(){
   renderLB(); window.renderDash?.();
 }
 
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 // DOCUMENTS
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 // EXPORT CSV
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 function exportCSV(type){
   let headers,rows,filename,isFiltered=false;
   if(type==='pro'){
@@ -4914,7 +4914,7 @@ function exportCSV(type){
     rows=src.map((r,i)=>[i+1,r.name,r.pp||'',r.phone||'',r.position||'',r.company||'',r.country||'',r.stage,
       r.commission||'',r.paid||'',(r.commission&&r.paid)?Number(r.commission)-Number(r.paid):'',
       fmtDate(r.submitted),fmtDate(r.interview),fmtDate(r.ol),fmtDate(r.mol),fmtDate(r.visa),fmtDate(r.travel)]);
-    filename=isFiltered?'Dreco_Professional_Filtered':'Dreco_Professional';
+    filename=isFiltered?'Recruitflow_Professional_Filtered':'Recruitflow_Professional';
   } else {
     headers=['#','Name','Phone','Passport Status','Travel Status','Travel Date','To Refund (USD)','Refunded (USD)','Balance (USD)','Refund Status','Notes'];
     const src=lastLBFiltered.length?lastLBFiltered:lbDB;
@@ -4926,7 +4926,7 @@ function exportCSV(type){
         fmtDate(r.travelDate||r.travel_date),rs==='N/A'?'':toR,rs==='N/A'?'':paid,
         (rs==='N/A'||rs==='RETURNED')?'':toR-paid,rs,r.notes||''];
     });
-    filename=isFiltered?'Dreco_General_Filtered':'Dreco_LB';
+    filename=isFiltered?'Recruitflow_General_Filtered':'Recruitflow_LB';
   }
   const esc=v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`;
   const csv=[headers.map(esc).join(','),...rows.map(r=>r.map(esc).join(','))].join('\n');
@@ -4937,9 +4937,9 @@ function exportCSV(type){
   a.click(); showToast('Export downloaded','success');
 }
 
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 // PAGINATION
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 function renderPagination(elId,page,total,count,which){
   const el=document.getElementById(elId); if(!el) return;
   if(total<=1){ el.innerHTML=`<span>${count} record${count!==1?'s':''}</span><span></span>`; return; }
@@ -4956,14 +4956,14 @@ function goPage(which,p){
   document.querySelector('.content-area')?.scrollTo({top:0,behavior:'smooth'});
 }
 
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 // TOAST
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 function showToast(msg,type=''){
   const t=document.getElementById('toast'); if(!t) return;
   const icon=type==='error'?'ti-alert-circle':'ti-circle-check';
   t.className='toast '+type;
-  // Message is inserted as text, never HTML — candidate-controlled values
+  // Message is inserted as text, never HTML â€” candidate-controlled values
   // (e.g. names) must not be able to inject markup/script here.
   t.innerHTML=`<i class="ti ${icon}"></i><span></span>`;
   const span=t.querySelector('span'); if(span) span.textContent=String(msg==null?'':msg);
@@ -4971,9 +4971,9 @@ function showToast(msg,type=''){
   setTimeout(()=>t.classList.remove('show'),2800);
 }
 
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 // PROFILE DROPDOWN
-// *Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â*Â
+// *Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚*Ã‚
 function toggleProfileDropdown(e) {
   e?.stopPropagation?.();
   const menu = document.getElementById('acct-menu');
@@ -5374,7 +5374,7 @@ injectDepsToD5({
   getActiveGeneralCountry, getGeneralWorkflowStages, getLBWorkflowStagesForRecord,
 });
 
-// ─── Expose module-scope functions on window ──────────────────────────────────
+// â”€â”€â”€ Expose module-scope functions on window â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // ES modules don't pollute global scope, so onclick="fn()" handlers need this.
 Object.assign(window, {
   // Auth & session
@@ -5446,13 +5446,14 @@ Object.assign(window, {
 // Tasks, Finance, Documents, Reports, Clients, and Settings.
 // =========================================================
 // =============================================================
-// DRECO v5 — Unified UI Layer (replaces all prior render IIFEs)
+// DRECO v5 â€” Unified UI Layer (replaces all prior render IIFEs)
 // =============================================================
 // =============================================================
-// DRECO v5 — Unified UI Layer
+// DRECO v5 â€” Unified UI Layer
 // Clean single IIFE. Replaces both ChatGPT IIFEs.
 // Uses: proDB, lbDB, allDocs, allTimelines, currentUser,
 //       proBalance, hasDocs, fmtDate, escHTML, exportCSV,
 //       openProForm, openLBForm, editPro, editLB, openDocs,
 //       switchTab (base), toggleSidebar, toggleProfileDropdown
 // =============================================================
+

@@ -1,8 +1,8 @@
-# Dreco Supabase + Vercel Setup Guide
+# Recruitflow Supabase + Vercel Setup Guide
 
 ## What Supabase Does
 
-Supabase stores Dreco data in the cloud so every authorized user in the same company workspace sees the same candidates, payments, timelines, documents, and settings.
+Supabase stores Recruitflow data in the cloud so every authorized user in the same company workspace sees the same candidates, payments, timelines, documents, and settings.
 
 ## Step 1 - Create Your Supabase Project
 
@@ -15,7 +15,7 @@ Supabase stores Dreco data in the cloud so every authorized user in the same com
 
 Do not paste Supabase keys into `app.js`, `index.html`, or `data.js`.
 
-In Vercel, open the Dreco project, then go to **Settings -> Environment Variables** and add:
+In Vercel, open the Recruitflow project, then go to **Settings -> Environment Variables** and add:
 
 ```text
 SUPABASE_URL=https://your-project.supabase.co
@@ -35,7 +35,7 @@ For another recruitment company, change the `DRECO_*` values to that company's w
 
 Security notes:
 
-- `SUPABASE_ANON_KEY` is browser-safe, but Dreco now serves it through `/api/dreco-config` instead of hardcoding it.
+- `SUPABASE_ANON_KEY` is browser-safe, but Recruitflow now serves it through `/api/dreco-config` instead of hardcoding it.
 - `SUPABASE_SERVICE_ROLE_KEY` must stay private in Vercel only.
 - `DRECO_RECOVERY_CODE` must stay private in Vercel only.
 
@@ -169,7 +169,7 @@ Vercel should redeploy automatically.
 
 After deployment:
 
-1. Open Dreco.
+1. Open Recruitflow.
 2. Click **Create company workspace**.
 3. Enter the company name, admin name, admin username, and admin password.
 4. Sign out.
