@@ -1606,6 +1606,7 @@ const DRECO_ACTIONS = {
   'team.remove': (el) => window.removeTeamMember?.(el.getAttribute('data-username') || (document.getElementById('edit-team-username') as HTMLInputElement)?.value),
   'candidate.jobtype': (el) => window.setJobTypeTab?.(el.getAttribute('data-jobtype')),
   'candidate.country': (el) => window.setLbCountry?.(el.getAttribute('data-country') || ''),
+  'candidate.viewmode': (el) => window.setCandidateDisplayMode?.(el.getAttribute('data-mode')),
   'settings.general.country': (el) => {
     const c = el.getAttribute('data-country');
     if (c) { window.settingsGeneralCountry = c; renderSettingsPage?.(); }

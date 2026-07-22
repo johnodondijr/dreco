@@ -1152,6 +1152,7 @@ export function injectDepsToD5(deps) {
   let candidateSearch = '';
   let candidateStageFilter = '';
   let candidateViewFilter = 'all';
+  let candidateDisplayMode = safeLocalGet('recruitflow_candidate_display_mode') === 'table' ? 'table' : 'cards';
   let selectedCandidates = new Set(); // 'type_id' strings
 
   function setCandidateSearch(v) {
@@ -1163,6 +1164,11 @@ export function injectDepsToD5(deps) {
   window.setCandidateSearch = setCandidateSearch;
   window.setCandidateStageFilter = v => { candidateStageFilter = v; renderCandidates(); };
   window.setCandidateViewFilter  = v => { candidateViewFilter  = v; renderCandidates(); };
+  window.setCandidateDisplayMode = v => {
+    candidateDisplayMode = v === 'table' ? 'table' : 'cards';
+    safeLocalSet('recruitflow_candidate_display_mode', candidateDisplayMode);
+    renderCandidates();
+  };
   window.clearSelectedCandidates = () => { selectedCandidates.clear(); renderCandidates(); };
 
   function stageFilterMatches(rowStage: string, filterValue: string) {
@@ -1203,11 +1209,33 @@ export function injectDepsToD5(deps) {
     mobileCandidateEventsBound = true;
     document.addEventListener('change', e => {
       const input = (e.target as Element)?.closest?.('[data-mobile-candidate-select]') as HTMLInputElement;
+      const tableInput = (e.target as Element)?.closest?.('[data-candidate-select]') as HTMLInputElement;
+      const selectAll = (e.target as Element)?.closest?.('[data-candidate-select-all]') as HTMLInputElement;
+      if (selectAll) {
+        toggleSelectAll(selectAll.checked);
+        return;
+      }
+      if (tableInput) {
+        toggleCandSelect(tableInput.dataset.key || '', tableInput.checked);
+        return;
+      }
       if (!input) return;
       toggleCandSelect(input.dataset.key || '', input.checked);
     });
     document.addEventListener('click', e => {
       const target = e.target as Element;
+      const candidateAction = target?.closest?.('[data-candidate-action]') as HTMLElement;
+      if (candidateAction) {
+        e.stopPropagation();
+        const type = candidateAction.dataset.type || '';
+        const id = Number(candidateAction.dataset.id);
+        const name = candidateAction.dataset.name || 'Candidate';
+        const action = candidateAction.dataset.candidateAction;
+        if (action === 'edit') type === 'pro' ? window.editPro?.(id) : window.editLB?.(id);
+        else if (action === 'docs') window.openDocs?.(type, id, name);
+        else if (action === 'profile') window.openCandidateProfile?.(type, id);
+        return;
+      }
       const actionBtn = target?.closest?.('[data-mobile-candidate-action]') as HTMLElement;
       if (actionBtn) {
         e.stopPropagation();
@@ -1218,6 +1246,12 @@ export function injectDepsToD5(deps) {
         if (action === 'edit') type === 'pro' ? window.editPro?.(id) : window.editLB?.(id);
         else if (action === 'docs') window.openDocs?.(type, id, name);
         else if (action === 'profile') window.openCandidateProfile?.(type, id);
+        return;
+      }
+      if (target?.closest?.('[data-candidate-select], [data-candidate-select-all]')) return;
+      const candidateRow = target?.closest?.('[data-candidate-row]') as HTMLElement;
+      if (candidateRow) {
+        window.openCandidateProfile?.(candidateRow.dataset.type || '', Number(candidateRow.dataset.id));
         return;
       }
       const card = target?.closest?.('[data-mobile-candidate-card]') as HTMLElement;
@@ -1317,6 +1351,50 @@ export function injectDepsToD5(deps) {
     const allSel = list.length > 0 && list.every(r => selectedCandidates.has(r.type+'_'+r.id));
     const someSel = selectedCandidates.size > 0;
     const allStages = isPro ? activeWorkflowStages('pro') : activeWorkflowStages('lb');
+    const simpleTableHTML = `
+      <table class="dv5-table dv5-simple-candidate-table">
+        <thead><tr>
+          <th style="width:36px"><input type="checkbox" id="cand-select-all" ${allSel?'checked':''} data-candidate-select-all></th>
+          <th>Name</th>
+          <th>Passport</th>
+          <th>Phone</th>
+          <th>${isPro?'Job title':'Destination'}</th>
+          ${isPro?'<th>Company</th>':'<th>Country</th>'}
+          <th>Stage</th>
+          <th>${isPro?'Commission':'Refund'}</th>
+          <th>Paid</th>
+          <th>Balance</th>
+          <th>Next action</th>
+          <th></th>
+        </tr></thead>
+        <tbody>
+          ${list.length ? list.map(r => {
+            const key = r.type+'_'+r.id;
+            const sel = selectedCandidates.has(key);
+            const paid = Number(r.paid || 0);
+            const total = Number(r.commission || 0);
+            const balance = Number(r.balance || 0);
+            const currency = r.type==='pro' ? money : moneyUSD;
+            return `<tr class="${sel?'dv5-row-selected':''}" data-candidate-row data-type="${h(r.type)}" data-id="${h(String(r.id))}">
+              <td><input type="checkbox" ${sel?'checked':''} data-candidate-select data-key="${h(key)}"></td>
+              <td>${h(r.name || 'Unnamed candidate')}</td>
+              <td>${h(r.pp || r.passport || '-')}</td>
+              <td>${h(r.phone || '-')}</td>
+              <td>${h(r.position || r.country || '-')}</td>
+              <td>${h(r.company || r.country || '-')}</td>
+              <td>${badge(r.pipelineStage)}</td>
+              <td>${currency(total)}</td>
+              <td>${currency(paid)}</td>
+              <td>${balance > 0 ? currency(balance) : 'Cleared'}</td>
+              <td>${h(nextAction(r))}</td>
+              <td>
+                <button class="dv5-action-btn" data-candidate-action="edit" data-type="${h(r.type)}" data-id="${h(String(r.id))}" title="Edit"><i class="ti ti-edit"></i></button>
+                <button class="dv5-action-btn" data-candidate-action="docs" data-type="${h(r.type)}" data-id="${h(String(r.id))}" data-name="${h(r.name || 'Candidate')}" title="Documents"><i class="ti ti-paperclip"></i></button>
+              </td>
+            </tr>`;
+          }).join('') : `<tr><td colspan="12"><div class="dv5-empty">No candidates found.</div></td></tr>`}
+        </tbody>
+      </table>`;
     const mobileCardsHTML = list.length ? list.map((r, ri) => {
       const key = r.type+'_'+r.id;
       const sel = selectedCandidates.has(key);
@@ -1356,7 +1434,7 @@ export function injectDepsToD5(deps) {
       </article>`;
     }).join('') : `<div class="dv5-mobile-candidate-card"><div class="dv5-empty">No candidates found.</div></div>`;
     el.innerHTML = `
-      <div class="dv5-page">
+      <div class="dv5-page dv5-candidates-page dv5-candidates-${candidateDisplayMode}">
         <div class="dv5-page-head">
           <div><h1>Candidates</h1><p>${isPro?'Professional placements — commissions in KES.':'General Jobs — refunds in USD.'}</p></div>
           <div class="dv5-head-actions">
@@ -1385,6 +1463,11 @@ export function injectDepsToD5(deps) {
             </select>
           </div>
           <div class="dv5-toolbar-right">
+            <div class="dv5-view-tabs" aria-label="Candidate display">
+              ${[['cards','Cards'],['table','Table']].map(([v,l])=>
+                `<button class="dv5-view-tab ${candidateDisplayMode===v?'active':''}" data-action="candidate.viewmode" data-mode="${v}">${l}</button>`
+              ).join('')}
+            </div>
             <div class="dv5-view-tabs">
               ${[['all','All'],['follow','Needs Action'],['balance','Has Balance']].map(([v,l])=>
                 `<button class="dv5-view-tab ${candidateViewFilter===v?'active':''}"
@@ -1400,7 +1483,7 @@ export function injectDepsToD5(deps) {
         </div>
         <div class="dv5-table-card">
           <div class="dv5-table-wrap">
-            <table class="dv5-table">
+            ${candidateDisplayMode === 'table' ? simpleTableHTML : `<table class="dv5-table">
               <thead><tr>
                 <th style="width:36px"><input type="checkbox" id="cand-select-all" ${allSel?'checked':''} onchange="toggleSelectAll(this.checked)"></th>
                 <th class="rich-idx-h">#</th>
@@ -1447,7 +1530,7 @@ export function injectDepsToD5(deps) {
                   </tr>`;
                 }).join('') : `<tr><td colspan="10"><div class="dv5-empty">No candidates found.</div></td></tr>`}
               </tbody>
-            </table>
+            </table>`}
           </div>
         </div>
       </div>`;
