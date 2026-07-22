@@ -2724,7 +2724,8 @@ window.addEventListener('popstate', e => {
 });
 function setBottomNav(t){
   document.querySelectorAll('.bottom-nav-item').forEach(btn=>btn.classList.remove('active'));
-  const active=document.getElementById('bnav-'+t);
+  const primaryTabs = new Set(['dash','pipeline','candidates','finance']);
+  const active=document.getElementById(primaryTabs.has(t) ? 'bnav-'+t : 'bnav-more');
   if(active){
     active.classList.add('active');
     const nav=document.getElementById('bottom-nav');

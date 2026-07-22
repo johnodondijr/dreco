@@ -8989,6 +8989,127 @@ html body #app .integrity-row.medium{
     overflow:hidden!important;
     border-radius:20px!important;
   }
+  html body #app .dv5-mobile-candidate-list{
+    display:grid!important;
+    gap:12px!important;
+    margin:12px 0!important;
+  }
+  html body #app .dv5-mobile-candidate-card{
+    display:grid!important;
+    gap:12px!important;
+    padding:14px!important;
+    border-radius:20px!important;
+    background:#FFFFFF!important;
+    border:1px solid #E4E1D6!important;
+    box-shadow:0 14px 34px rgba(31,33,51,.055)!important;
+    color:#1F2133!important;
+    cursor:pointer!important;
+  }
+  html body #app .dv5-mobile-candidate-card.selected{
+    border-color:#DDF56C!important;
+    box-shadow:0 0 0 3px rgba(221,245,108,.28),0 14px 34px rgba(31,33,51,.055)!important;
+  }
+  html body #app .dv5-mobile-candidate-top{
+    display:grid!important;
+    grid-template-columns:22px auto minmax(0,1fr) auto!important;
+    gap:10px!important;
+    align-items:center!important;
+  }
+  html body #app .dv5-mobile-check{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+  }
+  html body #app .dv5-mobile-candidate-title{
+    min-width:0!important;
+  }
+  html body #app .dv5-mobile-candidate-title strong{
+    display:block!important;
+    font-size:14px!important;
+    font-weight:700!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  html body #app .dv5-mobile-candidate-title span{
+    display:block!important;
+    margin-top:3px!important;
+    font-size:11px!important;
+    color:#77786D!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  html body #app .dv5-mobile-candidate-top em{
+    font-style:normal!important;
+    color:#9A978C!important;
+    font-size:11px!important;
+    font-weight:700!important;
+  }
+  html body #app .dv5-mobile-candidate-grid{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:8px!important;
+  }
+  html body #app .dv5-mobile-candidate-grid>div{
+    min-width:0!important;
+    padding:10px!important;
+    border-radius:14px!important;
+    background:#F8F7EF!important;
+    border:1px solid #EEECE2!important;
+  }
+  html body #app .dv5-mobile-candidate-grid span{
+    display:block!important;
+    margin-bottom:5px!important;
+    color:#77786D!important;
+    font-size:9px!important;
+    font-weight:750!important;
+    letter-spacing:.04em!important;
+    text-transform:uppercase!important;
+  }
+  html body #app .dv5-mobile-candidate-grid strong{
+    display:block!important;
+    color:#1F2133!important;
+    font-size:12px!important;
+    font-weight:700!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  html body #app .dv5-mobile-candidate-readiness{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    gap:10px!important;
+    align-items:center!important;
+  }
+  html body #app .dv5-mobile-candidate-readiness small{
+    color:#77786D!important;
+    font-size:10px!important;
+    font-weight:650!important;
+  }
+  html body #app .dv5-mobile-candidate-actions{
+    display:grid!important;
+    grid-template-columns:1fr 1fr 1fr!important;
+    gap:8px!important;
+  }
+  html body #app .dv5-mobile-candidate-actions .dv5-action-btn{
+    height:36px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:5px!important;
+    border-radius:12px!important;
+    background:#FFFFFF!important;
+    border:1px solid #E4E1D6!important;
+    color:#1F2133!important;
+  }
+  html body #app .dv5-mobile-candidate-actions .dv5-action-btn.primary{
+    background:#DDF56C!important;
+    border-color:#DDF56C!important;
+  }
+  html body #app #candidates-section .dv5-table-card{
+    display:none!important;
+  }
   html body #app .dv5-table-wrap,
   html body #app .table-scroll,
   html body #app .v4-card{
@@ -9104,6 +9225,9 @@ html body #app .integrity-row.medium{
 
 @media(min-width:761px){
   html body #app .bottom-nav{
+    display:none!important;
+  }
+  html body #app .dv5-mobile-candidate-list{
     display:none!important;
   }
 }

@@ -785,7 +785,9 @@ export function injectDepsToD5(deps) {
   function fileCard(icon, iconColor, iconBg, barColor, label, count, total, caption, action='') {
     const pct = total > 0 ? Math.round((count / total) * 100) : 0;
     const click = action ? `onclick="${action}"` : '';
-    return `<div class="dv5-file-card" ${click}>
+    const cursor = action ? 'cursor:pointer' : 'cursor:default';
+    const key = action ? `onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${action}}"` : '';
+    return `<div class="dv5-file-card" style="${cursor}" ${click} role="${action?'button':'group'}" tabindex="${action?'0':'-1'}" ${key}>
       <div class="dv5-file-card-head">
         <span class="dv5-file-card-label">${h(label)}</span>
         <div class="dv5-file-icon-box" style="background:${iconBg};color:${iconColor}">
@@ -820,10 +822,14 @@ export function injectDepsToD5(deps) {
     const isManual = t.manual;
     const iconClass = t.priority==='High'||t.label==='Overdue' ? 'high' : 'med';
     const pillClass = t.priority==='High'||t.label==='Overdue' ? 'red' : 'amber';
+    const rowClick = (!isManual && t.action) ? t.action : '';
+    const rowRole = rowClick ? 'button' : 'group';
+    const rowTab = rowClick ? '0' : '-1';
+    const rowKey = rowClick ? `onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${rowClick}}"` : '';
     const dismiss = isManual
       ? `<button class="dv5-action-btn" onclick="event.stopPropagation();dismissManualTask(${idx})" style="margin-left:6px" title="Dismiss"><i class="ti ti-x"></i></button>`
       : `<button class="dv5-action-btn" onclick="event.stopPropagation();dismissTask('${t.key}')" style="margin-left:6px" title="Dismiss"><i class="ti ti-x"></i></button>`;
-    return `<div class="dv5-task-item" onclick="${isManual?'':t.action}" style="${isManual?'':'cursor:pointer'}">
+    return `<div class="dv5-task-item" onclick="${rowClick}" style="${rowClick?'cursor:pointer':''}" role="${rowRole}" tabindex="${rowTab}" ${rowKey}>
       <div class="dv5-task-icon ${iconClass}"><i class="ti ${h(t.icon||'ti-checkbox')}"></i></div>
       <div class="dv5-task-body">
         <div class="dv5-task-title">${h(t.title)}</div>
@@ -1275,6 +1281,46 @@ export function injectDepsToD5(deps) {
     const allSel = list.length > 0 && list.every(r => selectedCandidates.has(r.type+'_'+r.id));
     const someSel = selectedCandidates.size > 0;
     const allStages = isPro ? activeWorkflowStages('pro') : activeWorkflowStages('lb');
+    const mobileCardsHTML = list.length ? list.map((r, ri) => {
+      const key = r.type+'_'+r.id;
+      const sel = selectedCandidates.has(key);
+      const status = workflowStatus(r);
+      const open = `openCandidateProfile('${r.type}',${r.id})`;
+      const edit = r.type==='pro' ? `editPro(${r.id})` : `editLB(${r.id})`;
+      const ppStatus = r.ppStatus||'NOT APPLIED';
+      const ppLabel = r.own_passport ? 'Has PP'
+        : ['APPLIED','PUSHED'].includes(ppStatus) ? 'Passport applied'
+        : r.type==='lb' ? 'Passport pending'
+        : (r.pp || 'No passport');
+      return `<article class="dv5-mobile-candidate-card ${sel?'selected':''}" onclick="${open}">
+        <div class="dv5-mobile-candidate-top">
+          <label class="dv5-mobile-check" onclick="event.stopPropagation()" aria-label="Select candidate">
+            <input type="checkbox" ${sel?'checked':''} onchange="toggleCandSelect('${key}',this.checked)">
+          </label>
+          ${avatar(r.name, r.type, r.id)}
+          <div class="dv5-mobile-candidate-title">
+            <strong>${h(r.name || 'Unnamed candidate')}</strong>
+            <span>${h(r.position || r.country || 'No role')} · ${h(r.company || r.country || 'No company')}</span>
+          </div>
+          <em>#${ri+1}</em>
+        </div>
+        <div class="dv5-mobile-candidate-grid">
+          <div><span>Stage</span>${badge(r.pipelineStage)}</div>
+          <div><span>${r.type==='pro'?'Passport':'Passport'}</span><strong>${h(ppLabel)}</strong></div>
+          <div><span>Next action</span><strong>${h(nextAction(r))}</strong></div>
+          <div><span>Balance</span><strong>${r.balance>0 ? (r.type==='pro'?money(r.balance):moneyUSD(r.balance)) : 'Cleared'}</strong></div>
+        </div>
+        <div class="dv5-mobile-candidate-readiness">
+          ${progressMini(r)}
+          <small>${h(status.label || 'Record health')}</small>
+        </div>
+        <div class="dv5-mobile-candidate-actions" onclick="event.stopPropagation()">
+          <button class="dv5-action-btn" onclick="${edit}"><i class="ti ti-edit"></i>Edit</button>
+          <button class="dv5-action-btn" onclick="openDocs('${r.type}',${JSON.stringify(r.id)},'${js(r.name)}')"><i class="ti ti-paperclip"></i>Docs</button>
+          <button class="dv5-action-btn primary" onclick="${open}"><i class="ti ti-user"></i>Profile</button>
+        </div>
+      </article>`;
+    }).join('') : `<div class="dv5-mobile-candidate-card"><div class="dv5-empty">No candidates found.</div></div>`;
     el.innerHTML = `
       <div class="dv5-page">
         <div class="dv5-page-head">
@@ -1314,6 +1360,9 @@ export function injectDepsToD5(deps) {
             <span class="dv5-count">Showing ${list.length} of ${all.length}</span>
             <button class="dv5-btn" onclick="exportCSV('${isPro?'pro':'lb'}')"><i class="ti ti-download"></i>Export</button>
           </div>
+        </div>
+        <div class="dv5-mobile-candidate-list">
+          ${mobileCardsHTML}
         </div>
         <div class="dv5-table-card">
           <div class="dv5-table-wrap">
