@@ -9241,16 +9241,101 @@ html body #app .integrity-row.medium{
     display:none!important;
   }
 }
+/* Final sidebar/search cleanup */
+html body #app .sidebar-search-bar,
+html body #app #sidebar.mobile-open .sidebar-search-bar,
+html body #app .sidebar.mobile-open .sidebar-search-bar{
+  display:none!important;
+}
+html body #app .topbar-search,
+html body #app .topbar-search:hover,
+html body #app .topbar-search:focus,
+html body #app .topbar-search:focus-within,
+html body #app .topbar-search:active{
+  border-color:rgba(31,33,51,.08)!important;
+  box-shadow:none!important;
+  outline:0!important;
+}
+html body #app .topbar-search::before,
+html body #app .topbar-search::after{
+  content:none!important;
+  display:none!important;
+}
+html body #app .topbar-search-kbd,
+#login-screen .lp-real-search kbd,
+#login-screen .lp-preview-search kbd{
+  display:none!important;
+}
+html body #app .sidebar-logo,
+html body #app .sidebar-company-name,
+html body #app .nav-section-label,
+html body #app .nav-item{
+  margin-left:0!important;
+  margin-right:0!important;
+}
+html body #app .sidebar-logo,
+html body #app .sidebar-company-name{
+  padding-left:12px!important;
+  padding-right:12px!important;
+  justify-content:flex-start!important;
+  text-align:left!important;
+}
+html body #app .nav-section-label{
+  padding-left:12px!important;
+  padding-right:12px!important;
+}
+html body #app .nav-item{
+  padding-left:12px!important;
+  padding-right:12px!important;
+}
+@media(max-width:860px){
+  html body #app .sidebar.mobile-open,
+  html body #app #sidebar.mobile-open{
+    left:10px!important;
+    top:10px!important;
+    bottom:10px!important;
+    width:min(236px,calc(100vw - 20px))!important;
+    padding:16px 12px 18px!important;
+    border-radius:24px!important;
+  }
+  html body #app .sidebar.mobile-open .sidebar-top,
+  html body #app #sidebar.mobile-open .sidebar-top{
+    padding:0 0 22px!important;
+  }
+  html body #app .sidebar.mobile-open .sidebar-logo,
+  html body #app #sidebar.mobile-open .sidebar-logo{
+    padding-left:10px!important;
+    padding-right:10px!important;
+  }
+  html body #app .sidebar.mobile-open .nav-section-label,
+  html body #app #sidebar.mobile-open .nav-section-label,
+  html body #app .sidebar.mobile-open .sidebar-company-name,
+  html body #app #sidebar.mobile-open .sidebar-company-name{
+    padding-left:10px!important;
+    padding-right:10px!important;
+  }
+  html body #app .sidebar.mobile-open .nav-item,
+  html body #app #sidebar.mobile-open .nav-item{
+    height:46px!important;
+    padding-left:10px!important;
+    padding-right:10px!important;
+  }
+  html body #app .sidebar.mobile-open .dreco-wordmark,
+  html body #app #sidebar.mobile-open .dreco-wordmark{
+    width:132px!important;
+    max-width:132px!important;
+  }
+}
 </style>
 </head>
 <body>
 
-<!-- âŒ˜K COMMAND PALETTE -->
+<!-- COMMAND PALETTE -->
 <div id="cmd-overlay" onclick="if(event.target===this)closeCmd()">
   <div id="cmd-modal">
     <div id="cmd-input-wrap">
       <i class="ti ti-search"></i>
-      <input id="cmd-input" placeholder="Search candidates, tabsâ€¦" autocomplete="off" oninput="cmdSearch()" onkeydown="cmdKey(event)">
+      <input id="cmd-input" placeholder="Search candidates, tabs..." autocomplete="off" oninput="cmdSearch()" onkeydown="cmdKey(event)">
       <span id="cmd-esc">ESC</span>
     </div>
     <div id="cmd-results"></div>
@@ -9418,7 +9503,7 @@ html body #app .integrity-row.medium{
           </aside>
           <main class="lp-real-main">
             <div class="lp-real-topbar">
-              <div class="lp-real-search"><span>Search candidates, tabs...</span><kbd>âŒ˜K</kbd></div>
+              <div class="lp-real-search"><span>Search candidates, tabs...</span></div>
               <i class="ti ti-refresh"></i>
               <i class="ti ti-bell"></i>
               <span class="lp-real-avatar">AD</span>
@@ -9490,7 +9575,7 @@ html body #app .integrity-row.medium{
         </div>
         <div class="lp-preview-card">
           <div class="lp-preview-topbar">
-            <div class="lp-preview-search"><i class="ti ti-search"></i><span>Search candidates, tabs...</span><kbd>âŒ˜K</kbd></div>
+            <div class="lp-preview-search"><i class="ti ti-search"></i><span>Search candidates, tabs...</span></div>
             <button type="button"><i class="ti ti-refresh"></i></button>
             <button type="button"><i class="ti ti-bell"></i></button>
           </div>
@@ -9601,8 +9686,8 @@ html body #app .integrity-row.medium{
       <div class="topbar-search" onclick="openCmd()" style="cursor:pointer" title="Search candidates, jobs, clients">
         <i class="ti ti-search topbar-search-icon"></i>
         <label for="global-search" class="sr-only">Search candidates, jobs, clients</label>
-        <div id="global-search" class="topbar-search-fake">Search candidates, tabsâ€¦</div>
-        <kbd class="topbar-search-kbd">âŒ˜K</kbd>
+        <div id="global-search" class="topbar-search-fake">Search candidates, tabs...</div>
+        
       </div>
       <button class="topbar-icon-btn topbar-refresh-btn" id="topbar-refresh-btn" type="button" aria-label="Refresh data" title="Refresh data" onclick="refreshDrecoData()">
         <i class="ti ti-refresh"></i>
@@ -10508,7 +10593,6 @@ html body #app .integrity-row.medium{
 </script>
 </body>
 </html>
-
 
 
 

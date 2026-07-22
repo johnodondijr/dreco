@@ -896,9 +896,6 @@ export function injectDepsToD5(deps) {
         </button>
       </div>
       <div class="sidebar-divider"></div>
-      <div class="sidebar-search-bar" role="button" tabindex="0" onclick="document.querySelector('#cmd-modal')&&openCmd()">
-        <i class="ti ti-search"></i><span>Search...</span><kbd>⌘K</kbd>
-      </div>
       <div class="nav-section-label" style="font-size:10px;letter-spacing:.08em;font-weight:438;text-transform:uppercase;opacity:.5;margin:12px 0 2px 10px;padding:0">Workspace</div>
       ${['dash','pipeline','candidates'].map(navItem).join('')}
       <div class="nav-section-label" style="font-size:10px;letter-spacing:.08em;font-weight:438;text-transform:uppercase;opacity:.5;margin:12px 0 2px 10px;padding:0">Operations</div>
