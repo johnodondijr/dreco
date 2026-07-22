@@ -695,53 +695,70 @@ export function injectDepsToD5(deps) {
     </div>`;
   }
 
+  function goToSummaryTarget(target: string, stage = '', view = 'all', type = jobTypeTab) {
+    jobTypeTab = type || jobTypeTab;
+    if (target === 'candidates') {
+      candidateSearch = '';
+      candidateStageFilter = stage || '';
+      candidateViewFilter = view || 'all';
+      selectedCandidates?.clear?.();
+      switchTab('candidates');
+      return;
+    }
+    if (target === 'pipeline') {
+      pipelineSearch = '';
+      switchTab('pipeline');
+      return;
+    }
+    if (target === 'finance') {
+      financeClientSearch = '';
+      financePositionFilter = '';
+      financeTab = view === 'upcoming' ? 'upcoming' : view === 'expenses' ? 'expenses' : 'latest';
+      switchTab('finance');
+      return;
+    }
+    if (target === 'payments') {
+      paymentsTab = view === 'complete' ? 'complete' : 'incomplete';
+      switchTab('payments');
+      return;
+    }
+    switchTab(target);
+  }
+  window.goToSummaryTarget = goToSummaryTarget;
+
   function buildStageDonut(normRows: any[]) {
     const stageCounts: Record<string,number> = {};
     normRows.forEach(r => { const s=String(r.type==='pro'?resolveProProcessStage(r):(r.pipelineStage||r.stage||'Unknown')).toUpperCase(); stageCounts[s]=(stageCounts[s]||0)+1; });
     const entries = Object.entries(stageCounts).sort((a,b)=>b[1]-a[1]);
     const total = entries.reduce((s,[,n])=>s+n,0) || 1;
     const colorMap: Record<string,string> = {
-      'TRAVELLED':'#C9F035','VISA':'#C5C7F0','PENDING VISA':'#EDEDFB',
-      'WORK PERMIT':'#AE9CF0','MOL':'#AE9CF0','PENDING MOL':'#EDE8FB','OFFER LETTER':'#F9B3AA',
-      'INTERVIEW':'#FCECEA','PENDING OFFER LETTER':'#FCECEA','MEDICAL & ATTESTATION':'#D9D7F1','TICKET BOOKED':'#EDFAA8','PENDING TRAVEL':'#EDFAA8',
-      'SELECTED':'#D9D7F1','UNSELECTED':'#F3F3F3',
-      'REFUND PENDING':'#FFE2E2','REFUND COMPLETE':'#D1FAE5',
+      'TRAVELLED':'#DDF56C','VISA':'#D9D8F2','PENDING VISA':'#D9D8F2',
+      'WORK PERMIT':'#C8BFF4','MOL':'#C8BFF4','PENDING MOL':'#C8BFF4','OFFER LETTER':'#FFC2C6',
+      'INTERVIEW':'#FFE2E5','PENDING OFFER LETTER':'#FFE2E5','MEDICAL & ATTESTATION':'#FFE5C2','TICKET BOOKED':'#F0FFC2','PENDING TRAVEL':'#F0FFC2',
+      'SELECTED':'#D9D8F2','UNSELECTED':'#F4F4EC',
+      'REFUND PENDING':'#FFC2C6','REFUND COMPLETE':'#DDF56C',
     };
-    const fallback = ['#AE9CF0','#F9B3AA','#C5C7F0','#EDFAA8','#C9F035','#D9D7F1','#F3F3F3'];
-    const CX=90,CY=90,R=70,RI=46;
-    let angle = -Math.PI/2;
-    const GAP = entries.length>1 ? 0.05 : 0;
-    const paths = entries.map(([s,n],i)=>{
-      if(!n) return '';
-      const sweep=(n/total)*2*Math.PI;
-      const a0=angle+GAP/2, a1=angle+sweep-GAP/2;
-      angle+=sweep;
-      const ox1=CX+R*Math.cos(a0),oy1=CY+R*Math.sin(a0);
-      const ox2=CX+R*Math.cos(a1),oy2=CY+R*Math.sin(a1);
-      const ix1=CX+RI*Math.cos(a0),iy1=CY+RI*Math.sin(a0);
-      const ix2=CX+RI*Math.cos(a1),iy2=CY+RI*Math.sin(a1);
-      const large=sweep>Math.PI?1:0;
+    const fallback = ['#DDF56C','#D9D8F2','#FFC2C6','#FFE5C2','#C8BFF4','#F4F4EC'];
+    const max = Math.max(...entries.map(([,n])=>n), 1);
+    const rows = entries.slice(0,8).map(([s,n],i)=>{
       const color=colorMap[s]||fallback[i%fallback.length];
-      if(entries.length===1) return `<circle class="dv5-donut-slice" cx="${CX}" cy="${CY}" r="${R}" fill="${color}"/><circle cx="${CX}" cy="${CY}" r="${RI}" fill="#fff"/>`;
-      const d=`M${ox1.toFixed(1)},${oy1.toFixed(1)} A${R},${R} 0 ${large},1 ${ox2.toFixed(1)},${oy2.toFixed(1)} L${ix2.toFixed(1)},${iy2.toFixed(1)} A${RI},${RI} 0 ${large},0 ${ix1.toFixed(1)},${iy1.toFixed(1)} Z`;
-      return `<path class="dv5-donut-slice" d="${d}" fill="${color}" stroke="#fff" stroke-width="2.5"/>`;
+      const pct = Math.round(n/total*100);
+      const width = Math.max(Math.round(n/max*100), 5);
+      return `<button class="dv5-stage-break-row" onclick="goToSummaryTarget('candidates','${js(s)}','all','${jobTypeTab}')">
+        <span class="dv5-stage-break-dot" style="background:${color}"></span>
+        <span class="dv5-stage-break-label">${h(s)}</span>
+        <span class="dv5-stage-break-bar"><i style="width:${width}%;background:${color}"></i></span>
+        <strong>${n}</strong>
+        <em>${pct}%</em>
+      </button>`;
     }).join('');
-    const legend = entries.slice(0,7).map(([s,n],i)=>{
-      const color=colorMap[s]||fallback[i%fallback.length];
-      return `<div style="display:flex;align-items:center;gap:7px;padding:4px 0;border-bottom:1px solid #F3F3F3">
-        <span style="width:9px;height:9px;border-radius:2px;background:${color};flex-shrink:0;display:inline-block"></span>
-        <span style="font-size:11px;flex:1;color:#18191B;text-transform:uppercase;letter-spacing:.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h(s)}</span>
-        <span style="font-size:11px;font-weight:500;color:#18191B;flex-shrink:0">${n}</span>
-        <span style="font-size:10px;color:#999;flex-shrink:0;min-width:26px;text-align:right">${Math.round(n/total*100)}%</span>
-      </div>`;
-    }).join('');
-    return `<div class="dv5-stage-donut" style="display:flex;align-items:center;gap:16px;padding:4px 0">
-      <svg width="180" height="180" viewBox="0 0 180 180" style="flex-shrink:0;display:block">
-        ${paths}
-        <text x="${CX}" y="${CY+3}" text-anchor="middle" dominant-baseline="middle" font-size="28" font-weight="700" fill="#1A1C2E" font-family="inherit">${total}</text>
-        <text x="${CX}" y="${CY+21}" text-anchor="middle" font-size="9" fill="#999" font-family="inherit" letter-spacing=".06em">CANDIDATES</text>
-      </svg>
-      <div style="flex:1;min-width:0">${legend}</div>
+    return `<div class="dv5-stage-breakdown">
+      <div class="dv5-stage-break-hero">
+        <span>Total in pipeline</span>
+        <strong>${total}</strong>
+        <small>${entries.length} active stage${entries.length!==1?'s':''}</small>
+      </div>
+      <div class="dv5-stage-break-list">${rows || '<div class="dv5-empty">No stage data yet.</div>'}</div>
     </div>`;
   }
 
@@ -752,7 +769,8 @@ export function injectDepsToD5(deps) {
   function statCard(icon, value, label, sub, bgColor, iconBg, iconColor, action='') {
     const click = action ? `onclick="${action}"` : '';
     const cursor = action ? 'cursor:pointer' : 'cursor:default';
-    return `<div class="dv5-stat-card" style="${cursor}" ${click}>
+    const key = action ? `onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${action}}"` : '';
+    return `<div class="dv5-stat-card" style="${cursor}" ${click} role="${action?'button':'group'}" tabindex="${action?'0':'-1'}" ${key}>
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <div class="dv5-stat-icon"><i class="ti ${h(icon)}"></i></div>
         <i class="ti ti-dots-vertical" style="font-size:15px;opacity:.35"></i>
@@ -789,7 +807,7 @@ export function injectDepsToD5(deps) {
   // ── Priority card helper ──────────────────────────────────
   function priority(icon, num, label, note, cardBg, iconBg, action='') {
     const click = action ? `onclick="${action}"` : '';
-    return `<div class="dv5-priority" ${click}>
+    return `<div class="dv5-priority" ${click} role="${action?'button':'group'}" tabindex="${action?'0':'-1'}" onkeydown="${action?`if(event.key==='Enter'||event.key===' '){event.preventDefault();${action}}`:''}">
       <div class="dv5-priority-icon"><i class="ti ${h(icon)}"></i></div>
       <strong>${h(String(num))}</strong>
       <span>${h(label)}</span>
@@ -957,17 +975,17 @@ export function injectDepsToD5(deps) {
 
         <div class="dv5-priority-grid">
           ${isPro ? `
-            ${priority('ti-file-description', awaitPermit, 'Work Permits',      'Follow permits',       '#EDE8FB','#4825B8', "switchTab('pipeline')")}
-            ${priority('ti-id-badge-2',       visaReady, 'Visas Ready',        'Ready to travel',      '#EDEDFB','#252677', "switchTab('pipeline')")}
-            ${priority('ti-coin',             unpaidPro, 'Unpaid Commissions', 'Requires follow up',   '#FCECEA','#8B2010', "switchTab('finance')")}
-            ${priority('ti-plane-departure',  tickets,   'Tickets Pending',    'Awaiting issue',       '#EDFAA8','#5A7A10', "switchTab('pipeline')")}
-            ${priority('ti-users',            normRows.length, 'Total Candidates', 'In pipeline',      '#F4F4EC','#1A1C2E', "switchTab('candidates')")}
+            ${priority('ti-file-description', awaitPermit, 'Work Permits',      'Follow permits',       '#EDE8FB','#4825B8', "goToSummaryTarget('candidates','WORK PERMIT|MOL|PENDING MOL','all','pro')")}
+            ${priority('ti-id-badge-2',       visaReady, 'Visas Ready',        'Ready to travel',      '#EDEDFB','#252677', "goToSummaryTarget('candidates','VISA|PENDING VISA','all','pro')")}
+            ${priority('ti-coin',             unpaidPro, 'Unpaid Commissions', 'Requires follow up',   '#FCECEA','#8B2010', "goToSummaryTarget('finance','','upcoming','pro')")}
+            ${priority('ti-plane-departure',  tickets,   'Tickets Pending',    'Awaiting issue',       '#EDFAA8','#5A7A10', "goToSummaryTarget('candidates','TICKET BOOKED|PENDING TRAVEL','all','pro')")}
+            ${priority('ti-users',            normRows.length, 'Total Candidates', 'In pipeline',      '#F4F4EC','#1A1C2E', "goToSummaryTarget('candidates','','all','pro')")}
           ` : `
-            ${priority('ti-users',            lbSelected,       'Selected',          'Cumulative selected',  '#EDEDFB','#252677', "switchTab('pipeline')")}
-            ${priority('ti-passport',         lbPassportApplied,'Passport Applied',  'Applied by ppStatus',  '#EDFAA8','#5A7A10', "switchTab('candidates')")}
-            ${priority('ti-credit-card',      lbRefundPending,  'Refund Pending',    'Refunds to process',   '#EDE8FB','#4825B8', "switchTab('finance')")}
-            ${priority('ti-coin',             unpaidLB,         'Outstanding USD',   'Refunds not started',  '#FCECEA','#8B2010', "switchTab('finance')")}
-            ${priority('ti-users',            normRows.length,  'Total Candidates',  'In pipeline',          '#F4F4EC','#1A1C2E', "switchTab('candidates')")}
+            ${priority('ti-users',            lbSelected,       'Selected',          'Cumulative selected',  '#EDEDFB','#252677', "goToSummaryTarget('candidates','SELECTED','all','lb')")}
+            ${priority('ti-passport',         lbPassportApplied,'Passport Applied',  'Applied by ppStatus',  '#EDFAA8','#5A7A10', "goToSummaryTarget('candidates','','all','lb')")}
+            ${priority('ti-credit-card',      lbRefundPending,  'Refund Pending',    'Refunds to process',   '#EDE8FB','#4825B8', "goToSummaryTarget('finance','','upcoming','lb')")}
+            ${priority('ti-coin',             unpaidLB,         'Outstanding USD',   'Refunds not started',  '#FCECEA','#8B2010', "goToSummaryTarget('finance','','upcoming','lb')")}
+            ${priority('ti-users',            normRows.length,  'Total Candidates',  'In pipeline',          '#F4F4EC','#1A1C2E', "goToSummaryTarget('candidates','','all','lb')")}
           `}
         </div>
 
@@ -1142,11 +1160,17 @@ export function injectDepsToD5(deps) {
   window.setCandidateViewFilter  = v => { candidateViewFilter  = v; renderCandidates(); };
   window.clearSelectedCandidates = () => { selectedCandidates.clear(); renderCandidates(); };
 
+  function stageFilterMatches(rowStage: string, filterValue: string) {
+    if (!filterValue) return true;
+    const options = String(filterValue).split('|').map(s=>s.trim()).filter(Boolean);
+    return options.includes(String(rowStage || '').toUpperCase());
+  }
+
   function filterCandidates() {
     // Always scoped to the active job type tab
     let rows = allRows().filter(r => r.type === jobTypeTab);
     const q = candidateSearch.toLowerCase();
-    if (candidateStageFilter) rows = rows.filter(r=>r.stage===candidateStageFilter);
+    if (candidateStageFilter) rows = rows.filter(r=>stageFilterMatches(r.pipelineStage || r.stage, candidateStageFilter));
     if (candidateViewFilter==='follow') rows = rows.filter(r=>workflowStatus(r).level !== 'ok');
     if (candidateViewFilter==='balance') rows = rows.filter(r=>r.balance>0);
     if (q) rows = rows.filter(r=>[r.name,r.pp,r.phone,r.position,r.company,r.country,r.stage].join(' ').toLowerCase().includes(q));
@@ -1242,7 +1266,7 @@ export function injectDepsToD5(deps) {
     const stageOptions = isPro ? activeWorkflowStages('pro') : activeWorkflowStages('lb');
     const q = candidateSearch.toLowerCase();
     let list = all.filter(r => {
-      if (candidateStageFilter && r.pipelineStage !== candidateStageFilter) return false;
+      if (candidateStageFilter && !stageFilterMatches(r.pipelineStage, candidateStageFilter)) return false;
       if (candidateViewFilter==='follow' && workflowStatus(r).level === 'ok') return false;
       if (candidateViewFilter==='balance' && r.balance<=0) return false;
       if (q && ![r.name,r.pp,r.phone,r.position,r.company,r.country,r.stage].join(' ').toLowerCase().includes(q)) return false;
@@ -1509,7 +1533,7 @@ export function injectDepsToD5(deps) {
   // ── 5. FINANCE ────────────────────────────────────────────
   let financePositionFilter = '';
 
-  let financeTab = 'latest'; // 'latest' | 'upcoming'
+  let financeTab = 'latest'; // 'latest' | 'upcoming' | 'expenses'
   let financeDatePreset = 'all'; // 'all','this_month','last_month','this_quarter','this_year'
   let financeClientSearch = '';
   let financeShowAllTx = false;
@@ -1629,8 +1653,24 @@ export function injectDepsToD5(deps) {
       .filter(r => (Number(r.balance)||0) > 0)
       .sort((a,b) => (upcomingStatus(a).rank - upcomingStatus(b).rank) || ((Number(b.balance)||0) - (Number(a.balance)||0)));
     const searchQ = financeClientSearch.trim().toLowerCase();
+    const expenseEntries = expenses
+      .map((e, i) => {
+        const row = allFinRows.find(r => String(r.id) === String(e.candidateId || e.candidate_id || e.proId || e.pro_id || e.recordId || e.record_id || ''));
+        const label = e.label || e.name || e.description || e.note || e.category || 'Candidate expense';
+        return {
+          ...e,
+          key: e.id || i,
+          label,
+          candidate: row?.name || e.candidateName || e.candidate || e.client || 'Unassigned',
+          company: row?.company || e.company || '',
+          amount: Number(e.amount) || 0,
+          date: e.date || e.created_at || e.createdAt || '',
+        };
+      })
+      .sort((a,b) => +new Date(b.date||0) - +new Date(a.date||0));
     const filteredPayments = searchQ ? paymentEntries.filter(e => e.label.toLowerCase().includes(searchQ) || (e.r.company||'').toLowerCase().includes(searchQ)) : paymentEntries;
     const filteredUpcoming = searchQ ? upcomingRows.filter(r => (r.name||'').toLowerCase().includes(searchQ) || (r.company||'').toLowerCase().includes(searchQ)) : upcomingRows;
+    const filteredExpenses = searchQ ? expenseEntries.filter(e => `${e.label} ${e.candidate} ${e.company}`.toLowerCase().includes(searchQ)) : expenseEntries;
     const presets = [
       ['all','All Time'],['this_month','This Month'],['last_month','Last Month'],
       ['this_quarter','This Quarter'],['this_year','This Year']
@@ -1660,17 +1700,17 @@ export function injectDepsToD5(deps) {
 
         <div class="dv5-stat-grid" style="margin-bottom:20px;margin-top:12px">
           ${isPro ? `
-            ${statCard('ti-receipt',      money(proTotal), 'Total Commission',  `${proFin.length} candidates`,     '#EDE8FB','#4825B8','#fff')}
-            ${statCard('ti-wallet',       money(proPaid),  'Collected KES',     'Revenue received',                '#DCFCE7','#16A34A','#fff')}
-            ${statCard('ti-alert-circle', money(proDueNow), 'Due Now KES',       `${proFin.filter(r=>r.dueNow>0).length} stage-triggered accounts`, '#FCECEA','#8B2010','#fff')}
-            ${statCard('ti-file-invoice', money(proBal),   'Total Balance KES', `${proFin.filter(r=>r.balance>0).length} open accounts`, '#FEF9C3','#A16207','#fff')}
-            ${statCard('ti-chart-pie',    proRate+'%',     'Collection Rate',   'Paid vs invoiced',                '#EDFAA8','#5A7A10','#fff')}
-            ${statCard('ti-cash',         money(expTotal), 'Expenses',          `${expenses.length} entries · ${money(expMonthTotal)} this month`, '#EDEDFB','#252677','#fff', "window.setFinanceTab('expenses');window.renderFinancePage()")}
+            ${statCard('ti-receipt',      money(proTotal), 'Total Commission',  `${proFin.length} candidates`,     '#EDE8FB','#4825B8','#fff', "goToSummaryTarget('candidates','','all','pro')")}
+            ${statCard('ti-wallet',       money(proPaid),  'Collected KES',     'Revenue received',                '#DCFCE7','#16A34A','#fff', "goToSummaryTarget('payments','','complete','pro')")}
+            ${statCard('ti-alert-circle', money(proDueNow), 'Due Now KES',       `${proFin.filter(r=>r.dueNow>0).length} stage-triggered accounts`, '#FCECEA','#8B2010','#fff', "goToSummaryTarget('finance','','upcoming','pro')")}
+            ${statCard('ti-file-invoice', money(proBal),   'Total Balance KES', `${proFin.filter(r=>r.balance>0).length} open accounts`, '#FEF9C3','#A16207','#fff', "goToSummaryTarget('candidates','','balance','pro')")}
+            ${statCard('ti-chart-pie',    proRate+'%',     'Collection Rate',   'Paid vs invoiced',                '#EDFAA8','#5A7A10','#fff', "goToSummaryTarget('payments','','complete','pro')")}
+            ${statCard('ti-cash',         money(expTotal), 'Expenses',          `${expenses.length} entries · ${money(expMonthTotal)} this month`, '#EDEDFB','#252677','#fff', "goToSummaryTarget('finance','','expenses','pro')")}
           ` : `
-            ${statCard('ti-wallet',       moneyUSD(lbPaidAmt),   'Refunds Collected',  'Received so far',                                          '#DCFCE7','#16A34A','#fff')}
-            ${statCard('ti-alert-circle', moneyUSD(lbBal),      'Outstanding USD',    `${lbTravelled.filter(r=>r.balance>0).length} post-travel unpaid`, '#FCECEA','#8B2010','#fff')}
-            ${statCard('ti-receipt',      moneyUSD(lbTotal),    'Collected + Owed',   `${lbTravelled.length} have travelled`,                            '#EDE8FB','#4825B8','#fff')}
-            ${statCard('ti-clock',        moneyUSD(lbExpected), 'Expected (Pipeline)',`${lbPipeline} pre-travel candidates`,                             '#EDEDFB','#252677','#fff')}
+            ${statCard('ti-wallet',       moneyUSD(lbPaidAmt),   'Refunds Collected',  'Received so far',                                          '#DCFCE7','#16A34A','#fff', "goToSummaryTarget('payments','','complete','lb')")}
+            ${statCard('ti-alert-circle', moneyUSD(lbBal),      'Outstanding USD',    `${lbTravelled.filter(r=>r.balance>0).length} post-travel unpaid`, '#FCECEA','#8B2010','#fff', "goToSummaryTarget('finance','','upcoming','lb')")}
+            ${statCard('ti-receipt',      moneyUSD(lbTotal),    'Collected + Owed',   `${lbTravelled.length} have travelled`,                            '#EDE8FB','#4825B8','#fff', "goToSummaryTarget('candidates','TRAVELLED|REFUND PENDING|REFUND COMPLETE','all','lb')")}
+            ${statCard('ti-clock',        moneyUSD(lbExpected), 'Expected (Pipeline)',`${lbPipeline} pre-travel candidates`,                             '#EDEDFB','#252677','#fff', "goToSummaryTarget('candidates','','all','lb')")}
           `}
         </div>
 
@@ -1702,13 +1742,29 @@ export function injectDepsToD5(deps) {
           <div class="dv5-card" style="padding:0;overflow:hidden">
             <div class="dv5-card-head" style="padding:12px 18px 8px">
               <div style="display:flex;gap:14px;align-items:center">
-                <button class="fin-tab${financeTab!=='upcoming'?' active':''}" data-action="finance.tab" data-fintab="latest">Recent</button>
+                <button class="fin-tab${financeTab==='latest'?' active':''}" data-action="finance.tab" data-fintab="latest">Recent</button>
                 <button class="fin-tab${financeTab==='upcoming'?' active':''}" data-action="finance.tab" data-fintab="upcoming">Upcoming</button>
+                <button class="fin-tab${financeTab==='expenses'?' active':''}" data-action="finance.tab" data-fintab="expenses">Expenses</button>
               </div>
               <button style="width:32px;height:32px;border-radius:8px;background:#0D9488;border:0;color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0" onclick="openRecordPaymentPrompt('${isPro?'commission':'repayment'}')" title="Record payment"><i class="ti ti-plus"></i></button>
             </div>
             <div style="border-top:1px solid var(--border,#E8E8E8)">
-              ${financeTab==='upcoming'
+              ${financeTab==='expenses'
+                ? (filteredExpenses.length ? (financeShowAllTx?filteredExpenses:filteredExpenses.slice(0,TX_CAP)).map(e=>{
+                    const d = new Date(e.date||'');
+                    const dateStr = isNaN(d as any) ? '—' : d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+                    return `<div class="dv5-fin-tx">
+                      <div class="dv5-fin-tx-date">${dateStr}</div>
+                      <div class="dv5-fin-tx-info">
+                        <div class="dv5-fin-tx-name">${h(e.candidate)}</div>
+                        <div class="dv5-fin-tx-sub">${h(e.label)}</div>
+                      </div>
+                      <span class="dv5-badge red dv5-fin-tx-badge" style="font-size:10px;padding:2px 7px">Expense</span>
+                      <div class="dv5-fin-tx-amt" style="color:#B91C1C">-${money(e.amount)}</div>
+                      <button class="dv5-fin-tx-chev" aria-label="Expense record"><i class="ti ti-receipt" style="font-size:12px"></i></button>
+                    </div>`;
+                  }).join('') : '<div class="dv5-empty" style="padding:32px">No expenses recorded.</div>')
+                : financeTab==='upcoming'
                 ? (filteredUpcoming.length ? (financeShowAllTx?filteredUpcoming:filteredUpcoming.slice(0,TX_CAP)).map(r=>{
                     const st = upcomingStatus(r);
                     const amt = isPro ? money(Number(r.dueNow)||Number(r.balance)||0) : moneyUSD(Number(r.balance)||0);
@@ -1749,7 +1805,7 @@ export function injectDepsToD5(deps) {
                     </div>`;
                   }).join('') || '<div class="dv5-empty" style="padding:32px">No payments recorded.</div>')}
             </div>
-            ${(() => { const _list = financeTab==='upcoming'?filteredUpcoming:filteredPayments; return (!financeShowAllTx && _list.length > TX_CAP) ? `
+            ${(() => { const _list = financeTab==='expenses'?filteredExpenses:(financeTab==='upcoming'?filteredUpcoming:filteredPayments); return (!financeShowAllTx && _list.length > TX_CAP) ? `
             <div style="display:flex;align-items:center;justify-content:center;padding:12px 0;border-top:1px solid var(--border,#E8E8E8)">
               <button onclick="window.setFinanceShowAllTx(true)" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#374151;background:none;border:0;cursor:pointer;padding:4px 12px;border-radius:8px">See more <i class="ti ti-arrow-right" style="font-size:12px"></i></button>
             </div>` : ''; })()}
@@ -1872,9 +1928,9 @@ export function injectDepsToD5(deps) {
           <div><h1>Payments</h1><p>Commission installments per candidate — KES.</p></div>
         </div>
         <div class="dv5-stat-grid" style="margin:12px 0 18px">
-          ${statCard('ti-receipt',     money(totalCommission), 'Total Commission', `${withCalc.length} candidates`, '#EDE8FB','#4825B8','#fff')}
-          ${statCard('ti-wallet',      money(totalPaid),       'Collected',        `${complete.length} fully paid`, '#DCFCE7','#16A34A','#fff')}
-          ${statCard('ti-file-invoice',money(totalBal),        'Outstanding',      `${incomplete.length} still owing`, '#FEF9C3','#A16207','#fff')}
+          ${statCard('ti-receipt',     money(totalCommission), 'Total Commission', `${withCalc.length} candidates`, '#EDE8FB','#4825B8','#fff', "goToSummaryTarget('candidates','','all','pro')")}
+          ${statCard('ti-wallet',      money(totalPaid),       'Collected',        `${complete.length} fully paid`, '#DCFCE7','#16A34A','#fff', "goToSummaryTarget('payments','','complete','pro')")}
+          ${statCard('ti-file-invoice',money(totalBal),        'Outstanding',      `${incomplete.length} still owing`, '#FEF9C3','#A16207','#fff', "goToSummaryTarget('payments','','incomplete','pro')")}
         </div>
         <div class="dv5-card" style="padding:0;overflow:hidden">
           <div class="dv5-card-head" style="padding:12px 18px 8px">
@@ -2128,11 +2184,11 @@ export function injectDepsToD5(deps) {
         </div>
         ${!isPro ? lbCountryBar(lbDB||[]) : ''}
         <div class="dv5-stat-grid" style="margin-top:12px">
-          ${statCard('ti-users',     rows.length,       isPro?'Professional':'General Jobs',`Total candidates`,                             '#EFF6FF','#2563EB','#fff')}
-          ${statCard('ti-plane',     travelled.length,  'Travelled',        `Successful placements`,                                       '#F0FDF4','#16A34A','#fff')}
-          ${statCard('ti-target',    rows.length?Math.round(travelled.length/rows.length*100)+'%':'0%','Success Rate','Travelled / total', '#F4F4EC','#372514','#fff')}
-          ${statCard('ti-chart-line',total?Math.round(paid/total*100)+'%':'0%',isPro?'Collection Rate':'Refund Rate',isPro?'Finance health':'Refunds collected','#FFFBEB','#D97706','#fff')}
-          ${statCard('ti-clock',     avgProcessing,     'Avg Processing',   'Submission → travel',                                        '#F0FDFA','#0D9488','#fff')}
+          ${statCard('ti-users',     rows.length,       isPro?'Professional':'General Jobs',`Total candidates`,                             '#EFF6FF','#2563EB','#fff', `goToSummaryTarget('candidates','','all','${isPro?'pro':'lb'}')`)}
+          ${statCard('ti-plane',     travelled.length,  'Travelled',        `Successful placements`,                                       '#F0FDF4','#16A34A','#fff', `goToSummaryTarget('candidates','TRAVELLED${isPro?'':'|REFUND PENDING|REFUND COMPLETE'}','all','${isPro?'pro':'lb'}')`)}
+          ${statCard('ti-target',    rows.length?Math.round(travelled.length/rows.length*100)+'%':'0%','Success Rate','Travelled / total', '#F4F4EC','#372514','#fff', `goToSummaryTarget('candidates','TRAVELLED${isPro?'':'|REFUND PENDING|REFUND COMPLETE'}','all','${isPro?'pro':'lb'}')`)}
+          ${statCard('ti-chart-line',total?Math.round(paid/total*100)+'%':'0%',isPro?'Collection Rate':'Refund Rate',isPro?'Finance health':'Refunds collected','#FFFBEB','#D97706','#fff', `goToSummaryTarget('payments','','complete','${isPro?'pro':'lb'}')`)}
+          ${statCard('ti-clock',     avgProcessing,     'Avg Processing',   'Submission to travel',                                       '#F0FDFA','#0D9488','#fff', `goToSummaryTarget('candidates','','all','${isPro?'pro':'lb'}')`)}
         </div>
         <div class="dv5-card" style="margin-top:16px">
           <div class="dv5-card-head"><span class="dv5-card-title">Monthly Placements (Last 12 Months)</span></div>
@@ -3423,7 +3479,7 @@ export function injectDepsToD5(deps) {
 .dv5-line-axis,.dv5-line-summary { display:flex; justify-content:space-between; color:#8C8A93; font-size:11px; }
 .dv5-line-summary { margin-top:8px; color:#1A1C2E; font-weight:500; }
 .dv5-recent-card { display:none!important; }
-.dv5-dashboard-lower { display:grid; grid-template-columns:minmax(300px,.74fr) minmax(0,1.26fr); gap:16px; margin-bottom:12px; align-items:stretch; }
+.dv5-dashboard-lower { display:grid; grid-template-columns:minmax(300px,.58fr) minmax(420px,1.42fr); gap:16px; margin-bottom:12px; align-items:stretch; }
 .dv5-status-summary { position:relative; overflow:hidden; min-height:156px; border-radius:22px; background:#1E1D2E; color:#fff; padding:22px 24px; margin-bottom:14px; }
 .dv5-status-summary span { display:block; color:#fff; font-size:17px; font-weight:625; letter-spacing:-.03em; }
 .dv5-status-summary small { display:block; margin-top:22px; color:#A9A8B5; font-size:12px; font-weight:406; }
@@ -3457,8 +3513,26 @@ export function injectDepsToD5(deps) {
 .dv5-ring::after { content:''; position:absolute; inset:9px; border-radius:50%; background:#fff; }
 .dv5-ring-stat small { display:block; color:#777783; font-size:12px; font-weight:500; white-space:nowrap; }
 .dv5-ring-stat strong { display:block; color:#1E1D2E; font-size:23px; line-height:1; margin-top:4px; font-weight:700; letter-spacing:-.04em; }
-.dv5-funnel-card { border-radius:22px!important; padding:24px!important; box-shadow:none!important; }
+.dv5-funnel-card { border-radius:22px!important; padding:24px!important; box-shadow:none!important; min-height:300px; }
 .dv5-funnel-card .dv5-card-title { font-size:17px!important; font-weight:625!important; letter-spacing:-.035em; }
+.dv5-stage-breakdown { display:grid; grid-template-columns:210px minmax(0,1fr); gap:24px; align-items:stretch; min-height:230px; padding-top:4px; }
+.dv5-stage-break-hero { border-radius:18px; background:linear-gradient(145deg,#1F2133 0%,#171715 100%); color:#fff; padding:24px; display:flex; flex-direction:column; justify-content:center; box-shadow:0 18px 42px rgba(31,33,51,.16); overflow:hidden; position:relative; }
+.dv5-stage-break-hero::after { content:''; position:absolute; width:160px; height:160px; right:-76px; top:-58px; border-radius:50%; background:rgba(221,245,108,.12); }
+.dv5-stage-break-hero span { font-size:12px; color:rgba(255,255,255,.72); font-weight:520; }
+.dv5-stage-break-hero strong { font-size:58px; line-height:.95; letter-spacing:-.06em; color:#DDF56C; margin:12px 0 8px; font-weight:760; }
+.dv5-stage-break-hero small { font-size:12px; color:rgba(255,255,255,.74); }
+.dv5-stage-break-list { display:flex; flex-direction:column; gap:10px; min-width:0; justify-content:center; }
+.dv5-stage-break-row { border:1px solid #E7E6DD; background:#fff; border-radius:14px; padding:10px 12px; display:grid; grid-template-columns:12px minmax(132px,.78fr) minmax(160px,1fr) 42px 42px; align-items:center; gap:10px; cursor:pointer; font:inherit; color:#1F2133; text-align:left; transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease; }
+.dv5-stage-break-row:hover { transform:translateY(-1px); border-color:#D9D8F2; box-shadow:0 14px 30px rgba(31,33,51,.08); }
+.dv5-stage-break-row:focus-visible { outline:2px solid #DDF56C; outline-offset:2px; }
+.dv5-stage-break-dot { width:10px; height:10px; border-radius:999px; box-shadow:0 0 0 4px rgba(31,33,51,.04); }
+.dv5-stage-break-label { font-size:12px; font-weight:650; text-transform:uppercase; letter-spacing:.03em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dv5-stage-break-bar { height:11px; border-radius:999px; background:#F2F1EA; overflow:hidden; }
+.dv5-stage-break-bar i { display:block; height:100%; border-radius:999px; box-shadow:inset 0 -1px 0 rgba(31,33,51,.12); animation:dv5BarGrow .56s cubic-bezier(.2,.8,.2,1) both; transform-origin:left center; }
+.dv5-stage-break-row strong { font-size:15px; font-weight:720; text-align:right; }
+.dv5-stage-break-row em { font-size:11px; color:#7E7C8C; font-style:normal; text-align:right; }
+@keyframes dv5BarGrow { from { transform:scaleX(.08); opacity:.45; } to { transform:scaleX(1); opacity:1; } }
+@media(max-width:900px){ .dv5-stage-breakdown{grid-template-columns:1fr}.dv5-stage-break-row{grid-template-columns:12px minmax(90px,.8fr) minmax(90px,1fr) 32px 36px}.dv5-stage-break-hero strong{font-size:44px} }
 /* Monthly placements bar tooltip */
 .dv5-mp-bar { position:relative; transition:filter .12s; }
 .dv5-mp-bar::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 5px); left:50%; transform:translateX(-50%); background:#1A1C2E; color:#fff; font-size:10px; font-weight:500; padding:3px 7px; border-radius:5px; white-space:nowrap; pointer-events:none; opacity:0; transition:opacity .12s; z-index:20; }
