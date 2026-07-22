@@ -977,8 +977,8 @@ export function injectDepsToD5(deps) {
           ${isPro ? `
             ${priority('ti-file-description', awaitPermit, 'Work Permits',      'Follow permits',       '#EDE8FB','#4825B8', "goToSummaryTarget('candidates','WORK PERMIT|MOL|PENDING MOL','all','pro')")}
             ${priority('ti-id-badge-2',       visaReady, 'Visas Ready',        'Ready to travel',      '#EDEDFB','#252677', "goToSummaryTarget('candidates','VISA|PENDING VISA','all','pro')")}
-            ${priority('ti-coin',             unpaidPro, 'Unpaid Commissions', 'Requires follow up',   '#FCECEA','#8B2010', "goToSummaryTarget('finance','','upcoming','pro')")}
-            ${priority('ti-plane-departure',  tickets,   'Tickets Pending',    'Awaiting issue',       '#EDFAA8','#5A7A10', "goToSummaryTarget('candidates','TICKET BOOKED|PENDING TRAVEL','all','pro')")}
+            ${priority('ti-coin',             unpaidPro, 'Unpaid Commissions', 'Incomplete payments',  '#FCECEA','#8B2010', "goToSummaryTarget('payments','','incomplete','pro')")}
+            ${priority('ti-plane-departure',  tickets,   'Tickets Booked',     'Awaiting travel',      '#EDFAA8','#5A7A10', "goToSummaryTarget('candidates','TICKET BOOKED|PENDING TRAVEL','all','pro')")}
             ${priority('ti-users',            normRows.length, 'Total Candidates', 'In pipeline',      '#F4F4EC','#1A1C2E', "goToSummaryTarget('candidates','','all','pro')")}
           ` : `
             ${priority('ti-users',            lbSelected,       'Selected',          'Cumulative selected',  '#EDEDFB','#252677', "goToSummaryTarget('candidates','SELECTED','all','lb')")}
