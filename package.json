@@ -11,7 +11,7 @@
     "test:handlers": "node tests/check-inline-handlers.cjs",
     "test:workflow": "node tests/check-workflow-invariants.cjs",
     "test:smoke": "node tests/smoke.cjs",
-    "test": "npm run test:tabs && npm run test:handlers && npm run test:workflow && npm run test:smoke"
+    "test": "node tests/check-tabs.cjs && node tests/check-inline-handlers.cjs && node tests/check-workflow-invariants.cjs && node tests/smoke.cjs"
   },
   "repository": {
     "type": "git",

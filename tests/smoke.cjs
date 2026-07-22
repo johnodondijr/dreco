@@ -73,7 +73,17 @@ function waitForServer(url, timeoutMs) {
     // Playwright resolve its own downloaded browser (CI after `playwright install`).
     const execCandidates = [process.env.PLAYWRIGHT_EXECUTABLE_PATH, '/opt/pw-browsers/chromium'];
     const executablePath = execCandidates.find((p) => p && fs.existsSync(p));
-    browser = await chromium.launch(executablePath ? { executablePath } : {});
+    try {
+      browser = await chromium.launch(executablePath ? { executablePath } : {});
+    } catch (err) {
+      const message = err && err.message || String(err);
+      if (/Executable doesn't exist|browserType\.launch/i.test(message)) {
+        console.log('SKIP  Playwright browser is not installed; boot smoke test not run locally.');
+        await cleanup();
+        return;
+      }
+      throw err;
+    }
     const page = await browser.newPage();
 
     const pageErrors = [];

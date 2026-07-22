@@ -21,6 +21,7 @@ const LB_PIPELINE_STAGES  = ['SUBMITTED','PROFILE SENT','SELECTED','PASSPORT APP
 // Fallback only — overridden by injectDepsToD5 in practice
 let DEFAULT_COMPANY = { name: 'Recruitflow', id: 'dreco-default', generalJobsCountries: ['UAE'] };
 let getActiveGeneralCountry, getGeneralWorkflowStages, getLBWorkflowStagesForRecord;
+let mobileCandidateEventsBound = false;
 function activeWorkflowStages(type, country = '') {
   const stages = type === 'pro'
     ? proStages
@@ -248,10 +249,10 @@ export function injectDepsToD5(deps) {
   // Shared shadcn-style Pro/General tabs widget
   function jobTypeTabs(suffix='') {
     return `<div class="dv5-job-type-tabs" style="display:flex;align-items:center;gap:0;border:1px solid #e4e4e7;border-radius:8px;overflow:hidden;background:#f4f4f5">
-      <button class="dv5-jt-tab${jobTypeTab==='pro'?' active':''}" onclick="window.setJobTypeTab('pro')" style="padding:7px 18px;font-size:13px;font-weight:375;border:0;background:${jobTypeTab==='pro'?'#fff':'transparent'};color:${jobTypeTab==='pro'?'#18181b':'#71717a'};cursor:pointer;transition:all .15s;${jobTypeTab==='pro'?'box-shadow:0 1px 3px rgba(0,0,0,.08)':''}">
+      <button class="dv5-jt-tab${jobTypeTab==='pro'?' active':''}" data-action="candidate.jobtype" data-jobtype="pro" style="padding:7px 18px;font-size:13px;font-weight:375;border:0;background:${jobTypeTab==='pro'?'#fff':'transparent'};color:${jobTypeTab==='pro'?'#18181b':'#71717a'};cursor:pointer;transition:all .15s;${jobTypeTab==='pro'?'box-shadow:0 1px 3px rgba(0,0,0,.08)':''}">
         <i class="ti ti-briefcase" style="margin-right:5px;font-size:12px"></i>Professional Jobs
       </button>
-      <button class="dv5-jt-tab${jobTypeTab==='lb'?' active':''}" onclick="window.setJobTypeTab('lb')" style="padding:7px 18px;font-size:13px;font-weight:375;border:0;background:${jobTypeTab==='lb'?'#fff':'transparent'};color:${jobTypeTab==='lb'?'#18181b':'#71717a'};cursor:pointer;transition:all .15s;${jobTypeTab==='lb'?'box-shadow:0 1px 3px rgba(0,0,0,.08)':''}">
+      <button class="dv5-jt-tab${jobTypeTab==='lb'?' active':''}" data-action="candidate.jobtype" data-jobtype="lb" style="padding:7px 18px;font-size:13px;font-weight:375;border:0;background:${jobTypeTab==='lb'?'#fff':'transparent'};color:${jobTypeTab==='lb'?'#18181b':'#71717a'};cursor:pointer;transition:all .15s;${jobTypeTab==='lb'?'box-shadow:0 1px 3px rgba(0,0,0,.08)':''}">
         <i class="ti ti-globe" style="margin-right:5px;font-size:12px"></i>General Jobs
       </button>
     </div>`;
@@ -263,8 +264,8 @@ export function injectDepsToD5(deps) {
     if (countries.length < 2) return '';
     return `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px">
       <span style="font-size:11px;font-weight:375;color:#71717a;letter-spacing:.04em">DESTINATION:</span>
-      <button onclick="window.setLbCountry('')" style="font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid ${!lbCountryFilter?'#1A1C2E':'#E4E1D6'};background:${!lbCountryFilter?'#1A1C2E':'transparent'};color:${!lbCountryFilter?'#fff':'#76746B'};cursor:pointer;font-weight:375">All</button>
-      ${countries.map(c=>`<button onclick="window.setLbCountry('${js(c)}')" style="font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid ${lbCountryFilter===c?'#1A1C2E':'#E4E1D6'};background:${lbCountryFilter===c?'#1A1C2E':'transparent'};color:${lbCountryFilter===c?'#fff':'#76746B'};cursor:pointer;font-weight:375">${h(c)}</button>`).join('')}
+      <button data-action="candidate.country" data-country="" style="font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid ${!lbCountryFilter?'#1A1C2E':'#E4E1D6'};background:${!lbCountryFilter?'#1A1C2E':'transparent'};color:${!lbCountryFilter?'#fff':'#76746B'};cursor:pointer;font-weight:375">All</button>
+      ${countries.map(c=>`<button data-action="candidate.country" data-country="${h(c)}" style="font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid ${lbCountryFilter===c?'#1A1C2E':'#E4E1D6'};background:${lbCountryFilter===c?'#1A1C2E':'transparent'};color:${lbCountryFilter===c?'#fff':'#76746B'};cursor:pointer;font-weight:375">${h(c)}</button>`).join('')}
     </div>`;
   }
 
@@ -786,8 +787,7 @@ export function injectDepsToD5(deps) {
     const pct = total > 0 ? Math.round((count / total) * 100) : 0;
     const click = action ? `onclick="${action}"` : '';
     const cursor = action ? 'cursor:pointer' : 'cursor:default';
-    const key = action ? `onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${action}}"` : '';
-    return `<div class="dv5-file-card" style="${cursor}" ${click} role="${action?'button':'group'}" tabindex="${action?'0':'-1'}" ${key}>
+    return `<div class="dv5-file-card" style="${cursor}" ${click} role="${action?'button':'group'}" tabindex="${action?'0':'-1'}">
       <div class="dv5-file-card-head">
         <span class="dv5-file-card-label">${h(label)}</span>
         <div class="dv5-file-icon-box" style="background:${iconBg};color:${iconColor}">
@@ -825,11 +825,10 @@ export function injectDepsToD5(deps) {
     const rowClick = (!isManual && t.action) ? t.action : '';
     const rowRole = rowClick ? 'button' : 'group';
     const rowTab = rowClick ? '0' : '-1';
-    const rowKey = rowClick ? `onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${rowClick}}"` : '';
     const dismiss = isManual
       ? `<button class="dv5-action-btn" onclick="event.stopPropagation();dismissManualTask(${idx})" style="margin-left:6px" title="Dismiss"><i class="ti ti-x"></i></button>`
       : `<button class="dv5-action-btn" onclick="event.stopPropagation();dismissTask('${t.key}')" style="margin-left:6px" title="Dismiss"><i class="ti ti-x"></i></button>`;
-    return `<div class="dv5-task-item" onclick="${rowClick}" style="${rowClick?'cursor:pointer':''}" role="${rowRole}" tabindex="${rowTab}" ${rowKey}>
+    return `<div class="dv5-task-item" onclick="${rowClick}" style="${rowClick?'cursor:pointer':''}" role="${rowRole}" tabindex="${rowTab}">
       <div class="dv5-task-icon ${iconClass}"><i class="ti ${h(t.icon||'ti-checkbox')}"></i></div>
       <div class="dv5-task-body">
         <div class="dv5-task-title">${h(t.title)}</div>
@@ -1199,6 +1198,43 @@ export function injectDepsToD5(deps) {
   }
   window.toggleCandSelect = toggleCandSelect;
 
+  function bindMobileCandidateEvents() {
+    if (mobileCandidateEventsBound) return;
+    mobileCandidateEventsBound = true;
+    document.addEventListener('change', e => {
+      const input = (e.target as Element)?.closest?.('[data-mobile-candidate-select]') as HTMLInputElement;
+      if (!input) return;
+      toggleCandSelect(input.dataset.key || '', input.checked);
+    });
+    document.addEventListener('click', e => {
+      const target = e.target as Element;
+      const actionBtn = target?.closest?.('[data-mobile-candidate-action]') as HTMLElement;
+      if (actionBtn) {
+        e.stopPropagation();
+        const type = actionBtn.dataset.type || '';
+        const id = Number(actionBtn.dataset.id);
+        const name = actionBtn.dataset.name || 'Candidate';
+        const action = actionBtn.dataset.mobileCandidateAction;
+        if (action === 'edit') type === 'pro' ? window.editPro?.(id) : window.editLB?.(id);
+        else if (action === 'docs') window.openDocs?.(type, id, name);
+        else if (action === 'profile') window.openCandidateProfile?.(type, id);
+        return;
+      }
+      const card = target?.closest?.('[data-mobile-candidate-card]') as HTMLElement;
+      if (!card) return;
+      if (target?.closest?.('[data-mobile-candidate-select], .dv5-mobile-check')) return;
+      window.openCandidateProfile?.(card.dataset.type || '', Number(card.dataset.id));
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const card = (e.target as Element)?.closest?.('[data-mobile-candidate-card]') as HTMLElement;
+      if (!card) return;
+      e.preventDefault();
+      window.openCandidateProfile?.(card.dataset.type || '', Number(card.dataset.id));
+    });
+  }
+  bindMobileCandidateEvents();
+
   function toggleSelectAll(checked) {
     filterCandidates().forEach(r => {
       const key = r.type+'_'+r.id;
@@ -1285,17 +1321,15 @@ export function injectDepsToD5(deps) {
       const key = r.type+'_'+r.id;
       const sel = selectedCandidates.has(key);
       const status = workflowStatus(r);
-      const open = `openCandidateProfile('${r.type}',${r.id})`;
-      const edit = r.type==='pro' ? `editPro(${r.id})` : `editLB(${r.id})`;
       const ppStatus = r.ppStatus||'NOT APPLIED';
       const ppLabel = r.own_passport ? 'Has PP'
         : ['APPLIED','PUSHED'].includes(ppStatus) ? 'Passport applied'
         : r.type==='lb' ? 'Passport pending'
         : (r.pp || 'No passport');
-      return `<article class="dv5-mobile-candidate-card ${sel?'selected':''}" onclick="${open}">
+      return `<article class="dv5-mobile-candidate-card ${sel?'selected':''}" data-mobile-candidate-card data-type="${h(r.type)}" data-id="${h(String(r.id))}" role="button" tabindex="0">
         <div class="dv5-mobile-candidate-top">
-          <label class="dv5-mobile-check" onclick="event.stopPropagation()" aria-label="Select candidate">
-            <input type="checkbox" ${sel?'checked':''} onchange="toggleCandSelect('${key}',this.checked)">
+          <label class="dv5-mobile-check" aria-label="Select candidate">
+            <input type="checkbox" ${sel?'checked':''} data-mobile-candidate-select data-key="${h(key)}">
           </label>
           ${avatar(r.name, r.type, r.id)}
           <div class="dv5-mobile-candidate-title">
@@ -1314,10 +1348,10 @@ export function injectDepsToD5(deps) {
           ${progressMini(r)}
           <small>${h(status.label || 'Record health')}</small>
         </div>
-        <div class="dv5-mobile-candidate-actions" onclick="event.stopPropagation()">
-          <button class="dv5-action-btn" onclick="${edit}"><i class="ti ti-edit"></i>Edit</button>
-          <button class="dv5-action-btn" onclick="openDocs('${r.type}',${JSON.stringify(r.id)},'${js(r.name)}')"><i class="ti ti-paperclip"></i>Docs</button>
-          <button class="dv5-action-btn primary" onclick="${open}"><i class="ti ti-user"></i>Profile</button>
+        <div class="dv5-mobile-candidate-actions">
+          <button class="dv5-action-btn" data-mobile-candidate-action="edit" data-type="${h(r.type)}" data-id="${h(String(r.id))}"><i class="ti ti-edit"></i>Edit</button>
+          <button class="dv5-action-btn" data-mobile-candidate-action="docs" data-type="${h(r.type)}" data-id="${h(String(r.id))}" data-name="${h(r.name || 'Candidate')}"><i class="ti ti-paperclip"></i>Docs</button>
+          <button class="dv5-action-btn primary" data-mobile-candidate-action="profile" data-type="${h(r.type)}" data-id="${h(String(r.id))}"><i class="ti ti-user"></i>Profile</button>
         </div>
       </article>`;
     }).join('') : `<div class="dv5-mobile-candidate-card"><div class="dv5-empty">No candidates found.</div></div>`;
