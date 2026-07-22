@@ -884,7 +884,7 @@ export function injectDepsToD5(deps) {
     side.innerHTML = `
       <div class="sidebar-top">
         <a class="sidebar-logo" data-action="tab.switch" data-tab="dash" aria-label="Recruitflow home">
-          <img class="dreco-wordmark dreco-wordmark-lime" src="/wordmark-lime.png" alt="Recruitflow">
+          <img class="dreco-wordmark dreco-lockup-white" src="/recruitflow-lockup-white.png" alt="Recruitflow">
         </a>
         <button class="sidebar-toggle" onclick="toggleSidebar()" type="button" aria-label="Toggle sidebar">
           <i class="ti ti-chevrons-left"></i>
@@ -3621,6 +3621,16 @@ export function injectDepsToD5(deps) {
   --dreco-card-pink-line:#F0AEB5;
   --dreco-card-lavender-line:#C8C6E8;
   --dreco-card-lime-line:#E3F3A5;
+}
+#app .sidebar-logo .dreco-lockup-white {
+  display:block!important;
+  width:146px!important;
+  max-width:100%!important;
+  height:auto!important;
+  object-fit:contain!important;
+}
+#app .sidebar.collapsed .sidebar-logo .dreco-lockup-white {
+  display:none!important;
 }
 .dv5-card,
 .dv5-table-card,

@@ -6786,6 +6786,43 @@ html body #app .sidebar-company-name{
   width:118px!important;
   max-width:100%!important;
 }
+#login-screen .lp-brand-tag{
+  display:flex!important;
+  align-items:center!important;
+  gap:11px!important;
+}
+#login-screen .lp-brand-tag .recruitflow-brand-icon{
+  width:34px!important;
+  height:34px!important;
+  border-radius:8px!important;
+  object-fit:cover!important;
+  display:block!important;
+  flex:0 0 auto!important;
+}
+#login-screen .lp-brand-tag .recruitflow-wordmark-dark{
+  width:132px!important;
+  height:auto!important;
+  display:block!important;
+  object-fit:contain!important;
+}
+#login-screen .lp-real-logo{
+  width:120px!important;
+  max-width:120px!important;
+  height:auto!important;
+  object-fit:contain!important;
+  margin:0 0 18px 0!important;
+}
+#app .sidebar-logo .dreco-lockup-white,
+#login-screen .sidebar-logo .dreco-lockup-white{
+  width:146px!important;
+  max-width:100%!important;
+  height:auto!important;
+  object-fit:contain!important;
+}
+#login-screen .lp-product-preview > .lp-preview-sidebar,
+#login-screen .lp-product-preview > .lp-preview-card{
+  display:none!important;
+}
 #app.sidebar-collapsed .sidebar-logo .dreco-wordmark,
 #app .sidebar.collapsed .sidebar-logo .dreco-wordmark{
   display:none!important;
@@ -7613,7 +7650,8 @@ html body #app .integrity-row.medium{
   <div class="lp-window">
     <div class="lp-form-panel">
       <div class="lp-brand-tag" aria-label="Recruitflow">
-        <img class="dreco-wordmark dreco-wordmark-purple" src="/wordmark-purple.png" alt="Recruitflow">
+        <img class="recruitflow-brand-icon" src="/recruitflow-icon.png" alt="" aria-hidden="true">
+        <img class="dreco-wordmark recruitflow-wordmark-dark" src="/recruitflow-wordmark-dark.png" alt="Recruitflow">
       </div>
       <div class="lp-content-area">
         <div id="login-main">
@@ -7745,7 +7783,7 @@ html body #app .integrity-row.medium{
       <div class="lp-product-preview">
         <div class="lp-dreco-preview">
           <aside class="lp-real-sidebar">
-            <img class="lp-real-logo" src="/wordmark-lime.png" alt="Recruitflow">
+            <img class="lp-real-logo" src="/recruitflow-lockup-white.png" alt="Recruitflow">
             <span class="lp-real-section">Workspace</span>
             <div class="lp-real-nav active"><i class="ti ti-layout-grid"></i><b>Home</b></div>
             <div class="lp-real-nav"><i class="ti ti-briefcase"></i><b>Pipeline</b></div>
@@ -7769,13 +7807,13 @@ html body #app .integrity-row.medium{
             <div class="lp-real-content">
               <div class="lp-real-head">
                 <div><h3>Good afternoon, Admin</h3><p>Here's what needs your attention today.</p></div>
-                <div class="lp-real-actions"><span><i class="ti ti-briefcase"></i> Professional</span><span>General Jobs</span><button>+ Add</button></div>
+                <div class="lp-real-actions"><span><i class="ti ti-briefcase"></i> Professional Jobs</span><span>General Jobs</span><button>+ Add</button></div>
               </div>
               <div class="lp-real-kpis">
                 <div><i class="ti ti-file-description pink"></i><strong>4</strong><span>Work Permits</span><small>Follow permits</small></div>
                 <div><i class="ti ti-id-badge-2 lavender"></i><strong>11</strong><span>Visas Ready</span><small>Ready to travel</small></div>
-                <div><i class="ti ti-coin lime"></i><strong>8</strong><span>Unpaid Commissions</span><small>Requires follow up</small></div>
-                <div><i class="ti ti-plane-departure pink"></i><strong>5</strong><span>Tickets Pending</span><small>Awaiting issue</small></div>
+                <div><i class="ti ti-coin lime"></i><strong>8</strong><span>Unpaid Commissions</span><small>Incomplete payments</small></div>
+                <div><i class="ti ti-plane-departure pink"></i><strong>5</strong><span>Tickets Booked</span><small>Awaiting travel</small></div>
                 <div><i class="ti ti-users lavender"></i><strong>32</strong><span>Total Candidates</span><small>In pipeline</small></div>
               </div>
               <section class="lp-real-card lp-real-pipeline">
@@ -7786,7 +7824,7 @@ html body #app .integrity-row.medium{
                   <div><strong>2</strong><span>MEDICAL</span><em style="width:15%"></em></div><b>â€º</b>
                   <div><strong>4</strong><span>PERMIT</span><em style="width:30%"></em></div><b>â€º</b>
                   <div><strong>11</strong><span>VISA</span><em style="width:78%"></em></div><b>â€º</b>
-                  <div><strong>5</strong><span>TICKET</span><em style="width:36%"></em></div><b>â€º</b>
+                  <div><strong>5</strong><span>TICKET BOOKED</span><em style="width:36%"></em></div><b>â€º</b>
                   <div><strong>12</strong><span>TRAVELLED</span><em class="done" style="width:86%"></em></div>
                 </div>
               </section>
@@ -8032,7 +8070,7 @@ html body #app .integrity-row.medium{
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-top">
         <a class="sidebar-logo" href="#">
-          <img class="dreco-wordmark dreco-wordmark-lime" src="/wordmark-lime.png" alt="Recruitflow">
+          <img class="dreco-wordmark dreco-lockup-white" src="/recruitflow-lockup-white.png" alt="Recruitflow">
         </a>
         <button class="sidebar-toggle" type="button" onclick="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">
           <i class="ti ti-layout-sidebar-left-collapse"></i>
